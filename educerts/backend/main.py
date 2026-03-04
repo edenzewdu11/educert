@@ -41,10 +41,10 @@ templates = Jinja2Templates(directory="templates")
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
 ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
 
-# CORS setup
+# CORS setup - Allow all origins for development
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[FRONTEND_URL, "http://127.0.0.1:3000", "http://localhost:3000", "http://localhost:3002", "http://127.0.0.1:3002", "http://10.5.87.118:3002", "https://hungry-animals-leave.loca.lt", "https://educerts-api.loca.lt", "https://routes-div-studies-tumor.trycloudflare.com", "https://fountain-benefit-walking-span.trycloudflare.com"],
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000", "http://192.168.56.1:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -58,12 +58,22 @@ async def validation_exception_handler(request, exc):
     )
 
 @app.exception_handler(Exception)
-async def global_exception_handler(request, exc):
+async def global_exception_handler(request: Request, exc):
     import traceback
     print(f"GLOBAL ERROR: {exc}\n{traceback.format_exc()}")
+    
+    # Get origin from request
+    origin = request.headers.get("origin", "http://localhost:3000")
+    
     return JSONResponse(
         status_code=500,
-        content={"detail": "Internal server error"}
+        content={"detail": "Internal server error"},
+        headers={
+            "Access-Control-Allow-Origin": origin,
+            "Access-Control-Allow-Credentials": "true",
+            "Access-Control-Allow-Methods": "*",
+            "Access-Control-Allow-Headers": "*",
+        }
     )
 
 def get_db():
@@ -1679,22 +1689,24 @@ async def apply_digital_signatures(
                     'signature': cert.signature
                 }
                 
-                # KEEP WPS RIBBON - REMOVE OTHER RIBBONS
-                # Create WPS-style enhanced PDF with interactive ribbon
-                wps_enhanced_pdf_path = f"generated_certs/{cert_id}_wps_verified.pdf"
-                add_simple_wps_ribbon(
-                    cert.rendered_pdf_path,
-                    wps_enhanced_pdf_path,
-                    cert_data
-                )
-                
-                # Update certificate to point to WPS-enhanced PDF
-                cert.rendered_pdf_path = wps_enhanced_pdf_path
-                print(f"✅ Added WPS-style verification ribbon to {cert_id}")
+                # Add verification badge to PDF with gap above certificate
+                wps_enhanced_pdf_path = f"generated_certs/{cert_id}_verified.pdf"
+                try:
+                    add_simple_wps_ribbon(
+                        cert.rendered_pdf_path,
+                        wps_enhanced_pdf_path,
+                        cert_data
+                    )
+                    # Update certificate to point to verified PDF
+                    cert.rendered_pdf_path = wps_enhanced_pdf_path
+                    print(f"✅ Added verification badge to {cert_id}")
+                except Exception as ribbon_err:
+                    print(f"⚠️  Failed to add verification badge to {cert_id}: {ribbon_err}")
+                    # Continue without badge - signing still successful
                 
         except Exception as e:
-            print(f"⚠️  Failed to add WPS verification ribbon to {cert_id}: {e}")
-            # Continue without ribbon - signing still successful
+            print(f"⚠️  Error processing certificate {cert_id}: {e}")
+            # Continue - signing still successful
             
         signed_certs.append({"id": cert_id, "student_name": cert.student_name, "pin": cert.claim_pin})
 
@@ -2077,6 +2089,61 @@ async def preview_signature(
                 os.remove(tmp_path)
         except Exception:
             pass
+
+
+@app.get("/api/view/{cert_id}")
+def view_certificate(cert_id: str, db: Session = Depends(get_db)):
+    """View certificate inline (not download)"""
+    cert = db.query(models.Certificate).filter(models.Certificate.id == cert_id).first()
+    if not cert:
+        raise HTTPException(status_code=404, detail="Certificate not found")
+
+    # Check if rendered PDF exists
+    if cert.rendered_pdf_path and os.path.exists(cert.rendered_pdf_path):
+        return FileResponse(
+            path=cert.rendered_pdf_path,
+            media_type="application/pdf",
+            headers={"Content-Disposition": f"inline; filename=cert_{cert.id}.pdf"}
+        )
+    
+    # If no rendered PDF, try to generate it on the fly
+    pdf_template_path = "user_templates/template.pdf"
+    if cert.template_type == "pdf" and os.path.exists(pdf_template_path):
+        verify_url = f"{FRONTEND_URL}/verify?id={cert.id}"
+        qr_b64 = generate_qr_base64(verify_url)
+        field_values = {
+            "student_name": cert.student_name,
+            "name": cert.student_name,
+            "course_name": cert.course_name,
+            "course": cert.course_name,
+            "issued_at": cert.issued_at.strftime("%Y-%m-%d"),
+            "date": cert.issued_at.strftime("%Y-%m-%d"),
+            "cert_id": cert.id,
+            "signature": cert.signature[:20] + "..." if cert.signature else "Unsigned",
+            "qr_code": qr_b64,
+        }
+        
+        os.makedirs("generated_certs", exist_ok=True)
+        out_path = f"generated_certs/{cert.id}_view.pdf"
+        
+        try:
+            pdf_utils.render_pdf_certificate(
+                pdf_template_path, 
+                field_values, 
+                out_path,
+                metadata={"cert_id": cert.id}
+            )
+            
+            return FileResponse(
+                path=out_path,
+                media_type="application/pdf",
+                headers={"Content-Disposition": f"inline; filename=cert_{cert.id}.pdf"}
+            )
+        except Exception as e:
+            print(f"Error rendering PDF: {e}")
+            raise HTTPException(status_code=500, detail=f"Error rendering PDF: {str(e)}")
+    
+    raise HTTPException(status_code=404, detail="Certificate PDF not found. Please sign the certificate first.")
 
 
 @app.get("/api/download/{cert_id}")

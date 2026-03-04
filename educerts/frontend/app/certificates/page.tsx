@@ -18,6 +18,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Modal } from "@/components/ui/modal"
 import { API_BASE_URL } from "@/lib/api-config"
+import VerificationBanner from "@/components/VerificationBanner"
+import CertificateViewer from "@/components/CertificateViewer"
 
 const API = API_BASE_URL
 
@@ -46,6 +48,7 @@ export default function CertificatesPage() {
     const [statusFilter, setStatusFilter] = useState("all") // all, signed, unsigned, revoked
     const [categoryFilter, setCategoryFilter] = useState("all")
     const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
+    const [viewingCert, setViewingCert] = useState<Certificate | null>(null)
 
     // Selection State
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
@@ -274,6 +277,22 @@ export default function CertificatesPage() {
     }
 
     return (
+        <>
+            {/* Certificate Viewer with Banner */}
+            {viewingCert && viewingCert.signing_status === 'signed' && !viewingCert.revoked && (
+                <CertificateViewer
+                    certificateData={{
+                        id: viewingCert.id,
+                        student_name: viewingCert.student_name,
+                        course_name: viewingCert.course_name,
+                        issued_at: viewingCert.issued_at,
+                        organization: viewingCert.organization || 'EduCerts Academy'
+                    }}
+                    pdfUrl={`${API}/api/view/${viewingCert.id}`}
+                    onClose={() => setViewingCert(null)}
+                />
+            )}
+            
         <div className="p-8 max-w-7xl mx-auto space-y-8 relative pb-32">
             <Modal {...modalConfig} onClose={closeModal} />
 
@@ -509,12 +528,18 @@ export default function CertificatesPage() {
                                                     <Button
                                                         size="sm"
                                                         className="flex-1 bg-slate-900 hover:bg-slate-800 text-white font-black rounded-xl h-10 text-[11px] transition-all hover:scale-[1.02]"
-                                                        onClick={() => window.open(`${API}/api/download/${cert.id}`)}
-                                                        title={cert.signing_status === "unsigned" ? "Preview Draft PDF" : "Download Signed PDF"}
+                                                        onClick={() => {
+                                                            if (cert.signing_status === 'signed' && !cert.revoked) {
+                                                                setViewingCert(cert)
+                                                            } else {
+                                                                window.open(`${API}/api/download/${cert.id}`)
+                                                            }
+                                                        }}
+                                                        title={cert.signing_status === "unsigned" ? "Preview Draft PDF" : "View Verified Certificate"}
                                                     >
                                                         <div className="flex items-center gap-1.5">
-                                                            {cert.signing_status === "unsigned" ? <Eye className="w-4 h-4" /> : <Download className="w-4 h-4" />}
-                                                            {cert.signing_status === "unsigned" ? "Preview" : "Download"}
+                                                            {cert.signing_status === "unsigned" ? <Eye className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                                            {cert.signing_status === "unsigned" ? "Preview" : "View"}
                                                         </div>
                                                     </Button>
                                                 </>
@@ -572,5 +597,6 @@ export default function CertificatesPage() {
                 )}
             </AnimatePresence>
         </div>
+        </>
     )
 }

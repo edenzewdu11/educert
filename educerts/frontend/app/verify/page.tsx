@@ -8,6 +8,7 @@ import axios from "axios"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
+import VerificationBanner from "@/components/VerificationBanner"
 
 interface VerificationResult {
     summary: {
@@ -129,7 +130,23 @@ export default function VerifyPage() {
     )
 
     return (
-        <div className="p-8 max-w-4xl mx-auto space-y-12">
+        <>
+            {/* Verification Banner - shows when certificate is verified */}
+            {result && result.summary.all && result.certificate && (
+                <VerificationBanner
+                    certificateData={{
+                        id: verifyId,
+                        student_name: result.certificate.student_name,
+                        course_name: result.certificate.course_name,
+                        issued_at: new Date().toISOString().split('T')[0],
+                        organization: 'EduCerts Academy',
+                        signature: result.data.find(d => d.type === 'SIGNATURE_VERIFICATION')?.data?.signature
+                    }}
+                    onClose={() => setResult(null)}
+                />
+            )}
+            
+            <div className="p-8 max-w-4xl mx-auto space-y-12">
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -345,5 +362,6 @@ export default function VerifyPage() {
                 </div>
             </div>
         </div>
+        </>
     )
 }

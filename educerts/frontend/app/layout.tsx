@@ -51,7 +51,7 @@ export default function RootLayout({
         <meta name="application-name" content="EduWallet" />
         <meta name="format-detection" content="telephone=no" />
       </head>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`} suppressHydrationWarning>
         <AppProviders>{children}</AppProviders>
       </body>
     </html>
