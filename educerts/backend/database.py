@@ -7,9 +7,12 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Use PostgreSQL from environment variable, fallback to SQLite for local dev
-import os
 db_path = os.path.join(os.path.dirname(__file__), "educerts.db")
 DATABASE_URL = os.getenv("DATABASE_URL", f"sqlite:///{db_path}")
+
+# Render/Heroku provide "postgres://" but SQLAlchemy + psycopg2 need "postgresql://"
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
 # psycopg2 driver for PostgreSQL
 connect_args = {}

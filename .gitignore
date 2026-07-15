@@ -29,6 +29,16 @@ educerts/backend/user_templates/*.jpg
 educerts/backend/*.db
 educerts/backend/*.sqlite3
 
+# Secrets / signing keys (provide via ISSUER_PRIVATE_KEY env var in production)
+educerts/backend/*.pem
+
+# Test & debug artifacts
+educerts/backend/*.pdf
+educerts/backend/*.log
+educerts/backend/backend_log.txt
+educerts/backend/debug_response_*.json
+educerts/backend/certificate_hash_database.json
+
 # IDEs
 .vscode/
 .idea/

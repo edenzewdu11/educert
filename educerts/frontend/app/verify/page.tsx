@@ -18,6 +18,7 @@ interface VerificationResult {
         issuerIdentity: boolean
         signature: boolean
         registryCheck: boolean
+        contentIntegrity?: boolean
     }
     data: Array<{
         type: string
@@ -40,6 +41,31 @@ export default function VerifyPage() {
     const [activeMode, setActiveMode] = useState<"id" | "file">("id")
     const [dragActive, setDragActive] = useState(false)
 
+    // Function to determine specific reason for unverified status
+    const getUnverifiedReason = (result: VerificationResult): string => {
+        if (!result.summary.documentIntegrity) {
+            return "Document has been tampered with or corrupted."
+        }
+        if (!result.summary.documentStatus) {
+            return "Certificate has been revoked or was never issued."
+        }
+        if (!result.summary.signature) {
+            return "Digital signature is invalid or missing."
+        }
+        if (!result.summary.issuerIdentity) {
+            return "Issuer identity could not be verified."
+        }
+        if (!result.summary.registryCheck) {
+            return "Certificate not found in the official registry."
+        }
+        // Check for content integrity issues (PDF tampering)
+        const contentCheck = result.data.find(d => d.type === "CONTENT_INTEGRITY")
+        if (contentCheck && contentCheck.status === "INVALID") {
+            return "PDF content has been modified after issuance."
+        }
+        return "Certificate verification failed for unknown reasons."
+    }
+
     // Check for ID in URL params
     useEffect(() => {
         const params = new URLSearchParams(window.location.search)
@@ -56,14 +82,35 @@ export default function VerifyPage() {
         setLoading(true)
         setResult(null)
         setError(null)
+        
+        const timestamp = Date.now()
+        console.log(`[${timestamp}] Starting ID verification for: ${certId}`)
+        
         try {
             const res = await axios.post("http://localhost:8000/api/verify", {
                 certificate_id: certId
+            }, {
+                headers: {
+                    'Cache-Control': 'no-cache, no-store, must-revalidate',
+                    'Pragma': 'no-cache',
+                    'Expires': '0'
+                }
             })
+            
+            console.log(`[${timestamp}] ID verification response:`, res.data)
+            console.log(`[${timestamp}] Overall valid:`, res.data.summary.all)
+            console.log(`[${timestamp}] Content integrity:`, res.data.summary.contentIntegrity)
+            
             setResult(res.data)
         } catch (err: any) {
             setResult(null)
-            setError("Certificate not found. Make sure you entered the correct ID.")
+            console.error(`[${timestamp}] ID verification error:`, err)
+            
+            if (err.response?.status === 404) {
+                setError("Certificate not found. Please check the certificate ID and try again.")
+            } else {
+                setError("Verification failed. Please check your connection and try again.")
+            }
         } finally {
             setLoading(false)
         }
@@ -73,11 +120,29 @@ export default function VerifyPage() {
         setLoading(true)
         setResult(null)
         setError(null)
+        
+        // Add cache-busting timestamp to prevent browser caching
+        const timestamp = Date.now()
+        console.log(`[${timestamp}] Starting verification for file: ${file.name}`)
+        
         try {
             if (file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf")) {
                 const formData = new FormData()
                 formData.append("file", file)
-                const res = await axios.post<VerificationResult>("http://localhost:8000/api/verify/pdf", formData)
+                
+                // Add cache-busting headers
+                const res = await axios.post<VerificationResult>("http://localhost:8000/api/verify/pdf", formData, {
+                    headers: {
+                        'Cache-Control': 'no-cache, no-store, must-revalidate',
+                        'Pragma': 'no-cache',
+                        'Expires': '0'
+                    }
+                })
+                
+                console.log(`[${timestamp}] PDF verification response:`, res.data)
+                console.log(`[${timestamp}] Overall valid:`, res.data.summary.all)
+                console.log(`[${timestamp}] Content integrity:`, res.data.summary.contentIntegrity)
+                
                 setResult(res.data)
             } else {
                 const text = await file.text()
@@ -85,7 +150,15 @@ export default function VerifyPage() {
                     const jsonData = JSON.parse(text)
                     const res = await axios.post<VerificationResult>("http://localhost:8000/api/verify", {
                         data_payload: jsonData
+                    }, {
+                        headers: {
+                            'Cache-Control': 'no-cache, no-store, must-revalidate',
+                            'Pragma': 'no-cache',
+                            'Expires': '0'
+                        }
                     })
+                    
+                    console.log(`[${timestamp}] JSON verification response:`, res.data)
                     setResult(res.data)
                 } catch (e) {
                     setError("Invalid JSON document format.")
@@ -94,6 +167,7 @@ export default function VerifyPage() {
         } catch (err: any) {
             setResult(null)
             const errorMsg = err.response?.data?.detail || err.message || "Invalid document format."
+            console.error(`[${timestamp}] Verification error:`, err)
             setError(`Verification failed: ${errorMsg}`)
         } finally {
             setLoading(false)
@@ -320,10 +394,13 @@ export default function VerifyPage() {
                                     </div>
                                     <div>
                                         <h3 className={`text-2xl font-bold ${result.summary.all ? "text-emerald-700" : "text-red-700"}`}>
-                                            {result.summary.all ? "Fully Verified" : "Verification Failed"}
+                                            {result.summary.all ? "Verified" : "Unverified"}
                                         </h3>
                                         <p className={`text-sm font-medium ${result.summary.all ? "text-emerald-600" : "text-red-600"}`}>
-                                            {result.summary.all ? "The credential is legitimate and intact." : "Integrity or identity check failed."}
+                                            {result.summary.all 
+                                                ? "This certificate is authentic and has not been tampered with." 
+                                                : getUnverifiedReason(result)
+                                            }
                                         </p>
                                     </div>
                                 </div>
@@ -348,6 +425,12 @@ export default function VerifyPage() {
                                         <FragmentStatus label="Issuer Identity" isValid={result.summary.issuerIdentity} />
                                         <FragmentStatus label="Registry Verification" isValid={result.summary.registryCheck} />
                                         <FragmentStatus label="Cryptographic Signature" isValid={result.summary.signature} />
+                                        {result.summary.contentIntegrity !== undefined && (
+                                            <FragmentStatus 
+                                                label="Content Integrity (PDF Hash)" 
+                                                isValid={result.summary.contentIntegrity} 
+                                            />
+                                        )}
                                     </div>
 
                                     <div className="mt-auto pt-6">

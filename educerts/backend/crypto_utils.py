@@ -12,12 +12,20 @@ from cryptography.hazmat.primitives.asymmetric import ed25519
 from cryptography.hazmat.primitives import serialization
 import base64
 
-# Load or generate a persistent issuer key
+# Load or generate a persistent issuer key.
+# Priority: ISSUER_PRIVATE_KEY env var (PEM) > local key file > generate new.
+# On ephemeral hosts (e.g. Render) set ISSUER_PRIVATE_KEY so the signing key is
+# stable across redeploys and previously issued certificates stay verifiable.
 import os
 
-KEY_FILE = "issuer_private_key.pem"
+KEY_FILE = os.path.join(os.path.dirname(__file__), "issuer_private_key.pem")
 
-if os.path.exists(KEY_FILE):
+_env_key = os.getenv("ISSUER_PRIVATE_KEY")
+if _env_key:
+    private_key = serialization.load_pem_private_key(
+        _env_key.encode("utf-8"), password=None
+    )
+elif os.path.exists(KEY_FILE):
     with open(KEY_FILE, "rb") as f:
         private_key = serialization.load_pem_private_key(f.read(), password=None)
 else:

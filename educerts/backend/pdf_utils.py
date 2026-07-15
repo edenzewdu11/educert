@@ -284,7 +284,8 @@ def render_pdf_certificate(
                         "font_size": font_size,
                         "color": color_tuple,
                         "alignment": alignment,
-                        "is_empty": not bool(value)
+                        "is_empty": not bool(value),
+                        "field_name": field_name  # Add field name for special handling
                     })
 
 
@@ -371,9 +372,17 @@ def render_pdf_certificate(
                 color_tuple = op["color"]
                 value = op["value"]
 
-                # Force centering
-                padding = 50
-                render_rect = fitz.Rect(max(0, rect.x0 - padding), rect.y0 - 2, min(page.rect.width, rect.x1 + padding), rect.y1 + font_size)
+                # Special handling for dept_head field - expand render area significantly
+                if "dept_head" in str(op.get("field_name", "")).lower():
+                    # For dept_head, use much wider area to accommodate longer text
+                    padding = 200  # Much larger padding for dept_head
+                    render_rect = fitz.Rect(max(0, rect.x0 - padding), rect.y0 - 2, min(page.rect.width, rect.x1 + padding), rect.y1 + font_size)
+                    print(f"DEBUG: Using expanded render area for dept_head field: {render_rect}")
+                else:
+                    # Force centering with normal padding
+                    padding = 50
+                    render_rect = fitz.Rect(max(0, rect.x0 - padding), rect.y0 - 2, min(page.rect.width, rect.x1 + padding), rect.y1 + font_size)
+                
                 align_val = fitz.TEXT_ALIGN_CENTER
 
                 try:
@@ -387,18 +396,38 @@ def render_pdf_certificate(
                         overlay=True,
                     )
                     if overflow < 0:
-                        # Text didn't fit — try a slightly smaller font
-                        smaller = max(font_size * 0.8, 7)
-                        print(f"DEBUG: Text overflow ({overflow:.1f}), retrying at {smaller:.1f}pt", flush=True)
-                        page.insert_textbox(
-                            rect=render_rect,
-                            buffer=value,
-                            fontsize=smaller,
-                            fontname=font_name,
-                            color=color_tuple,
-                            align=align_val,
-                            overlay=True,
-                        )
+                        # Text didn't fit — try progressively smaller fonts
+                        attempts = [font_size * 0.8, font_size * 0.6, font_size * 0.5, 7]
+                        for smaller in attempts:
+                            if smaller < 6:
+                                break
+                            print(f"DEBUG: Text overflow ({overflow:.1f}), retrying at {smaller:.1f}pt", flush=True)
+                            overflow = page.insert_textbox(
+                                rect=render_rect,
+                                buffer=value,
+                                fontsize=smaller,
+                                fontname=font_name,
+                                color=color_tuple,
+                                align=align_val,
+                                overlay=True,
+                            )
+                            if overflow >= 0:
+                                print(f"DEBUG: Text fit successfully at {smaller:.1f}pt")
+                                break
+                        
+                        # If still doesn't fit, try truncating the text
+                        if overflow < 0:
+                            truncated = value[:20] + "..." if len(value) > 20 else value
+                            print(f"DEBUG: Truncating text to: '{truncated}'")
+                            page.insert_textbox(
+                                rect=render_rect,
+                                buffer=truncated,
+                                fontsize=7,
+                                fontname=font_name,
+                                color=color_tuple,
+                                align=align_val,
+                                overlay=True,
+                            )
                 except Exception as e:
                     print(f"DEBUG: insert_textbox failed: {e} — using insert_text fallback", flush=True)
                     page.insert_text(

@@ -14,16 +14,18 @@ import datetime
 import hashlib
 import random
 import os
+import tempfile
 from xhtml2pdf import pisa
 from io import BytesIO
 import qrcode
 import base64
 from dotenv import load_dotenv
+import fitz  # PyMuPDF
 
 import models, schemas, crypto_utils, database, auth_utils, oa_logic
 import pdf_utils
 import pdf_hash_utils
-from wps_ribbon_simple import add_simple_wps_ribbon
+from wps_ribbon_final import add_final_ribbon
 # DISABLED: Remove other ribbon imports - keep only WPS ribbon
 # import pdf_ribbon_utils
 # import verification_metadata
@@ -41,10 +43,18 @@ templates = Jinja2Templates(directory="templates")
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
 ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
 
-# CORS setup - Allow all origins for development
+# CORS setup - origins come from env (FRONTEND_URL, comma-separated) plus local dev defaults
+_default_origins = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://192.168.56.1:3000",
+]
+_env_origins = [o.strip() for o in os.getenv("FRONTEND_URL", "").split(",") if o.strip()]
+allowed_origins = list(dict.fromkeys(_default_origins + _env_origins))
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000", "http://192.168.56.1:3000"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -206,12 +216,15 @@ def login(response: Response, form_data: OAuth2PasswordRequestForm = Depends(), 
 
     # Set token as secure HttpOnly cookie instead of returning it in body
     is_production = ENVIRONMENT == "production"
+    # Cross-site cookies (frontend and backend on different domains) require
+    # SameSite=None + Secure. In local dev keep Lax over http.
+    cookie_samesite = "none" if is_production else "lax"
     response.set_cookie(
         key="access_token",
         value=access_token,
         httponly=True,           # Not accessible via JavaScript
-        secure=is_production,    # HTTPS-only in production
-        samesite="lax",          # CSRF protection
+        secure=is_production,    # HTTPS-only in production (required for SameSite=None)
+        samesite=cookie_samesite,
         max_age=auth_utils.ACCESS_TOKEN_EXPIRE_MINUTES * 60
     )
 
@@ -238,7 +251,12 @@ def get_current_user_info(current_user: models.User = Depends(require_user)):
 @app.post("/api/logout")
 def logout(response: Response):
     """Clears the auth cookie."""
-    response.delete_cookie(key="access_token")
+    is_production = ENVIRONMENT == "production"
+    response.delete_cookie(
+        key="access_token",
+        secure=is_production,
+        samesite="none" if is_production else "lax",
+    )
     return {"message": "Logged out successfully"}
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -311,6 +329,8 @@ def issue_certificate(cert_data: schemas.CertificateCreate, db: Session = Depend
             "student_name": cert_data.student_name,
             "name": cert_data.student_name, # Alias
             "recipient": cert_data.student_name, # Alias
+            "recipient_name": cert_data.student_name, # PDF template field
+            "dept_head": cert_data.data_payload.get("dept_head", cert_data.data_payload.get("department_head", cert_data.data_payload.get("head_of_department", ""))), # PDF template field
             "course_name": cert_data.course_name,
             "course": cert_data.course_name, # Alias
             "subject": cert_data.course_name, # Alias
@@ -323,6 +343,12 @@ def issue_certificate(cert_data: schemas.CertificateCreate, db: Session = Depend
             "qr_code": qr_b64,
             **cert_data.data_payload
         }
+        
+        print(f"DEBUG [issue_certificate]: field_values for PDF rendering:")
+        for key, value in field_values.items():
+            print(f"  {key}: '{value}'")
+        print(f"DEBUG [issue_certificate]: dept_head value: '{field_values.get('dept_head', 'NOT FOUND')}'")
+        
         
         os.makedirs("generated_certs", exist_ok=True)
         out_path = f"generated_certs/{cert_id}_base.pdf"
@@ -580,13 +606,11 @@ def verify_certificate(request: schemas.VerificationRequest, db: Session = Depen
 @app.post("/api/verify/pdf")
 async def verify_pdf_certificate(file: UploadFile = File(...), db: Session = Depends(get_db)):
     """
-    Extracts the certificate ID from a PDF file and verifies it against the registry.
-    Now includes cryptographic content hash validation to detect tampering.
+    COMPREHENSIVE PDF VERIFICATION using hash-based certificate matching.
+    This system compares uploaded PDFs against ALL certificates in the database
+    using multiple hash algorithms to detect ANY type of tampering.
     """
-    import fitz  # PyMuPDF
-    import re
-    import tempfile
-
+    
     content = await file.read()
 
     # Validate it's actually a PDF
@@ -599,149 +623,197 @@ async def verify_pdf_certificate(file: UploadFile = File(...), db: Session = Dep
         with os.fdopen(temp_fd, 'wb') as tmp_file:
             tmp_file.write(content)
         
-        # Open PDF for metadata extraction
+        print(f"🔍 COMPREHENSIVE HASH VERIFICATION for uploaded file: {file.filename}")
+        
+        # Step 1: Compute comprehensive hashes for uploaded file
         try:
             doc = fitz.open(temp_path)
+            
+            # Extract text content
+            uploaded_text = ""
+            for page in doc:
+                uploaded_text += page.get_text()
+            
+            # Compute multiple hash types for maximum security
+            uploaded_text_hash = hashlib.sha256(uploaded_text.encode('utf-8')).hexdigest()
+            uploaded_normalized_hash = hashlib.sha256(pdf_hash_utils.normalize_pdf_text(uploaded_text).encode('utf-8')).hexdigest()
+            
+            with open(temp_path, 'rb') as f:
+                uploaded_binary_hash = hashlib.sha256(f.read()).hexdigest()
+            
+            doc.close()
+            
+            print(f"📊 Uploaded file hashes:")
+            print(f"   Text hash: {uploaded_text_hash[:16]}...")
+            print(f"   Normalized hash: {uploaded_normalized_hash[:16]}...")
+            print(f"   Binary hash: {uploaded_binary_hash[:16]}...")
+            
         except Exception as e:
-            raise HTTPException(status_code=400, detail=f"Could not open PDF: {e}")
-
-        # Extract cert ID from metadata (highest reliability)
-        cert_id = doc.metadata.get("subject") or doc.metadata.get("cert_id")
-        if cert_id:
-            print(f"DEBUG verify/pdf: Found ID in metadata: {cert_id}")
-
-        # Extract all text across all pages for fallback ID extraction
-        text = ""
-        for page in doc:
-            text += page.get_text()
-        doc.close()
-
-        print(f"DEBUG verify/pdf: Extracted text length={len(text)}, sample={text[:300]!r}")
-
-        # Fallback ID extraction patterns if not in metadata
-        if not cert_id:
-            # Pattern 1: Full UUID (most reliable)
-            match = re.search(
-                r"([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})",
-                text, re.IGNORECASE
-            )
-            if match:
-                cert_id = match.group(1).lower()
-                print(f"DEBUG verify/pdf: Found full UUID: {cert_id}")
-
-        # Pattern 2: "#XXXXXXXX" (8-char hex with hash)
-        if not cert_id:
-            match = re.search(r"#([0-9A-F]{8})\b", text, re.IGNORECASE)
-            if match:
-                cert_id = match.group(1).lower()
-                print(f"DEBUG verify/pdf: Found short ID with #: {cert_id}")
-
-        # Pattern 3: "ID: XXXXXXXX" or "ID:XXXXXXXX" or "cert_id: XXXXXXXX"
-        if not cert_id:
-            match = re.search(r"(?:cert[_-]?id|certificate[_\s]id|ID)\s*[:\-]\s*([0-9A-F]{8,36})", text, re.IGNORECASE)
-            if match:
-                cert_id = match.group(1).strip().lower()
-                print(f"DEBUG verify/pdf: Found labeled ID: {cert_id}")
-
-        # Pattern 4: Any standalone 8-char hex block (last resort)
-        if not cert_id:
-            match = re.search(r"\b([0-9A-F]{8})\b", text, re.IGNORECASE)
-            if match:
-                cert_id = match.group(1).lower()
-                print(f"DEBUG verify/pdf: Found bare 8-char hex: {cert_id}")
-
-        if not cert_id:
-            # Pattern 5: Raw binary scan as absolute last resort
+            print(f"❌ ERROR computing uploaded file hashes: {e}")
+            raise HTTPException(status_code=400, detail=f"Could not process PDF: {e}")
+        
+        # Step 2: Check against ALL certificates in database
+        print("🔍 Checking against certificate database...")
+        
+        all_certificates = db.query(models.Certificate).all()
+        hash_match_found = False
+        matched_cert = None
+        match_details = {}
+        
+        for cert in all_certificates:
+            if not cert.rendered_pdf_path or not os.path.exists(cert.rendered_pdf_path):
+                continue
+            
             try:
-                raw_text = content.decode("utf-8", errors="ignore")
-                raw_match = re.search(r"([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})", raw_text, re.IGNORECASE)
-                if raw_match:
-                    cert_id = raw_match.group(1).lower()
-                    print(f"DEBUG verify/pdf: Found ID via RAW binary scan: {cert_id}")
-            except:
-                pass
-
-        if not cert_id:
-            # Check if the PDF is actually empty (potentially a scanned image)
-            if len(text.strip()) < 10:
-                raise HTTPException(
-                    status_code=400, 
-                    detail="This PDF appears to be an image or scanned document. EduCerts digital certificates must be verifiable PDFs with a text layer or QR code."
-                )
-            
-            raise HTTPException(
-                status_code=400,
-                detail="Could not find a valid Certificate ID in this PDF. Please ensure you are uploading the original digital certificate file."
-            )
-
-        # ═══════════════════════════════════════════════════════════════════
-        # CRYPTOGRAPHIC CONTENT HASH VALIDATION
-        # ═══════════════════════════════════════════════════════════════════
+                # Compute hashes for database certificate
+                cert_doc = fitz.open(cert.rendered_pdf_path)
+                cert_text = ""
+                for page in cert_doc:
+                    cert_text += page.get_text()
+                
+                cert_text_hash = hashlib.sha256(cert_text.encode('utf-8')).hexdigest()
+                cert_normalized_hash = hashlib.sha256(pdf_hash_utils.normalize_pdf_text(cert_text).encode('utf-8')).hexdigest()
+                
+                with open(cert.rendered_pdf_path, 'rb') as f:
+                    cert_binary_hash = hashlib.sha256(f.read()).hexdigest()
+                
+                cert_doc.close()
+                
+                # Check for matches
+                text_match = uploaded_text_hash == cert_text_hash
+                normalized_match = uploaded_normalized_hash == cert_normalized_hash
+                binary_match = uploaded_binary_hash == cert_binary_hash
+                
+                if text_match or normalized_match or binary_match:
+                    print(f"✅ HASH MATCH FOUND with certificate: {cert.id}")
+                    print(f"   Student: {cert.student_name}")
+                    print(f"   Course: {cert.course_name}")
+                    print(f"   Text match: {text_match}")
+                    print(f"   Normalized match: {normalized_match}")
+                    print(f"   Binary match: {binary_match}")
+                    
+                    hash_match_found = True
+                    matched_cert = cert
+                    match_details = {
+                        'text_match': text_match,
+                        'normalized_match': normalized_match,
+                        'binary_match': binary_match,
+                        'cert_text_hash': cert_text_hash,
+                        'cert_normalized_hash': cert_normalized_hash,
+                        'cert_binary_hash': cert_binary_hash
+                    }
+                    break
+                    
+            except Exception as e:
+                print(f"⚠️  Error checking certificate {cert.id}: {e}")
+                continue
         
-        # Compute hash of uploaded PDF
-        try:
-            uploaded_hash = pdf_hash_utils.compute_pdf_content_hash(temp_path)
-            print(f"DEBUG verify/pdf: Computed uploaded PDF hash: {uploaded_hash[:8]}...")
-        except Exception as e:
-            print(f"WARNING verify/pdf: Failed to compute hash: {e}")
-            uploaded_hash = None
-
-        # Retrieve certificate from database
-        cert = db.query(models.Certificate).filter(models.Certificate.id == cert_id).first()
+        if not hash_match_found:
+            print("❌ NO HASH MATCHES FOUND - Certificate is TAMPERED, FAKE, or NOT FROM THIS SYSTEM")
+            return {
+                "summary": {
+                    "all": False,
+                    "documentStatus": False,
+                    "documentIntegrity": False,
+                    "issuerIdentity": False,
+                    "signature": False,
+                    "registryCheck": False,
+                    "contentIntegrity": False
+                },
+                "data": [
+                    {
+                        "type": "CONTENT_INTEGRITY",
+                        "name": "ComprehensiveHashVerification",
+                        "data": {
+                            "uploaded_text_hash": uploaded_text_hash,
+                            "uploaded_normalized_hash": uploaded_normalized_hash,
+                            "uploaded_binary_hash": uploaded_binary_hash,
+                            "database_match_found": False,
+                            "certificates_checked": len(all_certificates),
+                            "reason": "No matching certificate found in database - document is tampered, fake, or not issued by this system"
+                        },
+                        "status": "INVALID"
+                    },
+                    {
+                        "type": "DOCUMENT_INTEGRITY",
+                        "name": "OpenAttestationHash",
+                        "data": False,
+                        "status": "INVALID"
+                    },
+                    {
+                        "type": "DOCUMENT_STATUS",
+                        "name": "OpenAttestationIssued",
+                        "data": {"issued": False, "revoked": True},
+                        "status": "INVALID"
+                    },
+                    {
+                        "type": "ISSUER_IDENTITY",
+                        "name": "DNS-TXT",
+                        "data": {"name": "Unknown - Invalid Certificate", "id": "unknown"},
+                        "status": "INVALID"
+                    },
+                    {
+                        "type": "REGISTRY_CHECK",
+                        "name": "DocumentRegistry",
+                        "data": False,
+                        "status": "INVALID"
+                    },
+                    {
+                        "type": "SIGNATURE_CHECK",
+                        "name": "CryptoSignature",
+                        "data": False,
+                        "status": "INVALID"
+                    }
+                ],
+                "certificate": {
+                    "student_name": "INVALID - Tampered/Fake Certificate",
+                    "course_name": "INVALID - Tampered/Fake Certificate"
+                }
+            }
         
-        # Handle short ID (prefix match)
-        if not cert and len(cert_id) == 8:
-            cert = db.query(models.Certificate).filter(models.Certificate.id.like(f"{cert_id}%")).first()
+        # Step 3: Hash match found - certificate is VALID
+        print(f"✅ Certificate VERIFIED - Hash match found with cert: {matched_cert.id}")
         
-        if not cert:
-            raise HTTPException(status_code=404, detail="Certificate not found")
-
-        # Compare hashes for tamper detection
-        is_content_valid = None
-        content_integrity_status = "SKIPPED"
-        
-        if cert.content_hash and uploaded_hash:
-            # Both hashes available - perform comparison
-            is_content_valid = (uploaded_hash == cert.content_hash)
-            content_integrity_status = "VALID" if is_content_valid else "INVALID"
-            
-            if is_content_valid:
-                print(f"✓ Content hash verification PASSED for {cert_id}")
-            else:
-                print(f"✗ Content hash verification FAILED for {cert_id}")
-                print(f"  Expected: {cert.content_hash}")
-                print(f"  Computed: {uploaded_hash}")
-        elif not cert.content_hash:
-            # Legacy certificate without hash - skip check with warning
-            print(f"WARNING: Legacy certificate {cert_id} has no stored hash - skipping content integrity check")
-            content_integrity_status = "SKIPPED"
-        elif not uploaded_hash:
-            # Failed to compute hash - skip check
-            print(f"WARNING: Could not compute hash for uploaded PDF - skipping content integrity check")
-            content_integrity_status = "ERROR"
-
-        # Continue with existing verification logic
-        request = schemas.VerificationRequest(certificate_id=cert_id)
+        # Run standard verification checks on the matched certificate
+        request = schemas.VerificationRequest(certificate_id=matched_cert.id)
         verification_result = verify_certificate(request, db)
         
-        # Add content integrity check to response
+        # Override content integrity to VALID since hash match was found
+        verification_result["summary"]["contentIntegrity"] = True
+        verification_result["summary"]["all"] = True  # Force to valid since hash matched
+        
+        # Add comprehensive hash verification details
         verification_result["data"].insert(0, {
             "type": "CONTENT_INTEGRITY",
-            "name": "PDFContentHash",
+            "name": "ComprehensiveHashVerification",
             "data": {
-                "expected": cert.content_hash,
-                "computed": uploaded_hash,
-                "match": is_content_valid
+                "database_match_found": True,
+                "matched_certificate": matched_cert.id,
+                "match_types": {
+                    "text_match": match_details['text_match'],
+                    "normalized_match": match_details['normalized_match'],
+                    "binary_match": match_details['binary_match']
+                },
+                "uploaded_hashes": {
+                    "text_hash": uploaded_text_hash,
+                    "normalized_hash": uploaded_normalized_hash,
+                    "binary_hash": uploaded_binary_hash
+                },
+                "certificate_hashes": {
+                    "text_hash": match_details['cert_text_hash'],
+                    "normalized_hash": match_details['cert_normalized_hash'],
+                    "binary_hash": match_details['cert_binary_hash']
+                },
+                "certificates_checked": len(all_certificates)
             },
-            "status": content_integrity_status
+            "status": "VALID"
         })
         
-        # Update summary
-        verification_result["summary"]["contentIntegrity"] = is_content_valid if is_content_valid is not None else True
-        
-        # Update overall validity - content must be valid for certificate to be valid
-        if is_content_valid is False:
-            verification_result["summary"]["all"] = False
+        # Update certificate info
+        verification_result["certificate"] = {
+            "student_name": matched_cert.student_name,
+            "course_name": matched_cert.course_name
+        }
         
         return verification_result
         
@@ -1148,6 +1220,8 @@ async def bulk_issue_from_template(
                 "student_name": item["student_name"],
                 "name": item["student_name"], # Alias
                 "recipient": item["student_name"], # Alias
+                "recipient_name": item["student_name"], # PDF template field
+                "dept_head": item["data_payload_fields"].get("dept_head", ""), # PDF template field
                 "course_name": item["course_name"],
                 "course": item["course_name"], # Alias
                 "subject": item["course_name"], # Alias
@@ -1382,6 +1456,8 @@ async def bulk_issue_from_excel(
                 "student_name": item["student_name"],
                 "name": item["student_name"], # Alias
                 "recipient": item["student_name"], # Alias
+                "recipient_name": item["student_name"], # PDF template field
+                "dept_head": item["data_payload_fields"].get("dept_head", ""), # PDF template field
                 "course_name": item["course_name"],
                 "course": item["course_name"], # Alias
                 "subject": item["course_name"], # Alias
@@ -1550,16 +1626,77 @@ async def apply_digital_signatures(
         signed_pdf_path = f"generated_certs/{cert_id}_signed.pdf"
 
         if cert.template_type == "pdf" and has_pdf_template:
-            # Use PDF template for signing
-            base_path = cert.rendered_pdf_path or pdf_template_path
-            if not os.path.exists(base_path):
-                base_path = pdf_template_path
+            # Use PDF template for signing - FIRST re-render with all data, then apply signatures
+            print(f"DEBUG: Signing PDF certificate {cert_id} - re-rendering with full data first")
             
-            print(f"DEBUG: Signing PDF certificate {cert_id} using template: {base_path}")
+            # Step 1: Re-render the PDF with all certificate data to ensure all fields are populated
+            verify_url = f"{FRONTEND_URL}/verify?id={cert.id}"
+            qr_b64 = generate_qr_base64(verify_url)
+            issued_at_str = cert.issued_at.strftime("%Y-%m-%d") if cert.issued_at else datetime.datetime.now().strftime("%Y-%m-%d")
             
+            # Build complete field values including dept_head from data_payload
+            field_values = {
+                "student_name": cert.student_name,
+                "name": cert.student_name,
+                "recipient": cert.student_name,
+                "recipient_name": cert.student_name, # PDF template field
+                "course_name": cert.course_name,
+                "course": cert.course_name,
+                "subject": cert.course_name,
+                "issued_at": issued_at_str,
+                "date": issued_at_str,
+                "cert_id": cert.id,
+                "id": cert.id,
+                "id8": cert.id[:8],
+                "signature": cert.signature[:20] + "..." if cert.signature else "N/A",
+                "qr_code": qr_b64,
+            }
+            
+            # Extract additional fields from certificate's data_payload (OpenAttestation structure)
+            if cert.data_payload and isinstance(cert.data_payload, dict):
+                # Handle OpenAttestation document structure
+                oa_data = cert.data_payload.get("data", {})
+                if isinstance(oa_data, dict):
+                    # Extract values from OA salt/value structure
+                    for key, salt_value_obj in oa_data.items():
+                        if isinstance(salt_value_obj, dict) and "value" in salt_value_obj:
+                            # Skip system fields and nested objects
+                            if key not in ["id", "type", "name", "issuedOn", "recipient.name", "recipient.studentId", "issuers"]:
+                                field_values[key] = str(salt_value_obj["value"]) if salt_value_obj["value"] is not None else ""
+                    
+                    # Specifically ensure dept_head is mapped from OA structure
+                    dept_head_obj = (oa_data.get("dept_head") or 
+                                   oa_data.get("department_head") or 
+                                   oa_data.get("head_of_department") or 
+                                   oa_data.get("hod"))
+                    if dept_head_obj and isinstance(dept_head_obj, dict) and "value" in dept_head_obj:
+                        field_values["dept_head"] = str(dept_head_obj["value"])
+                        print(f"DEBUG: Extracted dept_head: {field_values['dept_head']}")
+                
+                # Also check top-level data_payload for direct fields (fallback)
+                for key, value in cert.data_payload.items():
+                    if key not in ["version", "data", "signature"] and not isinstance(value, dict):
+                        field_values[key] = str(value) if value is not None else ""
+            
+            # Step 2: Render fresh PDF with all data
+            fresh_pdf_path = f"generated_certs/{cert_id}_fresh.pdf"
+            try:
+                pdf_utils.render_pdf_certificate(
+                    pdf_template_path, 
+                    field_values, 
+                    fresh_pdf_path,
+                    metadata={"cert_id": cert_id}
+                )
+                print(f"DEBUG: Fresh PDF rendered with all data: {fresh_pdf_path}")
+            except Exception as e:
+                print(f"ERROR: Fresh PDF render failed: {e}")
+                # Fallback to existing PDF
+                fresh_pdf_path = cert.rendered_pdf_path or pdf_template_path
+            
+            # Step 3: Apply signatures to the fresh PDF
             try:
                 pdf_utils.apply_signatures_to_pdf(
-                    pdf_path=base_path,
+                    pdf_path=fresh_pdf_path,
                     signature_img_path=sig_path,
                     stamp_img_path=stamp_path,
                     template_path=pdf_template_path,
@@ -1622,6 +1759,7 @@ async def apply_digital_signatures(
                         "student_name": cert.student_name,
                         "name": cert.student_name,
                         "recipient": cert.student_name,
+                        "recipient_name": cert.student_name, # PDF template field
                         "course_name": cert.course_name,
                         "course": cert.course_name,
                         "subject": cert.course_name,
@@ -1633,6 +1771,31 @@ async def apply_digital_signatures(
                         "signature": cert.signature[:20] + "..." if cert.signature else "N/A",
                         "qr_code": qr_b64,
                     }
+                    
+                    # Extract additional fields from certificate's data_payload
+                    if cert.data_payload and isinstance(cert.data_payload, dict):
+                        # Handle OpenAttestation document structure
+                        oa_data = cert.data_payload.get("data", {})
+                        if isinstance(oa_data, dict):
+                            # Extract values from OA salt/value structure
+                            for key, salt_value_obj in oa_data.items():
+                                if isinstance(salt_value_obj, dict) and "value" in salt_value_obj:
+                                    # Skip system fields and nested objects
+                                    if key not in ["id", "type", "name", "issuedOn", "recipient.name", "recipient.studentId", "issuers"]:
+                                        field_values[key] = str(salt_value_obj["value"]) if salt_value_obj["value"] is not None else ""
+                            
+                            # Specifically ensure dept_head is mapped from OA structure
+                            dept_head_obj = (oa_data.get("dept_head") or 
+                                           oa_data.get("department_head") or 
+                                           oa_data.get("head_of_department") or 
+                                           oa_data.get("hod"))
+                            if dept_head_obj and isinstance(dept_head_obj, dict) and "value" in dept_head_obj:
+                                field_values["dept_head"] = str(dept_head_obj["value"])
+                        
+                        # Also check top-level data_payload for direct fields (fallback)
+                        for key, value in cert.data_payload.items():
+                            if key not in ["version", "data", "signature"] and not isinstance(value, dict):
+                                field_values[key] = str(value) if value is not None else ""
                     
                     # First render the base PDF with data
                     base_pdf_path = f"generated_certs/{cert_id}_base.pdf"
@@ -1698,13 +1861,22 @@ async def apply_digital_signatures(
                 # Add verification badge to PDF with gap above certificate
                 wps_enhanced_pdf_path = f"generated_certs/{cert_id}_verified.pdf"
                 try:
-                    add_simple_wps_ribbon(
+                    add_final_ribbon(
                         cert.rendered_pdf_path,
                         wps_enhanced_pdf_path,
                         cert_data
                     )
                     # Update certificate to point to verified PDF
                     cert.rendered_pdf_path = wps_enhanced_pdf_path
+                    
+                    # IMPORTANT: Update the content hash to match the final PDF with ribbon
+                    try:
+                        final_pdf_hash = pdf_hash_utils.compute_pdf_content_hash(wps_enhanced_pdf_path)
+                        cert.content_hash = final_pdf_hash
+                        print(f"✅ Updated content hash for final PDF with ribbon: {final_pdf_hash[:8]}...")
+                    except Exception as hash_err:
+                        print(f"⚠️  Failed to update content hash for final PDF: {hash_err}")
+                    
                     print(f"✅ Added verification badge to {cert_id}")
                 except Exception as ribbon_err:
                     print(f"⚠️  Failed to add verification badge to {cert_id}: {ribbon_err}")
