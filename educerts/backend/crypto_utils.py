@@ -22,6 +22,8 @@ KEY_FILE = os.path.join(os.path.dirname(__file__), "issuer_private_key.pem")
 
 _env_key = os.getenv("ISSUER_PRIVATE_KEY")
 if _env_key:
+    # Handle escaped newlines in environment variable
+    _env_key = _env_key.replace('\\n', '\n')
     private_key = serialization.load_pem_private_key(
         _env_key.encode("utf-8"), password=None
     )
