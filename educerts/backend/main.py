@@ -37,6 +37,30 @@ load_dotenv()
 # Create tables
 models.Base.metadata.create_all(bind=database.engine)
 
+# Auto-seed admin user for production
+def seed_admin_user():
+    db = database.SessionLocal()
+    try:
+        admin_email = "app-reguser@mailinator.com"
+        user = db.query(models.User).filter(models.User.email == admin_email).first()
+        if not user:
+            print("Creating admin user for production...")
+            new_user = models.User(
+                name="Eden",
+                email=admin_email,
+                password=auth_utils.get_password_hash("Password1"),
+                is_admin=True
+            )
+            db.add(new_user)
+            db.commit()
+            print("Admin user created successfully.")
+    except Exception as e:
+        print(f"Error seeding admin user: {e}")
+    finally:
+        db.close()
+
+seed_admin_user()
+
 app = FastAPI(title="EduCerts API")
 templates = Jinja2Templates(directory="templates")
 
