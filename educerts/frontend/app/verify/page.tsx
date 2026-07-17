@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
 import VerificationBanner from "@/components/VerificationBanner"
+import { getApiBaseUrl } from "@/lib/api-config"
 
 interface VerificationResult {
     summary: {
@@ -87,7 +88,7 @@ export default function VerifyPage() {
         console.log(`[${timestamp}] Starting ID verification for: ${certId}`)
         
         try {
-            const res = await axios.post("http://localhost:8000/api/verify", {
+            const res = await axios.post(`${getApiBaseUrl()}/api/verify`, {
                 certificate_id: certId
             }, {
                 headers: {
@@ -131,7 +132,7 @@ export default function VerifyPage() {
                 formData.append("file", file)
                 
                 // Add cache-busting headers
-                const res = await axios.post<VerificationResult>("http://localhost:8000/api/verify/pdf", formData, {
+                const res = await axios.post<VerificationResult>(`${getApiBaseUrl()}/api/verify/pdf`, formData, {
                     headers: {
                         'Cache-Control': 'no-cache, no-store, must-revalidate',
                         'Pragma': 'no-cache',
@@ -148,7 +149,7 @@ export default function VerifyPage() {
                 const text = await file.text()
                 try {
                     const jsonData = JSON.parse(text)
-                    const res = await axios.post<VerificationResult>("http://localhost:8000/api/verify", {
+                    const res = await axios.post<VerificationResult>(`${getApiBaseUrl()}/api/verify`, {
                         data_payload: jsonData
                     }, {
                         headers: {
