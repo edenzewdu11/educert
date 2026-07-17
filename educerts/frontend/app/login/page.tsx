@@ -37,13 +37,13 @@ export default function LoginPage() {
     return (
         <div className="min-h-screen grid lg:grid-cols-2">
             {/* Brand Section */}
-            <div className="hidden lg:flex bg-gradient-to-br from-indigo-50 via-purple-50 to-violet-50 border-r border-slate-200 flex-col p-12 justify-between relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-400/10 rounded-full blur-3xl -mr-48 -mt-48"></div>
-                <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-purple-400/10 rounded-full blur-3xl -ml-60 -mb-60"></div>
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-violet-400/5 rounded-full blur-3xl"></div>
+            <div className="hidden lg:flex bg-gradient-to-br from-sky-50 via-sky-100 to-sky-50 border-r border-slate-200 flex-col p-12 justify-between relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-96 h-96 bg-sky-400/10 rounded-full blur-3xl -mr-48 -mt-48"></div>
+                <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-sky-300/10 rounded-full blur-3xl -ml-60 -mb-60"></div>
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-sky-200/5 rounded-full blur-3xl"></div>
 
                 <div className="relative z-10 flex items-center gap-3">
-                    <div className="w-14 h-14 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-2xl shadow-indigo-600/30">
+                    <div className="w-14 h-14 bg-gradient-to-br from-sky-500 to-sky-600 rounded-2xl flex items-center justify-center shadow-2xl shadow-sky-500/30">
                         <Shield className="w-8 h-8 text-white" />
                     </div>
                     <h1 className="font-bold text-3xl tracking-tight text-slate-900">EduCerts<span className="gradient-text">.io</span></h1>
@@ -71,7 +71,7 @@ export default function LoginPage() {
             </div>
 
             {/* Form Section */}
-            <div className="flex items-center justify-center p-6 bg-gradient-to-br from-white via-slate-50 to-indigo-50/30">
+            <div className="flex items-center justify-center p-6 bg-gradient-to-br from-white via-slate-50 to-sky-50/30">
                 <div className="w-full max-w-md">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
@@ -80,7 +80,7 @@ export default function LoginPage() {
                         <div className="mb-8 block lg:hidden">
                             {/* Mobile Logo */}
                             <div className="flex items-center gap-3 justify-center mb-10">
-                                <div className="w-12 h-12 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-600/30">
+                                <div className="w-12 h-12 bg-gradient-to-br from-sky-500 to-sky-600 rounded-xl flex items-center justify-center shadow-lg shadow-sky-500/30">
                                     <Shield className="w-7 h-7 text-white" />
                                 </div>
                                 <h1 className="font-bold text-2xl text-slate-900">EduCerts<span className="gradient-text">.io</span></h1>
@@ -110,7 +110,7 @@ export default function LoginPage() {
                                                 type="text"
                                                 value={formData.name}
                                                 onChange={e => setFormData({ ...formData, name: e.target.value })}
-                                                className="w-full bg-white border-2 border-slate-200 rounded-2xl px-12 py-4 text-slate-900 focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-500 outline-none transition-all placeholder:text-slate-400 font-medium"
+                                                className="w-full bg-white border-2 border-slate-200 rounded-2xl px-12 py-4 text-slate-900 focus:ring-2 focus:ring-sky-600/20 focus:border-sky-500 outline-none transition-all placeholder:text-slate-400 font-medium"
                                                 placeholder="Enter your name"
                                             />
                                         </div>
@@ -126,7 +126,7 @@ export default function LoginPage() {
                                                     type="email"
                                                     value={formData.email}
                                                     onChange={e => setFormData({ ...formData, email: e.target.value })}
-                                                    className="w-full bg-white border-2 border-slate-200 rounded-2xl px-12 py-4 text-slate-900 focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-500 outline-none transition-all placeholder:text-slate-400 font-medium"
+                                                    className="w-full bg-white border-2 border-slate-200 rounded-2xl px-12 py-4 text-slate-900 focus:ring-2 focus:ring-sky-600/20 focus:border-sky-500 outline-none transition-all placeholder:text-slate-400 font-medium"
                                                     placeholder="name@example.com"
                                                 />
                                             </div>
@@ -142,7 +142,7 @@ export default function LoginPage() {
                                                 type="password"
                                                 value={formData.password}
                                                 onChange={e => setFormData({ ...formData, password: e.target.value })}
-                                                className="w-full bg-white border-2 border-slate-200 rounded-2xl px-12 py-4 text-slate-900 focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-500 outline-none transition-all placeholder:text-slate-400 font-medium"
+                                                className="w-full bg-white border-2 border-slate-200 rounded-2xl px-12 py-4 text-slate-900 focus:ring-2 focus:ring-sky-600/20 focus:border-sky-500 outline-none transition-all placeholder:text-slate-400 font-medium"
                                                 placeholder="••••••••"
                                             />
                                         </div>
@@ -151,12 +151,12 @@ export default function LoginPage() {
                             </AnimatePresence>
 
                             {error && (
-                                <div className={`p-4 rounded-xl text-sm font-medium ${error.includes("successful") ? "bg-emerald-50 text-emerald-700 border-2 border-emerald-200" : "bg-red-50 text-red-700 border-2 border-red-200"}`}>
+                                <div className={`p-4 rounded-xl text-sm font-medium ${error.includes("successful") ? "bg-sky-50 text-sky-700 border-2 border-sky-200" : "bg-red-50 text-red-700 border-2 border-red-200"}`}>
                                     {error}
                                 </div>
                             )}
 
-                            <Button type="submit" className="w-full gradient-bg hover:opacity-90 h-14 rounded-2xl text-lg font-bold shadow-xl shadow-indigo-600/30 group transition-all">
+                            <Button type="submit" className="w-full gradient-bg hover:opacity-90 h-14 rounded-2xl text-lg font-bold shadow-xl shadow-sky-600/30 group transition-all">
                                 {isLogin ? "Sign In" : "Create Account"}
                                 <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
                             </Button>
@@ -165,7 +165,7 @@ export default function LoginPage() {
                         <div className="mt-8 text-center">
                             <button
                                 onClick={() => { setIsLogin(!isLogin); setError(""); }}
-                                className="text-sm text-slate-600 hover:text-indigo-600 font-bold transition-colors"
+                                className="text-sm text-slate-600 hover:text-sky-600 font-bold transition-colors"
                             >
                                 {isLogin ? "New here? Create an account" : "Already have an account? Sign in"}
                             </button>

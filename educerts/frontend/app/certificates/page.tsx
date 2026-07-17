@@ -295,9 +295,9 @@ export default function CertificatesPage() {
             
         <div className="min-h-screen p-8 max-w-7xl mx-auto space-y-8 relative pb-32 overflow-hidden">
             {/* Decorative Background Elements */}
-            <div className="fixed top-0 right-0 w-96 h-96 bg-indigo-400/5 rounded-full blur-3xl -mr-48 -mt-48 pointer-events-none"></div>
-            <div className="fixed bottom-0 left-0 w-[500px] h-[500px] bg-purple-400/5 rounded-full blur-3xl -ml-60 -mb-60 pointer-events-none"></div>
-            <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-violet-400/3 rounded-full blur-3xl pointer-events-none"></div>
+            <div className="fixed top-0 right-0 w-96 h-96 bg-sky-400/5 rounded-full blur-3xl -mr-48 -mt-48 pointer-events-none"></div>
+            <div className="fixed bottom-0 left-0 w-[500px] h-[500px] bg-sky-300/5 rounded-full blur-3xl -ml-60 -mb-60 pointer-events-none"></div>
+            <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-sky-200/3 rounded-full blur-3xl pointer-events-none"></div>
 
             <Modal {...modalConfig} onClose={closeModal} />
 
@@ -311,7 +311,7 @@ export default function CertificatesPage() {
                             className="bg-white border-slate-300"
                         />
                         <div className="flex items-center gap-3">
-                            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-xl shadow-indigo-500/30">
+                            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-sky-500 to-sky-600 flex items-center justify-center shadow-xl shadow-sky-500/30">
                                 <Award className="w-7 h-7 text-white" />
                             </div>
                             <h1 className="text-4xl font-black text-slate-900 flex items-center gap-3 tracking-tight">
@@ -350,16 +350,16 @@ export default function CertificatesPage() {
             <div className="bg-gradient-to-r from-white via-slate-50 to-white p-3 rounded-2xl border border-slate-200 flex flex-col md:flex-row items-center justify-between gap-4 shadow-sm relative z-10">
                 <Tabs value={statusFilter} onValueChange={setStatusFilter} className="w-full md:w-auto">
                     <TabsList className="bg-white border border-slate-200 p-1 h-auto rounded-xl shadow-sm">
-                        <TabsTrigger value="all" className="rounded-lg px-4 py-2 font-bold text-xs data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600 data-[state=active]:to-purple-600 data-[state=active]:text-white transition-all capitalize">All ({certs.length})</TabsTrigger>
-                        <TabsTrigger value="signed" className="rounded-lg px-4 py-2 font-bold text-xs data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-emerald-600 data-[state=active]:text-white transition-all capitalize">Signed</TabsTrigger>
+                        <TabsTrigger value="all" className="rounded-lg px-4 py-2 font-bold text-xs data-[state=active]:bg-gradient-to-r data-[state=active]:from-sky-500 data-[state=active]:to-sky-600 data-[state=active]:text-white transition-all capitalize">All ({certs.length})</TabsTrigger>
+                        <TabsTrigger value="signed" className="rounded-lg px-4 py-2 font-bold text-xs data-[state=active]:bg-gradient-to-r data-[state=active]:from-sky-500 data-[state=active]:to-sky-600 data-[state=active]:text-white transition-all capitalize">Signed</TabsTrigger>
                         <TabsTrigger value="unsigned" className="rounded-lg px-4 py-2 font-bold text-xs data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-orange-500 data-[state=active]:text-white transition-all capitalize">Unsigned</TabsTrigger>
                         <TabsTrigger value="revoked" className="rounded-lg px-4 py-2 font-bold text-xs data-[state=active]:bg-gradient-to-r data-[state=active]:from-rose-500 data-[state=active]:to-rose-600 data-[state=active]:text-white transition-all capitalize">Revoked</TabsTrigger>
                     </TabsList>
                 </Tabs>
 
                 <div className="flex items-center gap-4 w-full md:w-auto">
-                    <div className="flex items-center gap-2 bg-white border border-slate-200 px-3 py-1.5 rounded-xl shadow-sm hover:border-indigo-300 transition-colors">
-                        <Tag className="w-3.5 h-3.5 text-indigo-500" />
+                    <div className="flex items-center gap-2 bg-white border border-slate-200 px-3 py-1.5 rounded-xl shadow-sm hover:border-sky-300 transition-colors">
+                        <Tag className="w-3.5 h-3.5 text-sky-500" />
                         <select
                             value={categoryFilter}
                             onChange={(e) => setCategoryFilter(e.target.value)}
@@ -376,7 +376,7 @@ export default function CertificatesPage() {
                         <Button
                             variant={viewMode === "grid" ? "default" : "ghost"}
                             size="sm"
-                            className={`rounded-none px-3 border-none ${viewMode === "grid" ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white" : "text-slate-500"}`}
+                            className={`rounded-none px-3 border-none ${viewMode === "grid" ? "bg-gradient-to-r from-sky-500 to-sky-600 text-white" : "text-slate-500"}`}
                             onClick={() => setViewMode("grid")}
                         >
                             <LayoutGrid className="w-4 h-4" />
@@ -384,7 +384,7 @@ export default function CertificatesPage() {
                         <Button
                             variant={viewMode === "list" ? "default" : "ghost"}
                             size="sm"
-                            className={`rounded-none px-3 border-none ${viewMode === "list" ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white" : "text-slate-500"}`}
+                            className={`rounded-none px-3 border-none ${viewMode === "list" ? "bg-gradient-to-r from-sky-500 to-sky-600 text-white" : "text-slate-500"}`}
                             onClick={() => setViewMode("list")}
                         >
                             <ListIcon className="w-4 h-4" />
@@ -446,27 +446,27 @@ export default function CertificatesPage() {
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 key={cert.id}
-                                className={`group relative rounded-[2rem] border transition-all duration-500 overflow-hidden bg-gradient-to-br from-white via-white to-slate-50 hover:shadow-2xl hover:shadow-indigo-500/20 ${cert.revoked
+                                className={`group relative rounded-[2rem] border transition-all duration-500 overflow-hidden bg-gradient-to-br from-white via-white to-slate-50 hover:shadow-2xl hover:shadow-sky-500/20 ${cert.revoked
                                     ? "border-rose-200 grayscale-[0.5]"
                                     : cert.signing_status === "signed"
-                                        ? "border-emerald-200 hover:border-emerald-400"
-                                        : "border-slate-200 hover:border-indigo-400"
-                                    } ${selectedIds.has(cert.id) ? "ring-4 ring-indigo-500/30 border-indigo-500" : ""}`}
+                                        ? "border-sky-200 hover:border-sky-400"
+                                        : "border-slate-200 hover:border-sky-400"
+                                    } ${selectedIds.has(cert.id) ? "ring-4 ring-sky-500/30 border-sky-500" : ""}`}
                             >
                                 <div className="absolute top-3 left-3 z-10">
                                     <Checkbox
                                         checked={selectedIds.has(cert.id)}
                                         onCheckedChange={() => toggleSelect(cert.id)}
-                                        className="bg-white/90 backdrop-blur border-slate-200 data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600"
+                                        className="bg-white/90 backdrop-blur border-slate-200 data-[state=checked]:bg-sky-600 data-[state=checked]:border-sky-600"
                                     />
                                 </div>
 
-                                <div className={`absolute top-0 left-0 w-full h-1.5 ${cert.revoked ? "bg-gradient-to-r from-rose-500 to-rose-600" : cert.signing_status === "signed" ? "bg-gradient-to-r from-emerald-500 to-emerald-600" : "bg-gradient-to-r from-indigo-500 to-purple-600"}`}></div>
+                                <div className={`absolute top-0 left-0 w-full h-1.5 ${cert.revoked ? "bg-gradient-to-r from-rose-500 to-rose-600" : cert.signing_status === "signed" ? "bg-gradient-to-r from-sky-500 to-sky-600" : "bg-gradient-to-r from-sky-400 to-sky-500"}`}></div>
 
                                 <div className="p-5 flex flex-col h-full">
                                     <div className="flex justify-between items-start mb-4">
                                         <div className={`p-3 rounded-2xl shadow-lg ring-1 ring-white/50 ${cert.revoked ? "bg-gradient-to-br from-rose-100 to-rose-200 text-rose-600" :
-                                            cert.signing_status === "signed" ? "bg-gradient-to-br from-emerald-100 to-emerald-200 text-emerald-600" : "bg-gradient-to-br from-indigo-100 to-purple-100 text-indigo-600"
+                                            cert.signing_status === "signed" ? "bg-gradient-to-br from-sky-100 to-sky-200 text-sky-600" : "bg-gradient-to-br from-sky-50 to-sky-100 text-sky-600"
                                             }`}>
                                             <Fingerprint className="w-6 h-6" />
                                         </div>
@@ -477,7 +477,7 @@ export default function CertificatesPage() {
                                                         Revoked
                                                     </Badge>
                                                 ) : cert.signing_status === "signed" ? (
-                                                    <Badge className="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white rounded-full font-black uppercase text-[9px] px-2.5 py-1 shadow-sm border border-white">
+                                                    <Badge className="bg-gradient-to-r from-sky-500 to-sky-600 hover:from-sky-600 hover:to-sky-700 text-white rounded-full font-black uppercase text-[9px] px-2.5 py-1 shadow-sm border border-white">
                                                         Signed
                                                     </Badge>
                                                 ) : (
@@ -493,11 +493,11 @@ export default function CertificatesPage() {
                                     <div className="flex-1 space-y-4">
                                         <div>
                                             <span className="text-[9px] font-black gradient-text uppercase tracking-[0.2em] block mb-1">{cert.cert_type?.replace(/_/g, " ") || "Certificate"}</span>
-                                            <h3 className="text-xl font-black text-slate-900 leading-tight group-hover:text-indigo-600 transition-colors line-clamp-2 min-h-[1.1em]">{cert.course_name}</h3>
+                                            <h3 className="text-xl font-black text-slate-900 leading-tight group-hover:text-sky-600 transition-colors line-clamp-2 min-h-[1.1em]">{cert.course_name}</h3>
                                         </div>
 
                                         <div className="flex items-center gap-3 py-3 border-y border-slate-100">
-                                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center text-[11px] font-black text-indigo-600 border border-white shadow-md shrink-0">
+                                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-sky-100 to-sky-200 flex items-center justify-center text-[11px] font-black text-sky-600 border border-white shadow-md shrink-0">
                                                 {cert.student_name[0].toUpperCase()}
                                             </div>
                                             <div className="min-w-0">
@@ -567,7 +567,7 @@ export default function CertificatesPage() {
                                         <Button
                                             variant="ghost"
                                             size="sm"
-                                            className="w-full h-9 text-indigo-600 hover:bg-indigo-50 font-black rounded-xl text-[11px] flex items-center justify-center gap-1.5"
+                                            className="w-full h-9 text-sky-600 hover:bg-sky-50 font-black rounded-xl text-[11px] flex items-center justify-center gap-1.5"
                                             onClick={() => window.location.href = `/verify?id=${cert.id}`}
                                         >
                                             <ShieldCheck className="w-4 h-4" />
