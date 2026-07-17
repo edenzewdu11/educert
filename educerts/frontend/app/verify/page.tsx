@@ -233,7 +233,7 @@ export default function VerifyPage() {
                     )}
                     <div>
                         <h1 className="text-3xl font-bold text-slate-900 tracking-tight flex items-center gap-3">
-                            <Search className="w-8 h-8 text-indigo-600" />
+                            <Search className="w-8 h-8 text-sky-600" />
                             Verify Credential
                         </h1>
                         <p className="text-slate-500 font-medium mt-1">
@@ -244,7 +244,7 @@ export default function VerifyPage() {
                 <Link
                     href="/verify-public"
                     target="_blank"
-                    className="text-sm text-indigo-600 hover:text-indigo-700 font-semibold flex items-center gap-1"
+                    className="text-sm text-sky-600 hover:text-sky-700 font-semibold flex items-center gap-1"
                 >
                     Open Public Verifier
                     <Award className="w-4 h-4" />
@@ -257,14 +257,14 @@ export default function VerifyPage() {
                     <div className="flex gap-2 p-1 bg-slate-100 border border-slate-200 rounded-xl shadow-sm">
                         <button
                             onClick={() => { setActiveMode("id"); setError(null) }}
-                            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold transition-all ${activeMode === "id" ? "bg-white text-indigo-700 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
+                            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold transition-all ${activeMode === "id" ? "bg-white text-sky-700 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
                         >
                             <Hash className="w-4 h-4" />
                             By ID
                         </button>
                         <button
                             onClick={() => { setActiveMode("file"); setError(null) }}
-                            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold transition-all ${activeMode === "file" ? "bg-white text-indigo-700 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
+                            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold transition-all ${activeMode === "file" ? "bg-white text-sky-700 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
                         >
                             <Upload className="w-4 h-4" />
                             By Document
@@ -294,7 +294,7 @@ export default function VerifyPage() {
                                 exit={{ opacity: 0, x: 10 }}
                             >
                                 <Card className="bg-white border-slate-200 shadow-lg overflow-hidden rounded-2xl">
-                                    <div className="h-1 bg-indigo-600"></div>
+                                    <div className="h-1 bg-sky-600"></div>
                                     <CardHeader>
                                         <CardTitle className="text-md">Verify via Registry</CardTitle>
                                         <CardDescription>Enter the unique certificate UUID.</CardDescription>
@@ -308,10 +308,10 @@ export default function VerifyPage() {
                                                 value={verifyId}
                                                 onChange={(e) => { setVerifyId(e.target.value); setError(null) }}
                                                 onKeyDown={(e) => e.key === "Enter" && handleVerifyId()}
-                                                className="w-full bg-slate-50 border-slate-200 rounded-xl px-10 py-3 text-slate-900 font-mono text-sm focus:ring-2 focus:ring-indigo-600/20 outline-none border font-semibold"
+                                                className="w-full bg-slate-50 border-slate-200 rounded-xl px-10 py-3 text-slate-900 font-mono text-sm focus:ring-2 focus:ring-sky-600/20 outline-none border font-semibold"
                                             />
                                         </div>
-                                        <Button onClick={() => handleVerifyId()} disabled={loading || !verifyId} className="w-full bg-indigo-600 hover:bg-indigo-700 h-11 rounded-xl font-bold">
+                                        <Button onClick={() => handleVerifyId()} disabled={loading || !verifyId} className="w-full bg-sky-600 hover:bg-sky-700 h-11 rounded-xl font-bold">
                                             {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Verify Authenticity"}
                                         </Button>
                                     </CardContent>
@@ -329,13 +329,13 @@ export default function VerifyPage() {
                                     onDragLeave={handleDrag}
                                     onDragOver={handleDrag}
                                     onDrop={handleDrop}
-                                    className={`h-[200px] border-2 border-dashed rounded-2xl flex flex-col items-center justify-center gap-4 transition-all shadow-sm ${dragActive ? "border-indigo-600 bg-indigo-50 shadow-indigo-600/10" : "border-slate-200 bg-white"}`}
+                                    className={`h-[200px] border-2 border-dashed rounded-2xl flex flex-col items-center justify-center gap-4 transition-all shadow-sm ${dragActive ? "border-sky-600 bg-sky-50 shadow-sky-600/10" : "border-slate-200 bg-white"}`}
                                 >
                                     <div className="w-12 h-12 bg-slate-50 rounded-xl flex items-center justify-center border border-slate-100">
                                         {loading ? (
-                                            <Loader2 className="w-6 h-6 text-indigo-600 animate-spin" />
+                                            <Loader2 className="w-6 h-6 text-sky-600 animate-spin" />
                                         ) : (
-                                            <FileSearch className="w-6 h-6 text-indigo-600" />
+                                            <FileSearch className="w-6 h-6 text-sky-600" />
                                         )}
                                     </div>
                                     <div className="text-center">
@@ -353,7 +353,7 @@ export default function VerifyPage() {
                                                 id="file-verify"
                                                 onChange={(e) => e.target.files && handleFileUpload(e.target.files[0])}
                                             />
-                                            <label htmlFor="file-verify" className="text-xs text-indigo-400 hover:underline cursor-pointer font-semibold">Or browse files</label>
+                                            <label htmlFor="file-verify" className="text-xs text-sky-400 hover:underline cursor-pointer font-semibold">Or browse files</label>
                                         </>
                                     )}
                                 </div>

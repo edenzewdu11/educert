@@ -110,7 +110,7 @@ export default function SettingsPage() {
     return (
         <div className="p-8 max-w-4xl mx-auto space-y-8">
             <div className="flex items-center gap-3">
-                <Settings className="w-8 h-8 text-indigo-600" />
+                <Settings className="w-8 h-8 text-sky-600" />
                 <h1 className="text-3xl font-bold text-slate-900 tracking-tight">System Settings</h1>
             </div>
 
@@ -128,9 +128,9 @@ export default function SettingsPage() {
                         <button
                             key={item.name}
                             onClick={() => setActiveTab(item.id)}
-                            className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === item.id ? "bg-white text-indigo-600 border border-slate-200 shadow-sm" : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"}`}
+                            className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === item.id ? "bg-white text-sky-600 border border-slate-200 shadow-sm" : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"}`}
                         >
-                            <item.icon className={`w-4 h-4 ${activeTab === item.id ? "text-indigo-600" : "text-slate-400"}`} />
+                            <item.icon className={`w-4 h-4 ${activeTab === item.id ? "text-sky-600" : "text-slate-400"}`} />
                             {item.name}
                         </button>
                     ))}
@@ -147,13 +147,13 @@ export default function SettingsPage() {
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 <div className="flex items-center gap-4 p-4 rounded-xl bg-slate-50 border border-slate-100 shadow-inner">
-                                    <div className="w-16 h-16 rounded-full bg-indigo-600 flex items-center justify-center text-xl font-bold text-white shadow-lg shadow-indigo-600/20">
+                                    <div className="w-16 h-16 rounded-full bg-sky-600 flex items-center justify-center text-xl font-bold text-white shadow-lg shadow-sky-600/20">
                                         {user?.name?.[0].toUpperCase()}
                                     </div>
                                     <div>
                                         <h4 className="font-bold text-slate-900 text-lg">{user?.name}</h4>
                                         <p className="text-sm text-slate-500 font-medium">{user?.email}</p>
-                                        <span className={`inline-block mt-2 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest ${user?.is_admin ? "bg-indigo-100 text-indigo-600 border border-indigo-200 text-indigo-700" : "bg-slate-200 text-slate-600"}`}>
+                                        <span className={`inline-block mt-2 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest ${user?.is_admin ? "bg-sky-100 text-sky-600 border border-sky-200 text-sky-700" : "bg-slate-200 text-slate-600"}`}>
                                             {user?.is_admin ? "Administrator" : "Verified Student"}
                                         </span>
                                     </div>
@@ -173,8 +173,8 @@ export default function SettingsPage() {
                             <CardContent className="space-y-4">
                                 <div className="space-y-4">
                                     <div className="flex items-start gap-4">
-                                        <div className="p-2 bg-indigo-50 rounded-lg border border-indigo-100">
-                                            <Cpu className="w-5 h-5 text-indigo-600" />
+                                        <div className="p-2 bg-sky-50 rounded-lg border border-sky-100">
+                                            <Cpu className="w-5 h-5 text-sky-600" />
                                         </div>
                                         <div>
                                             <h5 className="text-sm font-bold text-slate-900">Asymmetric Signing (Ed25519)</h5>
@@ -182,8 +182,8 @@ export default function SettingsPage() {
                                         </div>
                                     </div>
                                     <div className="flex items-start gap-4">
-                                        <div className="p-2 bg-indigo-50 rounded-lg border border-indigo-100">
-                                            <Database className="w-5 h-5 text-indigo-600" />
+                                        <div className="p-2 bg-sky-50 rounded-lg border border-sky-100">
+                                            <Database className="w-5 h-5 text-sky-600" />
                                         </div>
                                         <div>
                                             <h5 className="text-sm font-bold text-slate-900">Field Salting (OpenAttestation v2)</h5>
@@ -191,8 +191,8 @@ export default function SettingsPage() {
                                         </div>
                                     </div>
                                     <div className="flex items-start gap-4">
-                                        <div className="p-2 bg-indigo-50 rounded-lg border border-indigo-100">
-                                            <Shield className="w-5 h-5 text-indigo-600" />
+                                        <div className="p-2 bg-sky-50 rounded-lg border border-sky-100">
+                                            <Shield className="w-5 h-5 text-sky-600" />
                                         </div>
                                         <div>
                                             <h5 className="text-sm font-bold text-slate-900">Content Hash Verification</h5>
@@ -202,18 +202,18 @@ export default function SettingsPage() {
                                 </div>
                             </CardContent>
                             <CardFooter className="pt-0">
-                                <Button variant="link" className="text-indigo-600 text-xs p-0 font-bold">Learn more about our security model</Button>
+                                <Button variant="link" className="text-sky-600 text-xs p-0 font-bold">Learn more about our security model</Button>
                             </CardFooter>
                         </Card>
                     )}
 
                     {/* Signatures Tab */}
                     {activeTab === "signatures" && (
-                        <Card id="signatures" className="bg-white border-indigo-200 shadow-lg shadow-indigo-500/5 rounded-2xl overflow-hidden ring-1 ring-indigo-50">
-                            <div className="h-1.5 bg-indigo-600 w-full"></div>
+                        <Card id="signatures" className="bg-white border-sky-200 shadow-lg shadow-sky-500/5 rounded-2xl overflow-hidden ring-1 ring-sky-50">
+                            <div className="h-1.5 bg-sky-600 w-full"></div>
                             <CardHeader>
                                 <CardTitle className="text-lg text-slate-900 flex items-center gap-2">
-                                    <PenTool className="w-5 h-5 text-indigo-600" />
+                                    <PenTool className="w-5 h-5 text-sky-600" />
                                     Authorized Signatures
                                 </CardTitle>
                                 <CardDescription className="font-medium text-slate-500">Manage your digital stamp and signature profile for certificate sealing.</CardDescription>
@@ -227,7 +227,7 @@ export default function SettingsPage() {
                                             type="text"
                                             value={signerName}
                                             onChange={(e) => setSignerName(e.target.value)}
-                                            className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600 outline-none text-sm font-semibold"
+                                            className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-sky-600/20 focus:border-sky-600 outline-none text-sm font-semibold"
                                             placeholder="Enter signer name"
                                         />
                                     </div>
@@ -237,7 +237,7 @@ export default function SettingsPage() {
                                             type="text"
                                             value={signerRole}
                                             onChange={(e) => setSignerRole(e.target.value)}
-                                            className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-600/20 focus:border-indigo-600 outline-none text-sm font-semibold"
+                                            className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-sky-600/20 focus:border-sky-600 outline-none text-sm font-semibold"
                                             placeholder="e.g. Principal, Dean"
                                         />
                                     </div>
@@ -248,7 +248,7 @@ export default function SettingsPage() {
                                     {/* Signature Upload */}
                                     <div 
                                         onClick={() => signatureInputRef.current?.click()}
-                                        className="p-6 rounded-2xl border-2 border-dashed border-slate-200 hover:border-indigo-400 transition-colors bg-slate-50 flex flex-col items-center justify-center text-center group cursor-pointer relative overflow-hidden min-h-[160px]"
+                                        className="p-6 rounded-2xl border-2 border-dashed border-slate-200 hover:border-sky-400 transition-colors bg-slate-50 flex flex-col items-center justify-center text-center group cursor-pointer relative overflow-hidden min-h-[160px]"
                                     >
                                         <input
                                             ref={signatureInputRef}
@@ -270,7 +270,7 @@ export default function SettingsPage() {
                                         ) : (
                                             <>
                                                 <div className="w-12 h-12 rounded-full bg-white shadow-sm flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                                                    <PenTool className="w-6 h-6 text-slate-400 group-hover:text-indigo-600" />
+                                                    <PenTool className="w-6 h-6 text-slate-400 group-hover:text-sky-600" />
                                                 </div>
                                                 <p className="text-xs font-black text-slate-600 uppercase tracking-widest">Digital Signature</p>
                                                 <p className="text-[10px] text-slate-400 mt-1 font-bold">Click to upload PNG</p>
@@ -281,7 +281,7 @@ export default function SettingsPage() {
                                     {/* Stamp Upload */}
                                     <div 
                                         onClick={() => stampInputRef.current?.click()}
-                                        className="p-6 rounded-2xl border-2 border-dashed border-slate-200 hover:border-indigo-400 transition-colors bg-slate-50 flex flex-col items-center justify-center text-center group cursor-pointer relative overflow-hidden min-h-[160px]"
+                                        className="p-6 rounded-2xl border-2 border-dashed border-slate-200 hover:border-sky-400 transition-colors bg-slate-50 flex flex-col items-center justify-center text-center group cursor-pointer relative overflow-hidden min-h-[160px]"
                                     >
                                         <input
                                             ref={stampInputRef}
@@ -303,7 +303,7 @@ export default function SettingsPage() {
                                         ) : (
                                             <>
                                                 <div className="w-12 h-12 rounded-full bg-white shadow-sm flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                                                    <Hash className="w-6 h-6 text-slate-400 group-hover:text-indigo-600" />
+                                                    <Hash className="w-6 h-6 text-slate-400 group-hover:text-sky-600" />
                                                 </div>
                                                 <p className="text-xs font-black text-slate-600 uppercase tracking-widest">Official Stamp</p>
                                                 <p className="text-[10px] text-slate-400 mt-1 font-bold">Click to upload seal</p>
@@ -316,7 +316,7 @@ export default function SettingsPage() {
                                 <Button 
                                     onClick={handleUpload}
                                     disabled={uploading || (!signatureFile && !stampFile) || !signerName}
-                                    className="w-full h-12 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-600/20"
+                                    className="w-full h-12 bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-xl shadow-lg shadow-sky-600/20"
                                 >
                                     {uploading ? (
                                         <><Loader2 className="w-5 h-5 animate-spin mr-2" /> Uploading...</>
@@ -340,10 +340,10 @@ export default function SettingsPage() {
                                                     </div>
                                                     <div className="flex gap-2">
                                                         {record.has_signature && (
-                                                            <span className="px-2 py-1 bg-indigo-100 text-indigo-600 text-[10px] font-bold rounded uppercase">Sig</span>
+                                                            <span className="px-2 py-1 bg-sky-100 text-sky-600 text-[10px] font-bold rounded uppercase">Sig</span>
                                                         )}
                                                         {record.has_stamp && (
-                                                            <span className="px-2 py-1 bg-emerald-100 text-emerald-600 text-[10px] font-bold rounded uppercase">Stamp</span>
+                                                            <span className="px-2 py-1 bg-sky-100 text-sky-600 text-[10px] font-bold rounded uppercase">Stamp</span>
                                                         )}
                                                     </div>
                                                 </div>
@@ -368,7 +368,7 @@ export default function SettingsPage() {
                         <Card className="bg-white border-slate-200 shadow-sm rounded-2xl">
                             <CardHeader>
                                 <CardTitle className="text-lg text-slate-900 flex items-center gap-2">
-                                    <Key className="w-5 h-5 text-indigo-600" />
+                                    <Key className="w-5 h-5 text-sky-600" />
                                     API Keys
                                 </CardTitle>
                                 <CardDescription className="font-medium text-slate-500">Manage API keys for programmatic access to EduCerts.</CardDescription>
@@ -392,7 +392,7 @@ export default function SettingsPage() {
                         <Card className="bg-white border-slate-200 shadow-sm rounded-2xl">
                             <CardHeader>
                                 <CardTitle className="text-lg text-slate-900 flex items-center gap-2">
-                                    <Bell className="w-5 h-5 text-indigo-600" />
+                                    <Bell className="w-5 h-5 text-sky-600" />
                                     Notifications
                                 </CardTitle>
                                 <CardDescription className="font-medium text-slate-500">Configure notification preferences and alerts.</CardDescription>
@@ -416,7 +416,7 @@ export default function SettingsPage() {
                         <Card className="bg-white border-slate-200 shadow-sm rounded-2xl">
                             <CardHeader>
                                 <CardTitle className="text-lg text-slate-900 flex items-center gap-2">
-                                    <Globe className="w-5 h-5 text-indigo-600" />
+                                    <Globe className="w-5 h-5 text-sky-600" />
                                     Integration
                                 </CardTitle>
                                 <CardDescription className="font-medium text-slate-500">Connect EduCerts with external systems and services.</CardDescription>
@@ -437,7 +437,7 @@ export default function SettingsPage() {
 
                     <div className="flex justify-end gap-3">
                         <Button variant="ghost" className="text-slate-400 font-bold">Cancel</Button>
-                        <Button className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-600/20 font-bold">Save Changes</Button>
+                        <Button className="bg-sky-600 hover:bg-sky-700 text-white shadow-lg shadow-sky-600/20 font-bold">Save Changes</Button>
                     </div>
                 </div>
             </div>
