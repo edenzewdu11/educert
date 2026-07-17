@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+*.pyo
+venv/
+env/
+.env
+*.db
+*.sqlite3
+*.log
+*.pdf
+issuer_private_key.pem
+certificate_hash_database.json
+debug_response_*.json
+generated_certs/
+user_templates/*

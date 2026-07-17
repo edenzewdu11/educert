@@ -1,0 +1,11 @@
+node_modules
+.next
+out
+build
+.env*
+.git
+npm-debug.log*
+Dockerfile
+.dockerignore
+lint_errors*.txt
+dev_log*.txt
