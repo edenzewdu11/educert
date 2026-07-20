@@ -108,13 +108,13 @@ export default function SettingsPage() {
     }
 
     return (
-        <div className="p-8 max-w-4xl mx-auto space-y-8">
-            <div className="flex items-center gap-3">
-                <Settings className="w-8 h-8 text-sky-600" />
-                <h1 className="text-3xl font-bold text-slate-900 tracking-tight">System Settings</h1>
+        <div className="p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto space-y-6 sm:space-y-8">
+            <div className="flex items-center gap-2 sm:gap-3">
+                <Settings className="w-6 h-6 sm:w-8 sm:h-8 text-sky-600" />
+                <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">System Settings</h1>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
                 {/* Sidebar Nav (Internal) */}
                 <div className="space-y-1">
                     {[
@@ -128,36 +128,36 @@ export default function SettingsPage() {
                         <button
                             key={item.name}
                             onClick={() => setActiveTab(item.id)}
-                            className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === item.id ? "bg-white text-sky-600 border border-slate-200 shadow-sm" : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"}`}
+                            className={`w-full flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all ${activeTab === item.id ? "bg-white text-sky-600 border border-slate-200 shadow-sm" : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"}`}
                         >
-                            <item.icon className={`w-4 h-4 ${activeTab === item.id ? "text-sky-600" : "text-slate-400"}`} />
+                            <item.icon className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${activeTab === item.id ? "text-sky-600" : "text-slate-400"}`} />
                             {item.name}
                         </button>
                     ))}
                 </div>
 
                 {/* Main Content */}
-                <div className="md:col-span-2 space-y-6">
+                <div className="lg:col-span-2 space-y-4 sm:space-y-6">
                     {/* Profile Tab */}
                     {activeTab === "profile" && (
                         <Card className="bg-white border-slate-200 shadow-sm rounded-2xl">
-                            <CardHeader>
-                                <CardTitle className="text-lg text-slate-900">Profile Information</CardTitle>
-                                <CardDescription className="font-medium">Update your personal details and account settings.</CardDescription>
+                            <CardHeader className="px-4 sm:px-6">
+                                <CardTitle className="text-base sm:text-lg text-slate-900">Profile Information</CardTitle>
+                                <CardDescription className="text-xs sm:text-sm font-medium">Update your personal details and account settings.</CardDescription>
                             </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div className="flex items-center gap-4 p-4 rounded-xl bg-slate-50 border border-slate-100 shadow-inner">
-                                    <div className="w-16 h-16 rounded-full bg-sky-600 flex items-center justify-center text-xl font-bold text-white shadow-lg shadow-sky-600/20">
+                            <CardContent className="space-y-3 sm:space-y-4 px-4 sm:px-6">
+                                <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl bg-slate-50 border border-slate-100 shadow-inner">
+                                    <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-sky-600 flex items-center justify-center text-lg sm:text-xl font-bold text-white shadow-lg shadow-sky-600/20 shrink-0">
                                         {user?.name?.[0].toUpperCase()}
                                     </div>
-                                    <div>
-                                        <h4 className="font-bold text-slate-900 text-lg">{user?.name}</h4>
-                                        <p className="text-sm text-slate-500 font-medium">{user?.email}</p>
-                                        <span className={`inline-block mt-2 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest ${user?.is_admin ? "bg-sky-100 text-sky-600 border border-sky-200 text-sky-700" : "bg-slate-200 text-slate-600"}`}>
+                                    <div className="flex-1">
+                                        <h4 className="font-bold text-slate-900 text-base sm:text-lg">{user?.name}</h4>
+                                        <p className="text-xs sm:text-sm text-slate-500 font-medium">{user?.email}</p>
+                                        <span className={`inline-block mt-1.5 sm:mt-2 px-2 py-0.5 rounded text-[9px] sm:text-[10px] font-bold uppercase tracking-widest ${user?.is_admin ? "bg-sky-100 text-sky-600 border border-sky-200 text-sky-700" : "bg-slate-200 text-slate-600"}`}>
                                             {user?.is_admin ? "Administrator" : "Verified Student"}
                                         </span>
                                     </div>
-                                    <Button variant="outline" size="sm" className="ml-auto bg-white border-slate-200 shadow-sm font-bold">Edit</Button>
+                                    <Button variant="outline" size="sm" className="bg-white border-slate-200 shadow-sm font-bold text-xs sm:text-sm">Edit</Button>
                                 </div>
                             </CardContent>
                         </Card>
@@ -166,43 +166,43 @@ export default function SettingsPage() {
                     {/* Security Tab */}
                     {activeTab === "security" && (
                         <Card className="bg-white border-slate-200 shadow-sm rounded-2xl">
-                            <CardHeader>
-                                <CardTitle className="text-lg text-slate-900">Security & Encryption</CardTitle>
-                                <CardDescription className="font-medium text-slate-500">Your account is protected by industry-standard cryptography.</CardDescription>
+                            <CardHeader className="px-4 sm:px-6">
+                                <CardTitle className="text-base sm:text-lg text-slate-900">Security & Encryption</CardTitle>
+                                <CardDescription className="text-xs sm:text-sm font-medium text-slate-500">Your account is protected by industry-standard cryptography.</CardDescription>
                             </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div className="space-y-4">
-                                    <div className="flex items-start gap-4">
-                                        <div className="p-2 bg-sky-50 rounded-lg border border-sky-100">
-                                            <Cpu className="w-5 h-5 text-sky-600" />
+                            <CardContent className="space-y-3 sm:space-y-4 px-4 sm:px-6">
+                                <div className="space-y-3 sm:space-y-4">
+                                    <div className="flex items-start gap-3 sm:gap-4">
+                                        <div className="p-2 bg-sky-50 rounded-lg border border-sky-100 shrink-0">
+                                            <Cpu className="w-4 h-4 sm:w-5 sm:h-5 text-sky-600" />
                                         </div>
                                         <div>
-                                            <h5 className="text-sm font-bold text-slate-900">Asymmetric Signing (Ed25519)</h5>
-                                            <p className="text-xs text-slate-500 mt-1 font-medium">Every credential issued is signed using a unique Ed25519 private key. The public key is embedded in the JSON for verification.</p>
+                                            <h5 className="text-xs sm:text-sm font-bold text-slate-900">Asymmetric Signing (Ed25519)</h5>
+                                            <p className="text-[10px] sm:text-xs text-slate-500 mt-1 font-medium">Every credential issued is signed using a unique Ed25519 private key. The public key is embedded in the JSON for verification.</p>
                                         </div>
                                     </div>
-                                    <div className="flex items-start gap-4">
-                                        <div className="p-2 bg-sky-50 rounded-lg border border-sky-100">
-                                            <Database className="w-5 h-5 text-sky-600" />
+                                    <div className="flex items-start gap-3 sm:gap-4">
+                                        <div className="p-2 bg-sky-50 rounded-lg border border-sky-100 shrink-0">
+                                            <Database className="w-4 h-4 sm:w-5 sm:h-5 text-sky-600" />
                                         </div>
                                         <div>
-                                            <h5 className="text-sm font-bold text-slate-900">Field Salting (OpenAttestation v2)</h5>
-                                            <p className="text-xs text-slate-500 mt-1 font-medium">Individual fields are salted to prevent brute-force dictionary attacks on certificate data. Selective disclosure ready.</p>
+                                            <h5 className="text-xs sm:text-sm font-bold text-slate-900">Field Salting (OpenAttestation v2)</h5>
+                                            <p className="text-[10px] sm:text-xs text-slate-500 mt-1 font-medium">Individual fields are salted to prevent brute-force dictionary attacks on certificate data. Selective disclosure ready.</p>
                                         </div>
                                     </div>
-                                    <div className="flex items-start gap-4">
-                                        <div className="p-2 bg-sky-50 rounded-lg border border-sky-100">
-                                            <Shield className="w-5 h-5 text-sky-600" />
+                                    <div className="flex items-start gap-3 sm:gap-4">
+                                        <div className="p-2 bg-sky-50 rounded-lg border border-sky-100 shrink-0">
+                                            <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-sky-600" />
                                         </div>
                                         <div>
-                                            <h5 className="text-sm font-bold text-slate-900">Content Hash Verification</h5>
-                                            <p className="text-xs text-slate-500 mt-1 font-medium">SHA-256 hashes are computed for all PDFs to detect tampering. Any modification to certificate content will fail verification.</p>
+                                            <h5 className="text-xs sm:text-sm font-bold text-slate-900">Content Hash Verification</h5>
+                                            <p className="text-[10px] sm:text-xs text-slate-500 mt-1 font-medium">SHA-256 hashes are computed for all PDFs to detect tampering. Any modification to certificate content will fail verification.</p>
                                         </div>
                                     </div>
                                 </div>
                             </CardContent>
-                            <CardFooter className="pt-0">
-                                <Button variant="link" className="text-sky-600 text-xs p-0 font-bold">Learn more about our security model</Button>
+                            <CardFooter className="pt-0 px-4 sm:px-6">
+                                <Button variant="link" className="text-sky-600 text-[10px] sm:text-xs p-0 font-bold">Learn more about our security model</Button>
                             </CardFooter>
                         </Card>
                     )}
@@ -211,44 +211,44 @@ export default function SettingsPage() {
                     {activeTab === "signatures" && (
                         <Card id="signatures" className="bg-white border-sky-200 shadow-lg shadow-sky-500/5 rounded-2xl overflow-hidden ring-1 ring-sky-50">
                             <div className="h-1.5 bg-sky-600 w-full"></div>
-                            <CardHeader>
-                                <CardTitle className="text-lg text-slate-900 flex items-center gap-2">
-                                    <PenTool className="w-5 h-5 text-sky-600" />
+                            <CardHeader className="px-4 sm:px-6">
+                                <CardTitle className="text-base sm:text-lg text-slate-900 flex items-center gap-2">
+                                    <PenTool className="w-4 h-4 sm:w-5 sm:h-5 text-sky-600" />
                                     Authorized Signatures
                                 </CardTitle>
-                                <CardDescription className="font-medium text-slate-500">Manage your digital stamp and signature profile for certificate sealing.</CardDescription>
+                                <CardDescription className="text-xs sm:text-sm font-medium text-slate-500">Manage your digital stamp and signature profile for certificate sealing.</CardDescription>
                             </CardHeader>
-                            <CardContent className="space-y-6">
+                            <CardContent className="space-y-4 sm:space-y-6 px-4 sm:px-6">
                                 {/* Signer Info */}
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Signer Name</label>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                                    <div className="space-y-1.5 sm:space-y-2">
+                                        <label className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Signer Name</label>
                                         <input
                                             type="text"
                                             value={signerName}
                                             onChange={(e) => setSignerName(e.target.value)}
-                                            className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-sky-600/20 focus:border-sky-600 outline-none text-sm font-semibold"
+                                            className="w-full px-3 sm:px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-sky-600/20 focus:border-sky-600 outline-none text-xs sm:text-sm font-semibold"
                                             placeholder="Enter signer name"
                                         />
                                     </div>
-                                    <div className="space-y-2">
-                                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Signer Role</label>
+                                    <div className="space-y-1.5 sm:space-y-2">
+                                        <label className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Signer Role</label>
                                         <input
                                             type="text"
                                             value={signerRole}
                                             onChange={(e) => setSignerRole(e.target.value)}
-                                            className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-sky-600/20 focus:border-sky-600 outline-none text-sm font-semibold"
+                                            className="w-full px-3 sm:px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-sky-600/20 focus:border-sky-600 outline-none text-xs sm:text-sm font-semibold"
                                             placeholder="e.g. Principal, Dean"
                                         />
                                     </div>
                                 </div>
 
                                 {/* Upload Areas */}
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                                     {/* Signature Upload */}
                                     <div 
                                         onClick={() => signatureInputRef.current?.click()}
-                                        className="p-6 rounded-2xl border-2 border-dashed border-slate-200 hover:border-sky-400 transition-colors bg-slate-50 flex flex-col items-center justify-center text-center group cursor-pointer relative overflow-hidden min-h-[160px]"
+                                        className="p-4 sm:p-6 rounded-2xl border-2 border-dashed border-slate-200 hover:border-sky-400 transition-colors bg-slate-50 flex flex-col items-center justify-center text-center group cursor-pointer relative overflow-hidden min-h-[140px] sm:min-h-[160px]"
                                     >
                                         <input
                                             ref={signatureInputRef}
@@ -259,21 +259,21 @@ export default function SettingsPage() {
                                         />
                                         {signaturePreview ? (
                                             <div className="relative w-full">
-                                                <img src={signaturePreview} alt="Signature preview" className="max-h-24 mx-auto object-contain" />
+                                                <img src={signaturePreview} alt="Signature preview" className="max-h-20 sm:max-h-24 mx-auto object-contain" />
                                                 <button 
                                                     onClick={(e) => { e.stopPropagation(); setSignatureFile(null); setSignaturePreview(null); }}
-                                                    className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600"
+                                                    className="absolute -top-2 -right-2 w-5 h-5 sm:w-6 sm:h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600"
                                                 >
-                                                    <X className="w-3 h-3" />
+                                                    <X className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                                                 </button>
                                             </div>
                                         ) : (
                                             <>
-                                                <div className="w-12 h-12 rounded-full bg-white shadow-sm flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                                                    <PenTool className="w-6 h-6 text-slate-400 group-hover:text-sky-600" />
+                                                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white shadow-sm flex items-center justify-center mb-2 sm:mb-3 group-hover:scale-110 transition-transform">
+                                                    <PenTool className="w-5 h-5 sm:w-6 sm:h-6 text-slate-400 group-hover:text-sky-600" />
                                                 </div>
-                                                <p className="text-xs font-black text-slate-600 uppercase tracking-widest">Digital Signature</p>
-                                                <p className="text-[10px] text-slate-400 mt-1 font-bold">Click to upload PNG</p>
+                                                <p className="text-[10px] sm:text-xs font-black text-slate-600 uppercase tracking-widest">Digital Signature</p>
+                                                <p className="text-[9px] sm:text-[10px] text-slate-400 mt-1 font-bold">Click to upload PNG</p>
                                             </>
                                         )}
                                     </div>
@@ -281,7 +281,7 @@ export default function SettingsPage() {
                                     {/* Stamp Upload */}
                                     <div 
                                         onClick={() => stampInputRef.current?.click()}
-                                        className="p-6 rounded-2xl border-2 border-dashed border-slate-200 hover:border-sky-400 transition-colors bg-slate-50 flex flex-col items-center justify-center text-center group cursor-pointer relative overflow-hidden min-h-[160px]"
+                                        className="p-4 sm:p-6 rounded-2xl border-2 border-dashed border-slate-200 hover:border-sky-400 transition-colors bg-slate-50 flex flex-col items-center justify-center text-center group cursor-pointer relative overflow-hidden min-h-[140px] sm:min-h-[160px]"
                                     >
                                         <input
                                             ref={stampInputRef}
@@ -292,21 +292,21 @@ export default function SettingsPage() {
                                         />
                                         {stampPreview ? (
                                             <div className="relative w-full">
-                                                <img src={stampPreview} alt="Stamp preview" className="max-h-24 mx-auto object-contain" />
+                                                <img src={stampPreview} alt="Stamp preview" className="max-h-20 sm:max-h-24 mx-auto object-contain" />
                                                 <button 
                                                     onClick={(e) => { e.stopPropagation(); setStampFile(null); setStampPreview(null); }}
-                                                    className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600"
+                                                    className="absolute -top-2 -right-2 w-5 h-5 sm:w-6 sm:h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600"
                                                 >
-                                                    <X className="w-3 h-3" />
+                                                    <X className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                                                 </button>
                                             </div>
                                         ) : (
                                             <>
-                                                <div className="w-12 h-12 rounded-full bg-white shadow-sm flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                                                    <Hash className="w-6 h-6 text-slate-400 group-hover:text-sky-600" />
+                                                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white shadow-sm flex items-center justify-center mb-2 sm:mb-3 group-hover:scale-110 transition-transform">
+                                                    <Hash className="w-5 h-5 sm:w-6 sm:h-6 text-slate-400 group-hover:text-sky-600" />
                                                 </div>
-                                                <p className="text-xs font-black text-slate-600 uppercase tracking-widest">Official Stamp</p>
-                                                <p className="text-[10px] text-slate-400 mt-1 font-bold">Click to upload seal</p>
+                                                <p className="text-[10px] sm:text-xs font-black text-slate-600 uppercase tracking-widest">Official Stamp</p>
+                                                <p className="text-[9px] sm:text-[10px] text-slate-400 mt-1 font-bold">Click to upload seal</p>
                                             </>
                                         )}
                                     </div>
@@ -316,34 +316,34 @@ export default function SettingsPage() {
                                 <Button 
                                     onClick={handleUpload}
                                     disabled={uploading || (!signatureFile && !stampFile) || !signerName}
-                                    className="w-full h-12 bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-xl shadow-lg shadow-sky-600/20"
+                                    className="w-full h-10 sm:h-12 bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-xl shadow-lg shadow-sky-600/20 text-xs sm:text-sm"
                                 >
                                     {uploading ? (
-                                        <><Loader2 className="w-5 h-5 animate-spin mr-2" /> Uploading...</>
+                                        <><Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin mr-2" /> Uploading...</>
                                     ) : uploadSuccess ? (
-                                        <><CheckCircle className="w-5 h-5 mr-2" /> Upload Successful!</>
+                                        <><CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 mr-2" /> Upload Successful!</>
                                     ) : (
-                                        <><Upload className="w-5 h-5 mr-2" /> Upload Signature Assets</>
+                                        <><Upload className="w-4 h-4 sm:w-5 sm:h-5 mr-2" /> Upload Signature Assets</>
                                     )}
                                 </Button>
 
                                 {/* Previous Records */}
                                 {records.length > 0 && (
-                                    <div className="space-y-3 pt-4 border-t border-slate-100">
-                                        <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Previous Signatures</p>
-                                        <div className="space-y-2 max-h-40 overflow-y-auto">
+                                    <div className="space-y-2.5 sm:space-y-3 pt-3 sm:pt-4 border-t border-slate-100">
+                                        <p className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Previous Signatures</p>
+                                        <div className="space-y-2 max-h-36 sm:max-h-40 overflow-y-auto">
                                             {records.map((record) => (
-                                                <div key={record.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100">
+                                                <div key={record.id} className="flex items-center justify-between p-2.5 sm:p-3 bg-slate-50 rounded-xl border border-slate-100">
                                                     <div>
-                                                        <p className="text-sm font-semibold text-slate-900">{record.signer_name}</p>
-                                                        <p className="text-xs text-slate-500">{record.signer_role}</p>
+                                                        <p className="text-xs sm:text-sm font-semibold text-slate-900">{record.signer_name}</p>
+                                                        <p className="text-[10px] sm:text-xs text-slate-500">{record.signer_role}</p>
                                                     </div>
-                                                    <div className="flex gap-2">
+                                                    <div className="flex gap-1.5 sm:gap-2">
                                                         {record.has_signature && (
-                                                            <span className="px-2 py-1 bg-sky-100 text-sky-600 text-[10px] font-bold rounded uppercase">Sig</span>
+                                                            <span className="px-1.5 sm:px-2 py-0.5 sm:py-1 bg-sky-100 text-sky-600 text-[9px] sm:text-[10px] font-bold rounded uppercase">Sig</span>
                                                         )}
                                                         {record.has_stamp && (
-                                                            <span className="px-2 py-1 bg-sky-100 text-sky-600 text-[10px] font-bold rounded uppercase">Stamp</span>
+                                                            <span className="px-1.5 sm:px-2 py-0.5 sm:py-1 bg-sky-100 text-sky-600 text-[9px] sm:text-[10px] font-bold rounded uppercase">Stamp</span>
                                                         )}
                                                     </div>
                                                 </div>
@@ -352,9 +352,9 @@ export default function SettingsPage() {
                                     </div>
                                 )}
 
-                                <div className="p-4 rounded-xl bg-amber-50 border border-amber-100 flex gap-3 items-start">
-                                    <Shield className="w-5 h-5 text-amber-600 mt-0.5" />
-                                    <div className="text-xs text-amber-800 font-medium leading-relaxed">
+                                <div className="p-3 sm:p-4 rounded-xl bg-amber-50 border border-amber-100 flex gap-2 sm:gap-3 items-start">
+                                    <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600 mt-0.5" />
+                                    <div className="text-[10px] sm:text-xs text-amber-800 font-medium leading-relaxed">
                                         <p className="font-bold">Security Note:</p>
                                         These assets are only used to visually represent your cryptographic signature on the final PDF documents. They are stored securely and never shared publicly.
                                     </div>
@@ -366,17 +366,17 @@ export default function SettingsPage() {
                     {/* API Keys Tab */}
                     {activeTab === "api-keys" && (
                         <Card className="bg-white border-slate-200 shadow-sm rounded-2xl">
-                            <CardHeader>
-                                <CardTitle className="text-lg text-slate-900 flex items-center gap-2">
-                                    <Key className="w-5 h-5 text-sky-600" />
+                            <CardHeader className="px-4 sm:px-6">
+                                <CardTitle className="text-base sm:text-lg text-slate-900 flex items-center gap-2">
+                                    <Key className="w-4 h-4 sm:w-5 sm:h-5 text-sky-600" />
                                     API Keys
                                 </CardTitle>
-                                <CardDescription className="font-medium text-slate-500">Manage API keys for programmatic access to EduCerts.</CardDescription>
+                                <CardDescription className="text-xs sm:text-sm font-medium text-slate-500">Manage API keys for programmatic access to EduCerts.</CardDescription>
                             </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div className="p-4 rounded-xl bg-slate-50 border border-slate-100">
-                                    <p className="text-sm text-slate-600 font-medium">API keys are not yet implemented. This feature will allow you to:</p>
-                                    <ul className="mt-2 text-xs text-slate-500 space-y-1 ml-4">
+                            <CardContent className="space-y-3 sm:space-y-4 px-4 sm:px-6">
+                                <div className="p-3 sm:p-4 rounded-xl bg-slate-50 border border-slate-100">
+                                    <p className="text-xs sm:text-sm text-slate-600 font-medium">API keys are not yet implemented. This feature will allow you to:</p>
+                                    <ul className="mt-2 text-[10px] sm:text-xs text-slate-500 space-y-1 ml-4">
                                         <li>• Issue certificates programmatically</li>
                                         <li>• Verify certificates via API</li>
                                         <li>• Access certificate data</li>
@@ -390,17 +390,17 @@ export default function SettingsPage() {
                     {/* Notifications Tab */}
                     {activeTab === "notifications" && (
                         <Card className="bg-white border-slate-200 shadow-sm rounded-2xl">
-                            <CardHeader>
-                                <CardTitle className="text-lg text-slate-900 flex items-center gap-2">
-                                    <Bell className="w-5 h-5 text-sky-600" />
+                            <CardHeader className="px-4 sm:px-6">
+                                <CardTitle className="text-base sm:text-lg text-slate-900 flex items-center gap-2">
+                                    <Bell className="w-4 h-4 sm:w-5 sm:h-5 text-sky-600" />
                                     Notifications
                                 </CardTitle>
-                                <CardDescription className="font-medium text-slate-500">Configure notification preferences and alerts.</CardDescription>
+                                <CardDescription className="text-xs sm:text-sm font-medium text-slate-500">Configure notification preferences and alerts.</CardDescription>
                             </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div className="p-4 rounded-xl bg-slate-50 border border-slate-100">
-                                    <p className="text-sm text-slate-600 font-medium">Notification settings are not yet implemented. Future features will include:</p>
-                                    <ul className="mt-2 text-xs text-slate-500 space-y-1 ml-4">
+                            <CardContent className="space-y-3 sm:space-y-4 px-4 sm:px-6">
+                                <div className="p-3 sm:p-4 rounded-xl bg-slate-50 border border-slate-100">
+                                    <p className="text-xs sm:text-sm text-slate-600 font-medium">Notification settings are not yet implemented. Future features will include:</p>
+                                    <ul className="mt-2 text-[10px] sm:text-xs text-slate-500 space-y-1 ml-4">
                                         <li>• Email notifications for certificate issuance</li>
                                         <li>• Alerts for verification attempts</li>
                                         <li>• Security notifications</li>
@@ -414,17 +414,17 @@ export default function SettingsPage() {
                     {/* Integration Tab */}
                     {activeTab === "integration" && (
                         <Card className="bg-white border-slate-200 shadow-sm rounded-2xl">
-                            <CardHeader>
-                                <CardTitle className="text-lg text-slate-900 flex items-center gap-2">
-                                    <Globe className="w-5 h-5 text-sky-600" />
+                            <CardHeader className="px-4 sm:px-6">
+                                <CardTitle className="text-base sm:text-lg text-slate-900 flex items-center gap-2">
+                                    <Globe className="w-4 h-4 sm:w-5 sm:h-5 text-sky-600" />
                                     Integration
                                 </CardTitle>
-                                <CardDescription className="font-medium text-slate-500">Connect EduCerts with external systems and services.</CardDescription>
+                                <CardDescription className="text-xs sm:text-sm font-medium text-slate-500">Connect EduCerts with external systems and services.</CardDescription>
                             </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div className="p-4 rounded-xl bg-slate-50 border border-slate-100">
-                                    <p className="text-sm text-slate-600 font-medium">Integration options are not yet implemented. Future integrations will include:</p>
-                                    <ul className="mt-2 text-xs text-slate-500 space-y-1 ml-4">
+                            <CardContent className="space-y-3 sm:space-y-4 px-4 sm:px-6">
+                                <div className="p-3 sm:p-4 rounded-xl bg-slate-50 border border-slate-100">
+                                    <p className="text-xs sm:text-sm text-slate-600 font-medium">Integration options are not yet implemented. Future integrations will include:</p>
+                                    <ul className="mt-2 text-[10px] sm:text-xs text-slate-500 space-y-1 ml-4">
                                         <li>• Student Information Systems (SIS)</li>
                                         <li>• Learning Management Systems (LMS)</li>
                                         <li>• Blockchain networks</li>
@@ -435,9 +435,9 @@ export default function SettingsPage() {
                         </Card>
                     )}
 
-                    <div className="flex justify-end gap-3">
-                        <Button variant="ghost" className="text-slate-400 font-bold">Cancel</Button>
-                        <Button className="bg-sky-600 hover:bg-sky-700 text-white shadow-lg shadow-sky-600/20 font-bold">Save Changes</Button>
+                    <div className="flex justify-end gap-2 sm:gap-3">
+                        <Button variant="ghost" className="text-slate-400 font-bold text-xs sm:text-sm">Cancel</Button>
+                        <Button className="bg-sky-600 hover:bg-sky-700 text-white shadow-lg shadow-sky-600/20 font-bold text-xs sm:text-sm">Save Changes</Button>
                     </div>
                 </div>
             </div>
