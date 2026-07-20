@@ -25,7 +25,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
     return (
         <div className="flex min-h-screen bg-slate-50 text-slate-900 font-sans">
             {!isExcluded && <Sidebar user={user} onLogout={logout} />}
-            <main className={`flex-1 ${!isExcluded ? "ml-64" : ""}`}>
+            <main className={`flex-1 ${!isExcluded ? "lg:ml-64" : ""}`}>
                 {children}
             </main>
         </div>
