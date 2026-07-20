@@ -120,21 +120,21 @@ function TemplateUpload({ parsed, parsing, onFile, onClear }: {
             }}
             onClick={() => !parsed && ref.current?.click()}
         >
-            <CardContent className="p-8 text-center space-y-4">
-                <div className={`w-16 h-16 mx-auto rounded-2xl flex items-center justify-center ${parsed ? "bg-gradient-to-br from-sky-100 to-sky-200" : dragging ? "bg-gradient-to-br from-sky-100 to-sky-200" : "bg-slate-50 border-2 border-slate-200"}`}>
+            <CardContent className="p-4 sm:p-8 text-center space-y-3 sm:space-y-4">
+                <div className={`w-12 h-12 sm:w-16 sm:h-16 mx-auto rounded-2xl flex items-center justify-center ${parsed ? "bg-gradient-to-br from-sky-100 to-sky-200" : dragging ? "bg-gradient-to-br from-sky-100 to-sky-200" : "bg-slate-50 border-2 border-slate-200"}`}>
                     {parsing
-                        ? <Loader2 className="w-8 h-8 text-sky-500 animate-spin" />
+                        ? <Loader2 className="w-6 h-6 sm:w-8 sm:h-8 text-sky-500 animate-spin" />
                         : parsed
-                            ? <Check className="w-8 h-8 text-sky-600" />
-                            : <LayoutTemplate className={`w-8 h-8 ${dragging ? "text-sky-600" : "text-slate-400"}`} />
+                            ? <Check className="w-6 h-6 sm:w-8 sm:h-8 text-sky-600" />
+                            : <LayoutTemplate className={`w-6 h-6 sm:w-8 sm:h-8 ${dragging ? "text-sky-600" : "text-slate-400"}`} />
                     }
                 </div>
                 <div>
-                    <h3 className={`text-lg font-bold ${parsed ? "text-sky-800" : "text-slate-800"}`}>
+                    <h3 className={`text-base sm:text-lg font-bold ${parsed ? "text-sky-800" : "text-slate-800"}`}>
                         {parsed ? `${parsed.template_name}` : "Upload Certificate"}
                     </h3>
                     {!parsed && (
-                        <p className="text-sm text-slate-500 mt-1">
+                        <p className="text-xs sm:text-sm text-slate-500 mt-1">
                             PDF or HTML
                         </p>
                     )}
@@ -464,18 +464,18 @@ function IssuePageContent() {
     const allSigned = issuedCerts.length > 0 && issuedCerts.every(c => c.signing_status === "signed")
 
     return (
-        <div className="p-6 max-w-5xl mx-auto space-y-8">
+        <div className="p-4 sm:p-6 max-w-5xl mx-auto space-y-6 sm:space-y-8">
 
             {/* ── Page Header ── */}
             <div>
-                <h1 className="text-3xl font-bold text-slate-900 flex items-center gap-3">
-                    <FilePlus className="w-8 h-8 text-sky-600" />Issue Credentials
+                <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 flex items-center gap-2 sm:gap-3">
+                    <FilePlus className="w-6 h-6 sm:w-8 sm:h-8 text-sky-600" />Issue Credentials
                 </h1>
-                <p className="text-slate-500 font-medium mt-1">Two-step process: generate certificates from a template, then apply digital signatures.</p>
+                <p className="text-slate-500 font-medium mt-1 text-sm sm:text-base">Two-step process: generate certificates from a template, then apply digital signatures.</p>
             </div>
 
             {/* ── Step Indicators ── */}
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2 sm:gap-3">
                 <StepIndicator current={step} step={1} label="Generate Certificates" icon={FilePlus} />
                 <StepIndicator current={step} step={2} label="Sign & Stamp" icon={PenLine} />
             </div>
@@ -484,9 +484,9 @@ function IssuePageContent() {
             <AnimatePresence>
                 {error && (
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                        className="p-4 rounded-xl bg-red-50 border border-red-200 flex items-start gap-3">
+                        className="p-3 sm:p-4 rounded-xl bg-red-50 border border-red-200 flex items-start gap-2 sm:gap-3">
                         <AlertCircle className="w-4 h-4 text-red-500 mt-0.5 shrink-0" />
-                        <p className="text-sm text-red-700 font-medium flex-1">{error}</p>
+                        <p className="text-xs sm:text-sm text-red-700 font-medium flex-1">{error}</p>
                         <button onClick={() => setError("")}><X className="w-4 h-4 text-red-400 hover:text-red-600" /></button>
                     </motion.div>
                 )}
@@ -496,7 +496,7 @@ function IssuePageContent() {
                 STEP 1 — GENERATE CERTIFICATES
                 ══════════════════════════════════════════════════════════════ */}
             {step === 1 && (
-                <div className="space-y-6">
+                <div className="space-y-4 sm:space-y-6">
 
                     {/* Category Selection */}
                     <div>
@@ -510,17 +510,17 @@ function IssuePageContent() {
                                     <button
                                         type="button"
                                         onClick={() => setCategoryOpen(o => !o)}
-                                        className={`w-full flex items-center gap-3 px-4 py-4 rounded-2xl border-2 bg-gradient-to-br from-white to-slate-50 text-left transition-all shadow-sm ${categoryOpen ? "border-sky-500 ring-2 ring-sky-500/30 shadow-xl shadow-sky-500/20" : "border-slate-200 hover:border-sky-400 hover:shadow-lg hover:shadow-sky-500/10"}`}
+                                        className={`w-full flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3 sm:py-4 rounded-2xl border-2 bg-gradient-to-br from-white to-slate-50 text-left transition-all shadow-sm ${categoryOpen ? "border-sky-500 ring-2 ring-sky-500/30 shadow-xl shadow-sky-500/20" : "border-slate-200 hover:border-sky-400 hover:shadow-lg hover:shadow-sky-500/10"}`}
                                     >
-                                        <div className={`w-11 h-11 rounded-xl flex items-center justify-center bg-gradient-to-br ${selected.color} text-white shadow-lg shrink-0 ring-2 ring-white ring-offset-2 ring-offset-slate-100`}>
-                                            <selected.icon className="w-5.5 h-5.5" />
+                                        <div className={`w-9 h-9 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center bg-gradient-to-br ${selected.color} text-white shadow-lg shrink-0 ring-2 ring-white ring-offset-2 ring-offset-slate-100`}>
+                                            <selected.icon className="w-4.5 h-4.5 sm:w-5.5 sm:h-5.5" />
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <p className="text-sm font-bold text-slate-800 truncate">{selected.label}</p>
-                                            <p className="text-[11px] text-slate-400 font-medium truncate">{selected.desc}</p>
+                                            <p className="text-xs sm:text-sm font-bold text-slate-800 truncate">{selected.label}</p>
+                                            <p className="text-[10px] sm:text-[11px] text-slate-400 font-medium truncate">{selected.desc}</p>
                                         </div>
-                                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-all ${categoryOpen ? "bg-sky-500 text-white" : "bg-slate-100 text-slate-400"}`}>
-                                            <ChevronDown className={`w-4 h-4 transition-transform ${categoryOpen ? "rotate-180" : ""}`} />
+                                        <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center shrink-0 transition-all ${categoryOpen ? "bg-sky-500 text-white" : "bg-slate-100 text-slate-400"}`}>
+                                            <ChevronDown className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform ${categoryOpen ? "rotate-180" : ""}`} />
                                         </div>
                                     </button>
 
@@ -533,25 +533,25 @@ function IssuePageContent() {
                                                     animate={{ opacity: 1, y: 0, scale: 1 }}
                                                     exit={{ opacity: 0, y: -8, scale: 0.98 }}
                                                     transition={{ duration: 0.2, ease: "easeOut" }}
-                                                    className="absolute z-20 mt-2 w-full max-h-80 overflow-y-auto rounded-2xl border-2 border-slate-200 bg-gradient-to-br from-white to-slate-50 shadow-2xl shadow-slate-300/50 p-2 ring-1 ring-slate-200"
+                                                    className="absolute z-20 mt-2 w-full max-h-72 sm:max-h-80 overflow-y-auto rounded-2xl border-2 border-slate-200 bg-gradient-to-br from-white to-slate-50 shadow-2xl shadow-slate-300/50 p-2 ring-1 ring-slate-200"
                                                 >
                                                     {CERT_TYPES.map(type => (
                                                         <button
                                                             key={type.id}
                                                             type="button"
                                                             onClick={() => { setSelectedType(type.id); setCategoryOpen(false) }}
-                                                            className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl text-left transition-all ${selectedType === type.id ? "bg-gradient-to-r from-sky-50 to-sky-100 border-2 border-sky-300 shadow-md" : "hover:bg-slate-100 border-2 border-transparent"}`}
+                                                            className={`w-full flex items-center gap-2 sm:gap-3 px-2.5 sm:px-3 py-2.5 sm:py-3 rounded-xl text-left transition-all ${selectedType === type.id ? "bg-gradient-to-r from-sky-50 to-sky-100 border-2 border-sky-300 shadow-md" : "hover:bg-slate-100 border-2 border-transparent"}`}
                                                         >
-                                                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center bg-gradient-to-br ${type.color} text-white shadow-md shrink-0 ${selectedType === type.id ? "ring-2 ring-sky-400 ring-offset-2 ring-offset-white" : ""}`}>
-                                                                <type.icon className="w-5 h-5" />
+                                                            <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center bg-gradient-to-br ${type.color} text-white shadow-md shrink-0 ${selectedType === type.id ? "ring-2 ring-sky-400 ring-offset-2 ring-offset-white" : ""}`}>
+                                                                <type.icon className="w-4 h-4 sm:w-5 sm:h-5" />
                                                             </div>
                                                             <div className="flex-1 min-w-0">
-                                                                <p className={`text-sm font-bold truncate ${selectedType === type.id ? "text-sky-900" : "text-slate-700"}`}>{type.label}</p>
-                                                                <p className="text-[10px] text-slate-400 font-medium truncate">{type.desc}</p>
+                                                                <p className={`text-xs sm:text-sm font-bold truncate ${selectedType === type.id ? "text-sky-900" : "text-slate-700"}`}>{type.label}</p>
+                                                                <p className="text-[9px] sm:text-[10px] text-slate-400 font-medium truncate">{type.desc}</p>
                                                             </div>
                                                             {selectedType === type.id && (
-                                                                <div className="w-6 h-6 bg-gradient-to-br from-sky-500 to-sky-600 rounded-full flex items-center justify-center text-white shadow-lg shrink-0 ring-2 ring-white">
-                                                                    <Check className="w-3.5 h-3.5" />
+                                                                <div className="w-5 h-5 sm:w-6 sm:h-6 bg-gradient-to-br from-sky-500 to-sky-600 rounded-full flex items-center justify-center text-white shadow-lg shrink-0 ring-2 ring-white">
+                                                                    <Check className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                                                                 </div>
                                                             )}
                                                         </button>
@@ -634,12 +634,12 @@ function IssuePageContent() {
                                 )}
 
                                 {/* Single / Bulk toggle */}
-                                <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl w-fit border border-slate-200">
-                                    {[{ key: "single", label: "Single Certificate", icon: SquarePen },
-                                    { key: "bulk", label: "Bulk (CSV / Excel)", icon: FileSpreadsheet }].map(m => (
+                                <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl w-full sm:w-fit border border-slate-200">
+                                    {[{ key: "single", label: "Single", icon: SquarePen },
+                                    { key: "bulk", label: "Bulk", icon: FileSpreadsheet }].map(m => (
                                         <button key={m.key} onClick={() => setIssueMode(m.key as "single" | "bulk")}
-                                            className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-bold transition-all ${issueMode === m.key ? "bg-white shadow text-sky-700 border border-sky-100" : "text-slate-500 hover:text-slate-800"}`}>
-                                            <m.icon className="w-4 h-4" />{m.label}
+                                            className={`flex-1 sm:flex-none flex items-center justify-center sm:justify-start gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-bold transition-all ${issueMode === m.key ? "bg-white shadow text-sky-700 border border-sky-100" : "text-slate-500 hover:text-slate-800"}`}>
+                                            <m.icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />{m.label}
                                         </button>
                                     ))}
                                 </div>
@@ -648,39 +648,39 @@ function IssuePageContent() {
                                 {issueMode === "single" && (
                                     <Card className="bg-white border-slate-200 shadow-2xl rounded-2xl overflow-hidden ring-1 ring-slate-200">
                                         <div className="h-2 bg-gradient-to-r from-sky-500 via-sky-600 to-sky-500" />
-                                        <CardHeader className="pb-4">
-                                            <CardTitle className="flex items-center gap-2 text-lg"><Tag className="w-5 h-5 text-sky-600" />Fill in Certificate Fields</CardTitle>
-                                            <CardDescription className="text-sm">
+                                        <CardHeader className="pb-3 sm:pb-4 px-4 sm:px-6">
+                                            <CardTitle className="flex items-center gap-2 text-base sm:text-lg"><Tag className="w-4 h-4 sm:w-5 sm:h-5 text-sky-600" />Fill in Certificate Fields</CardTitle>
+                                            <CardDescription className="text-xs sm:text-sm">
                                                 {parsedTemplate.input_fields.length} field{parsedTemplate.input_fields.length !== 1 ? "s" : ""} extracted from <span className="font-semibold text-sky-600">{parsedTemplate.template_name}</span>
                                             </CardDescription>
                                         </CardHeader>
-                                        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-5 px-4 sm:px-6">
                                             {parsedTemplate.input_fields
                                                 .filter(field => !SIG_FIELDS.has(field))
                                                 .map((field, i) => {
                                                     const isCore = isNameField(field) || isCourseField(field)
                                                     return (
-                                                        <div key={`form-input-${field}-${i}`} className="space-y-2">
-                                                            <label className="text-xs font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
-                                                                <span className={`w-2 h-2 rounded-full inline-block ${isCore ? "bg-sky-500" : "bg-sky-400"}`} />
+                                                        <div key={`form-input-${field}-${i}`} className="space-y-1.5 sm:space-y-2">
+                                                            <label className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+                                                                <span className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full inline-block ${isCore ? "bg-sky-500" : "bg-sky-400"}`} />
                                                                 {field.replace(/_/g, " ")}
                                                                 {isCore && <span className="text-red-400">*</span>}
                                                             </label>
                                                             <input type="text" placeholder={`Enter ${field.replace(/_/g, " ")}`}
                                                                 value={templateFields[field] || ""}
                                                                 onChange={e => setTemplateFields({ ...templateFields, [field]: e.target.value })}
-                                                                className="w-full bg-white border-2 border-slate-200 rounded-xl px-4 py-3 text-slate-900 focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 outline-none transition-all font-medium placeholder:text-slate-400 shadow-sm focus:shadow-md" />
+                                                                className="w-full bg-white border-2 border-slate-200 rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base text-slate-900 focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 outline-none transition-all font-medium placeholder:text-slate-400 shadow-sm focus:shadow-md" />
                                                         </div>
                                                     )
                                                 })}
-                                            <div className="md:col-span-2 p-4 bg-gradient-to-r from-sky-50 to-sky-100 rounded-xl border border-sky-200 flex gap-3">
-                                                <Sparkles className="w-5 h-5 shrink-0 text-sky-600 mt-0.5" />
-                                                <p className="text-xs leading-tight font-medium text-slate-700">
+                                            <div className="md:col-span-2 p-3 sm:p-4 bg-gradient-to-r from-sky-50 to-sky-100 rounded-xl border border-sky-200 flex gap-2 sm:gap-3">
+                                                <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 shrink-0 text-sky-600 mt-0.5" />
+                                                <p className="text-[10px] sm:text-xs leading-tight font-medium text-slate-700">
                                                     Fields will be injected into the template at the exact placeholder positions. All fields are individually salted, hashed, and signed with Ed25519.
                                                 </p>
                                             </div>
                                         </CardContent>
-                                        <CardFooter className="bg-slate-50 border-t border-slate-100 p-5">
+                                        <CardFooter className="bg-slate-50 border-t border-slate-100 p-4 sm:p-5">
                                             {(() => {
                                                 const inputFields = parsedTemplate.input_fields
                                                 const hasNameField = inputFields.some(isNameField)
@@ -697,10 +697,10 @@ function IssuePageContent() {
 
                                                 return (
                                                     <Button onClick={handleSingleIssue}
-                                                        className="w-full h-12 rounded-xl text-base font-bold group shadow-xl bg-gradient-to-r from-sky-500 to-sky-600 hover:from-sky-600 hover:to-sky-700 border-0 transition-all"
+                                                        className="w-full h-10 sm:h-12 rounded-xl text-sm sm:text-base font-bold group shadow-xl bg-gradient-to-r from-sky-500 to-sky-600 hover:from-sky-600 hover:to-sky-700 border-0 transition-all"
                                                         disabled={loading || !canIssue}>
-                                                        {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (
-                                                            <>Generate Certificate <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" /></>
+                                                        {loading ? <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" /> : (
+                                                            <>Generate Certificate <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2 group-hover:translate-x-1 transition-transform" /></>
                                                         )}
                                                     </Button>
                                                 )
@@ -711,46 +711,46 @@ function IssuePageContent() {
 
                                 {/* ── Bulk mode ── */}
                                 {issueMode === "bulk" && (
-                                    <div className="space-y-5">
+                                    <div className="space-y-4 sm:space-y-5">
                                         {/* Column mapping table */}
                                         <Card className="bg-white border-slate-200 rounded-2xl shadow-lg overflow-hidden ring-1 ring-slate-200">
                                             <div className="h-1.5 bg-gradient-to-r from-sky-500 to-sky-600" />
-                                            <CardHeader className="pb-2">
-                                                <CardTitle className="text-sm flex items-center gap-2">
-                                                    <Table2 className="w-4 h-4 text-sky-500" />
+                                            <CardHeader className="pb-2 px-4 sm:px-6">
+                                                <CardTitle className="text-xs sm:text-sm flex items-center gap-2">
+                                                    <Table2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-sky-500" />
                                                     CSV / Excel Column → Template Field Mapping
                                                 </CardTitle>
-                                                <CardDescription>
+                                                <CardDescription className="text-xs">
                                                     Your file must have these exact column headers. Each row = one certificate.
                                                 </CardDescription>
                                             </CardHeader>
-                                            <CardContent className="pt-0">
+                                            <CardContent className="pt-0 px-4 sm:px-6">
                                                 <div className="overflow-x-auto rounded-xl border border-slate-200">
-                                                    <table className="w-full text-sm">
+                                                    <table className="w-full text-xs sm:text-sm">
                                                         <thead>
                                                             <tr className="bg-slate-50 border-b border-slate-200">
-                                                                <th className="text-left px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-widest">Column Header</th>
-                                                                <th className="text-left px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-widest">Template Placeholder</th>
-                                                                <th className="text-left px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-widest">Required?</th>
+                                                                <th className="text-left px-2 sm:px-4 py-2 sm:py-3 text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-widest">Column Header</th>
+                                                                <th className="text-left px-2 sm:px-4 py-2 sm:py-3 text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-widest">Template Placeholder</th>
+                                                                <th className="text-left px-2 sm:px-4 py-2 sm:py-3 text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-widest">Required?</th>
                                                             </tr>
                                                         </thead>
                                                         <tbody>
                                                             {parsedTemplate.input_fields.filter(f => !SIG_FIELDS.has(f)).map((field, i) => (
                                                                 <tr key={`input-${field}-${i}`} className={i % 2 === 0 ? "bg-white" : "bg-slate-50/50"}>
-                                                                    <td className="px-4 py-2.5">
-                                                                        <div className="flex items-center gap-2">
-                                                                            <code className="text-sky-600 bg-sky-50 px-2 py-0.5 rounded font-mono text-xs">{field}</code>
+                                                                    <td className="px-2 sm:px-4 py-2 sm:py-2.5">
+                                                                        <div className="flex items-center gap-1.5 sm:gap-2">
+                                                                            <code className="text-sky-600 bg-sky-50 px-1.5 sm:px-2 py-0.5 rounded font-mono text-[10px] sm:text-xs">{field}</code>
                                                                         </div>
                                                                     </td>
-                                                                    <td className="px-4 py-2.5"><code className="text-sky-600 bg-sky-50 px-2 py-0.5 rounded font-mono text-xs">{"{{ " + field + " }}"}</code></td>
-                                                                    <td className="px-4 py-2.5 flex items-center gap-2">
+                                                                    <td className="px-2 sm:px-4 py-2 sm:py-2.5"><code className="text-sky-600 bg-sky-50 px-1.5 sm:px-2 py-0.5 rounded font-mono text-[10px] sm:text-xs">{"{{ " + field + " }}"}</code></td>
+                                                                    <td className="px-2 sm:px-4 py-2 sm:py-2.5 flex items-center gap-1.5 sm:gap-2">
                                                                         {(field === "student_name" || field === "course_name" || isNameField(field) || isCourseField(field))
-                                                                            ? <span className="text-[10px] font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded border border-red-200">Required</span>
-                                                                            : <span className="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded">Optional</span>
+                                                                            ? <span className="text-[9px] sm:text-[10px] font-bold text-red-600 bg-red-50 px-1.5 sm:px-2 py-0.5 rounded border border-red-200">Required</span>
+                                                                            : <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 bg-slate-100 px-1.5 sm:px-2 py-0.5 rounded">Optional</span>
                                                                         }
                                                                         {bulkFile && (
-                                                                            <span className="text-[10px] font-bold text-sky-600 bg-sky-50 px-2 py-0.5 rounded border border-sky-200 flex items-center gap-1">
-                                                                                <Check className="w-2 h-2" /> Auto-mapped
+                                                                            <span className="text-[9px] sm:text-[10px] font-bold text-sky-600 bg-sky-50 px-1.5 sm:px-2 py-0.5 rounded border border-sky-200 flex items-center gap-0.5 sm:gap-1">
+                                                                                <Check className="w-1.5 h-1.5 sm:w-2 sm:h-2" /> Auto-mapped
                                                                             </span>
                                                                         )}
                                                                     </td>
@@ -758,9 +758,9 @@ function IssuePageContent() {
                                                             ))}
                                                             {parsedTemplate.system_fields.filter(f => SYSTEM_AUTO.has(f)).map((field, i) => (
                                                                 <tr key={`system-${field}-${i}`} className={(parsedTemplate.input_fields.length + i) % 2 === 0 ? "bg-white" : "bg-slate-50/50"}>
-                                                                    <td className="px-4 py-2.5"><span className="text-slate-400 italic text-xs">(auto)</span></td>
-                                                                    <td className="px-4 py-2.5"><code className="text-slate-400 bg-slate-100 px-2 py-0.5 rounded font-mono text-xs">{"{{ " + field + " }}"}</code></td>
-                                                                    <td className="px-4 py-2.5"><span className="text-[10px] font-bold text-sky-600 bg-sky-50 px-2 py-0.5 rounded border border-sky-200">System Filled</span></td>
+                                                                    <td className="px-2 sm:px-4 py-2 sm:py-2.5"><span className="text-slate-400 italic text-[10px] sm:text-xs">(auto)</span></td>
+                                                                    <td className="px-2 sm:px-4 py-2 sm:py-2.5"><code className="text-slate-400 bg-slate-100 px-1.5 sm:px-2 py-0.5 rounded font-mono text-[10px] sm:text-xs">{"{{ " + field + " }}"}</code></td>
+                                                                    <td className="px-2 sm:px-4 py-2 sm:py-2.5"><span className="text-[9px] sm:text-[10px] font-bold text-sky-600 bg-sky-50 px-1.5 sm:px-2 py-0.5 rounded border border-sky-200">System Filled</span></td>
                                                                 </tr>
                                                             ))}
                                                         </tbody>
@@ -772,31 +772,31 @@ function IssuePageContent() {
                                         {/* File upload */}
                                         <Card className="bg-white border-2 border-dashed border-slate-200 rounded-2xl overflow-hidden hover:border-sky-300 transition-colors">
                                             <div className="h-1.5 bg-gradient-to-r from-sky-500 to-sky-600" />
-                                            <CardContent className="p-8 text-center space-y-5">
-                                                <div className="w-16 h-16 bg-slate-50 rounded-3xl mx-auto flex items-center justify-center border-2 border-slate-100">
-                                                    <FileSpreadsheet className="w-8 h-8 text-slate-400" />
+                                            <CardContent className="p-4 sm:p-8 text-center space-y-3 sm:space-y-5">
+                                                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-slate-50 rounded-3xl mx-auto flex items-center justify-center border-2 border-slate-100">
+                                                    <FileSpreadsheet className="w-6 h-6 sm:w-8 sm:h-8 text-slate-400" />
                                                 </div>
                                                 <div>
-                                                    <h3 className="text-lg font-bold text-slate-900">Upload Bulk Data File</h3>
-                                                    <p className="text-sm text-slate-500 mt-1 max-w-sm mx-auto">
+                                                    <h3 className="text-base sm:text-lg font-bold text-slate-900">Upload Bulk Data File</h3>
+                                                    <p className="text-xs sm:text-sm text-slate-500 mt-1 max-w-sm mx-auto">
                                                         Upload a <strong>.csv</strong> or <strong>.xlsx</strong> (Excel) file. Each row generates one signed certificate.
                                                     </p>
                                                 </div>
                                                 <input ref={bulkInputRef} type="file" accept=".csv,.xlsx" id="bulk-upload"
                                                     onChange={e => e.target.files && setBulkFile(e.target.files[0])} className="hidden" />
-                                                <div className="flex flex-col gap-3 items-center">
+                                                <div className="flex flex-col gap-2 sm:gap-3 items-center">
                                                     <label htmlFor="bulk-upload"
-                                                        className="px-6 py-3 rounded-xl bg-white hover:bg-slate-50 text-slate-700 cursor-pointer border border-slate-200 font-semibold shadow-sm flex items-center gap-2">
-                                                        <Upload className="w-4 h-4" />
+                                                        className="px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl bg-white hover:bg-slate-50 text-slate-700 cursor-pointer border border-slate-200 font-semibold shadow-sm flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm">
+                                                        <Upload className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                                                         {bulkFile ? bulkFile.name : "Select .csv or .xlsx File"}
                                                     </label>
                                                     {bulkFile && (
                                                         <Button onClick={handleBulkIssue}
-                                                            className="bg-gradient-to-r from-sky-500 to-sky-600 hover:from-sky-600 hover:to-sky-700 max-w-sm w-full h-12 rounded-xl font-bold shadow-xl shadow-sky-500/30"
+                                                            className="bg-gradient-to-r from-sky-500 to-sky-600 hover:from-sky-600 hover:to-sky-700 max-w-sm w-full h-10 sm:h-12 rounded-xl font-bold shadow-xl shadow-sky-500/30 text-xs sm:text-sm"
                                                             disabled={loading}>
                                                             {loading
-                                                                ? <><Loader2 className="w-4 h-4 animate-spin mr-2" />Issuing…</>
-                                                                : <><FileSpreadsheet className="w-4 h-4 mr-2" />Issue All from {bulkFile.name}</>
+                                                                ? <><Loader2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin mr-2" />Issuing…</>
+                                                                : <><FileSpreadsheet className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-2" />Issue All from {bulkFile.name}</>
                                                             }
                                                         </Button>
                                                     )}
@@ -815,72 +815,72 @@ function IssuePageContent() {
                 STEP 2 — SIGN & STAMP
                 ══════════════════════════════════════════════════════════════ */}
             {step === 2 && (
-                <div className="space-y-6">
+                <div className="space-y-4 sm:space-y-6">
                     {/* Summary banner */}
-                    <div className="flex items-center gap-4 p-5 rounded-2xl bg-sky-50 border border-sky-200">
-                        <div className="w-10 h-10 bg-sky-500 rounded-full flex items-center justify-center shrink-0 shadow-md shadow-sky-200">
-                            <CheckCircle2 className="w-6 h-6 text-white" />
+                    <div className="flex items-center gap-2 sm:gap-4 p-3 sm:p-5 rounded-2xl bg-sky-50 border border-sky-200">
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 bg-sky-500 rounded-full flex items-center justify-center shrink-0 shadow-md shadow-sky-200">
+                            <CheckCircle2 className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
                         </div>
                         <div className="flex-1">
-                            <h3 className="text-base font-bold text-sky-800">{issuedCerts.length} Certificate{issuedCerts.length !== 1 ? "s" : ""} Generated</h3>
-                            <p className="text-sm text-sky-600 mt-0.5">Now apply your digital signature and/or official stamp to finalize them.</p>
+                            <h3 className="text-sm sm:text-base font-bold text-sky-800">{issuedCerts.length} Certificate{issuedCerts.length !== 1 ? "s" : ""} Generated</h3>
+                            <p className="text-xs sm:text-sm text-sky-600 mt-0.5">Now apply your digital signature and/or official stamp to finalize them.</p>
                         </div>
                         <button onClick={() => { setStep(1); setIssuedCerts([]); setSignedResults([]) }}
-                            className="text-xs font-semibold text-sky-600 hover:text-sky-800 flex items-center gap-1">
-                            <RefreshCw className="w-3.5 h-3.5" /> Start Over
+                            className="text-[10px] sm:text-xs font-semibold text-sky-600 hover:text-sky-800 flex items-center gap-1">
+                            <RefreshCw className="w-3 h-3 sm:w-3.5 sm:h-3.5" /> Start Over
                         </button>
                     </div>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                         {/* ── Left: Signature configuration ── */}
-                        <div className="space-y-5">
+                        <div className="space-y-4 sm:space-y-5">
                             <Card className="bg-white border-slate-200 shadow-2xl rounded-2xl overflow-hidden ring-1 ring-slate-200">
                                 <div className="h-2 bg-gradient-to-r from-sky-500 via-sky-600 to-sky-500" />
-                                <CardHeader>
+                                <CardHeader className="px-4 sm:px-6">
                                     <div className="flex items-center justify-between">
-                                        <CardTitle className="flex items-center gap-2"><PenTool className="w-5 h-5 text-sky-600" />Signer Setup</CardTitle>
-                                        <Badge variant="outline" className="bg-sky-50 text-sky-700 border-sky-100">Step 2</Badge>
+                                        <CardTitle className="flex items-center gap-2 text-sm sm:text-base"><PenTool className="w-4 h-4 sm:w-5 sm:h-5 text-sky-600" />Signer Setup</CardTitle>
+                                        <Badge variant="outline" className="bg-sky-50 text-sky-700 border-sky-100 text-xs">Step 2</Badge>
                                     </div>
-                                    <CardDescription>Setup your digital signature and stamp for these certificates.</CardDescription>
+                                    <CardDescription className="text-xs sm:text-sm">Setup your digital signature and stamp for these certificates.</CardDescription>
 
                                     {parsedTemplate && parsedTemplate.signature_fields?.length === 0 && (
-                                        <div className="mt-4 flex items-start gap-3 p-3 bg-amber-50 border border-amber-200 rounded-xl">
-                                            <AlertCircle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
-                                            <p className="text-[11px] leading-tight text-amber-700 font-medium">
+                                        <div className="mt-3 sm:mt-4 flex items-start gap-2 sm:gap-3 p-2.5 sm:p-3 bg-amber-50 border border-amber-200 rounded-xl">
+                                            <AlertCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-500 shrink-0 mt-0.5" />
+                                            <p className="text-[10px] sm:text-[11px] leading-tight text-amber-700 font-medium">
                                                 <strong>Warning:</strong> Template missing signature/stamp placeholders.
                                                 Images will <strong>not</strong> appear on the PDF, but certificates will still be digitally secured.
                                             </p>
                                         </div>
                                     )}
                                 </CardHeader>
-                                <CardContent className="space-y-5 pb-6">
-                                    <div className="grid grid-cols-2 gap-4">
+                                <CardContent className="space-y-4 sm:space-y-5 pb-4 sm:pb-6 px-4 sm:px-6">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                                         <div className="space-y-1.5">
-                                            <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Signer Name</label>
-                                            <Input value={signerName} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSignerName(e.target.value)} placeholder="e.g. Dr. Jane Doe" className="rounded-xl border-slate-200 bg-white text-slate-900 placeholder:text-slate-400" />
+                                            <label className="text-[10px] sm:text-[11px] font-bold text-slate-500 uppercase tracking-wider">Signer Name</label>
+                                            <Input value={signerName} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSignerName(e.target.value)} placeholder="e.g. Dr. Jane Doe" className="rounded-xl border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 text-sm" />
                                         </div>
                                         <div className="space-y-1.5">
-                                            <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Signer Title</label>
-                                            <Input value={signerRole} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSignerRole(e.target.value)} placeholder="e.g. Dean of Studies" className="rounded-xl border-slate-200 bg-white text-slate-900 placeholder:text-slate-400" />
+                                            <label className="text-[10px] sm:text-[11px] font-bold text-slate-500 uppercase tracking-wider">Signer Title</label>
+                                            <Input value={signerRole} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSignerRole(e.target.value)} placeholder="e.g. Dean of Studies" className="rounded-xl border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 text-sm" />
                                         </div>
                                     </div>
 
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                                         <div className="space-y-1.5">
-                                            <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Signature Image</label>
+                                            <label className="text-[10px] sm:text-[11px] font-bold text-slate-500 uppercase tracking-wider">Signature Image</label>
                                             <div className="relative group cursor-pointer" onClick={() => (document.getElementById("sig-input") as HTMLInputElement).click()}>
-                                                <div className={`flex flex-col items-center justify-center h-28 border-2 border-dashed rounded-xl transition-all overflow-hidden ${signatureFile ? "border-sky-400 bg-gradient-to-br from-sky-50 to-sky-100" : "border-slate-200 bg-slate-50 hover:bg-white hover:border-sky-400 hover:shadow-sm"
+                                                <div className={`flex flex-col items-center justify-center h-24 sm:h-28 border-2 border-dashed rounded-xl transition-all overflow-hidden ${signatureFile ? "border-sky-400 bg-gradient-to-br from-sky-50 to-sky-100" : "border-slate-200 bg-slate-50 hover:bg-white hover:border-sky-400 hover:shadow-sm"
                                                     }`}>
                                                     {signatureFile ? (
                                                         <>
                                                             {/* eslint-disable-next-line @next/next/no-img-element */}
-                                                            <img src={URL.createObjectURL(signatureFile)} alt="Signature preview" className="max-h-16 max-w-full object-contain" />
-                                                            <p className="text-[10px] font-semibold text-sky-600 mt-1 truncate px-2">{signatureFile.name}</p>
+                                                            <img src={URL.createObjectURL(signatureFile)} alt="Signature preview" className="max-h-14 sm:max-h-16 max-w-full object-contain" />
+                                                            <p className="text-[9px] sm:text-[10px] font-semibold text-sky-600 mt-1 truncate px-2">{signatureFile.name}</p>
                                                         </>
                                                     ) : (
                                                         <>
-                                                            <Upload className="w-5 h-5 text-slate-300 mb-1" />
-                                                            <p className="text-[10px] text-slate-400 font-medium">Click to upload</p>
+                                                            <Upload className="w-4 h-4 sm:w-5 sm:h-5 text-slate-300 mb-1" />
+                                                            <p className="text-[9px] sm:text-[10px] text-slate-400 font-medium">Click to upload</p>
                                                         </>
                                                     )}
                                                 </div>
@@ -888,20 +888,20 @@ function IssuePageContent() {
                                             </div>
                                         </div>
                                         <div className="space-y-1.5">
-                                            <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Stamp Image</label>
+                                            <label className="text-[10px] sm:text-[11px] font-bold text-slate-500 uppercase tracking-wider">Stamp Image</label>
                                             <div className="relative group cursor-pointer" onClick={() => (document.getElementById("stamp-input") as HTMLInputElement).click()}>
-                                                <div className={`flex flex-col items-center justify-center h-28 border-2 border-dashed rounded-xl transition-all overflow-hidden ${stampFile ? "border-sky-400 bg-gradient-to-br from-sky-50 to-sky-100" : "border-slate-200 bg-slate-50 hover:bg-white hover:border-sky-400 hover:shadow-sm"
+                                                <div className={`flex flex-col items-center justify-center h-24 sm:h-28 border-2 border-dashed rounded-xl transition-all overflow-hidden ${stampFile ? "border-sky-400 bg-gradient-to-br from-sky-50 to-sky-100" : "border-slate-200 bg-slate-50 hover:bg-white hover:border-sky-400 hover:shadow-sm"
                                                     }`}>
                                                     {stampFile ? (
                                                         <>
                                                             {/* eslint-disable-next-line @next/next/no-img-element */}
-                                                            <img src={URL.createObjectURL(stampFile)} alt="Stamp preview" className="max-h-16 max-w-full object-contain" />
-                                                            <p className="text-[10px] font-semibold text-sky-600 mt-1 truncate px-2">{stampFile.name}</p>
+                                                            <img src={URL.createObjectURL(stampFile)} alt="Stamp preview" className="max-h-14 sm:max-h-16 max-w-full object-contain" />
+                                                            <p className="text-[9px] sm:text-[10px] font-semibold text-sky-600 mt-1 truncate px-2">{stampFile.name}</p>
                                                         </>
                                                     ) : (
                                                         <>
-                                                            <Upload className="w-5 h-5 text-slate-300 mb-1" />
-                                                            <p className="text-[10px] text-slate-400 font-medium">Click to upload</p>
+                                                            <Upload className="w-4 h-4 sm:w-5 sm:h-5 text-slate-300 mb-1" />
+                                                            <p className="text-[9px] sm:text-[10px] text-slate-400 font-medium">Click to upload</p>
                                                         </>
                                                     )}
                                                 </div>
@@ -910,25 +910,25 @@ function IssuePageContent() {
                                         </div>
                                     </div>
                                 </CardContent>
-                                <CardFooter className="border-t border-slate-100 bg-slate-50 p-5 flex flex-col gap-3">
+                                <CardFooter className="border-t border-slate-100 bg-slate-50 p-4 sm:p-5 flex flex-col gap-2 sm:gap-3">
                                     {!uploadedSignatureRecord ? (
                                         <Button onClick={handleUploadSignatureAssets}
-                                            className="w-full h-12 rounded-xl font-bold bg-gradient-to-r from-sky-500 to-sky-600 hover:from-sky-600 hover:to-sky-700 shadow-xl shadow-sky-500/30"
+                                            className="w-full h-10 sm:h-12 rounded-xl font-bold bg-gradient-to-r from-sky-500 to-sky-600 hover:from-sky-600 hover:to-sky-700 shadow-xl shadow-sky-500/30 text-xs sm:text-sm"
                                             disabled={signLoading || !signerName || !signerRole || (!signatureFile && !stampFile)}>
-                                            {signLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Upload className="w-4 h-4 mr-2" />}
+                                            {signLoading ? <Loader2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin mr-2" /> : <Upload className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-2" />}
                                             Upload Signature & Stamp
                                         </Button>
                                     ) : (
-                                        <div className="flex items-center gap-3 p-3 bg-sky-50 border border-sky-200 rounded-xl w-full">
-                                            <CheckCircle2 className="w-5 h-5 text-sky-600 shrink-0" />
+                                        <div className="flex items-center gap-2 sm:gap-3 p-2.5 sm:p-3 bg-sky-50 border border-sky-200 rounded-xl w-full">
+                                            <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-sky-600 shrink-0" />
                                             <div className="flex-1 min-w-0">
-                                                <p className="text-sm font-bold text-sky-800">Signature assets uploaded</p>
-                                                <p className="text-xs text-sky-600">
+                                                <p className="text-xs sm:text-sm font-bold text-sky-800">Signature assets uploaded</p>
+                                                <p className="text-[10px] sm:text-xs text-sky-600">
                                                     {uploadedSignatureRecord.has_signature ? "✓ Signature " : ""}
                                                     {uploadedSignatureRecord.has_stamp ? "✓ Stamp" : ""}
                                                 </p>
                                             </div>
-                                            <button className="text-xs text-sky-400 hover:text-sky-700 font-semibold"
+                                            <button className="text-[10px] sm:text-xs text-sky-400 hover:text-sky-700 font-semibold"
                                                 onClick={() => { setUploadedSignatureRecord(null); setSigRecordId(null); setPreviewImage(null) }}>
                                                 Change
                                             </button>
@@ -942,16 +942,16 @@ function IssuePageContent() {
                                 <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
                                     <Card className="bg-white border-slate-200 shadow-2xl rounded-2xl overflow-hidden ring-1 ring-slate-200">
                                         <div className="h-2 bg-gradient-to-r from-sky-500 via-sky-600 to-sky-500" />
-                                        <CardHeader>
-                                            <CardTitle className="flex items-center gap-2"><Eye className="w-5 h-5 text-sky-600" />Signature Preview</CardTitle>
-                                            <CardDescription>See how your signature and stamp will appear on the certificate.</CardDescription>
+                                        <CardHeader className="px-4 sm:px-6">
+                                            <CardTitle className="flex items-center gap-2 text-sm sm:text-base"><Eye className="w-4 h-4 sm:w-5 sm:h-5 text-sky-600" />Signature Preview</CardTitle>
+                                            <CardDescription className="text-xs sm:text-sm">See how your signature and stamp will appear on the certificate.</CardDescription>
                                         </CardHeader>
                                         <CardContent className="p-0">
                                             <div className="relative w-full aspect-[1.414/1] bg-slate-100 flex items-center justify-center overflow-hidden">
                                                 {previewLoading && (
                                                     <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-50/90 z-10 gap-2">
-                                                        <Loader2 className="w-8 h-8 animate-spin text-sky-600" />
-                                                        <p className="text-xs text-slate-500 font-medium">Generating preview…</p>
+                                                        <Loader2 className="w-6 h-6 sm:w-8 sm:h-8 animate-spin text-sky-600" />
+                                                        <p className="text-[10px] sm:text-xs text-slate-500 font-medium">Generating preview…</p>
                                                     </div>
                                                 )}
                                                 {previewImage && !previewLoading && (
@@ -959,21 +959,21 @@ function IssuePageContent() {
                                                     <img src={previewImage} alt="Signature Preview" className="w-full h-full object-contain" />
                                                 )}
                                                 {!previewImage && !previewLoading && (
-                                                    <div className="flex flex-col items-center gap-3 p-6 text-center">
-                                                        <Eye className="w-8 h-8 text-slate-300" />
+                                                    <div className="flex flex-col items-center gap-2 sm:gap-3 p-4 sm:p-6 text-center">
+                                                        <Eye className="w-6 h-6 sm:w-8 sm:h-8 text-slate-300" />
                                                         <div>
-                                                            <p className="text-sm font-semibold text-slate-500">Preview not generated yet</p>
-                                                            <p className="text-xs text-slate-400 mt-0.5">Click the button below to render the certificate with your signature and stamp.</p>
+                                                            <p className="text-xs sm:text-sm font-semibold text-slate-500">Preview not generated yet</p>
+                                                            <p className="text-[10px] sm:text-xs text-slate-400 mt-0.5">Click the button below to render the certificate with your signature and stamp.</p>
                                                         </div>
                                                     </div>
                                                 )}
                                             </div>
                                         </CardContent>
-                                        <CardFooter className="border-t border-slate-100 bg-slate-50 p-5">
+                                        <CardFooter className="border-t border-slate-100 bg-slate-50 p-4 sm:p-5">
                                             <Button onClick={handleGeneratePreview}
-                                                className="w-full h-12 rounded-xl font-bold bg-gradient-to-r from-sky-500 to-sky-600 hover:from-sky-600 hover:to-sky-700 shadow-xl shadow-sky-500/30"
+                                                className="w-full h-10 sm:h-12 rounded-xl font-bold bg-gradient-to-r from-sky-500 to-sky-600 hover:from-sky-600 hover:to-sky-700 shadow-xl shadow-sky-500/30 text-xs sm:text-sm"
                                                 disabled={previewLoading || !uploadedSignatureRecord}>
-                                                {previewLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Eye className="w-4 h-4 mr-2" />}
+                                                {previewLoading ? <Loader2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin mr-2" /> : <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-2" />}
                                                 Generate Preview
                                             </Button>
                                         </CardFooter>
@@ -983,18 +983,18 @@ function IssuePageContent() {
                         </div>
 
                         {/* ── Right: Certificate Selection ── */}
-                        <div className="space-y-5">
+                        <div className="space-y-4 sm:space-y-5">
                             <Card className="bg-white border-slate-200 shadow-2xl rounded-2xl overflow-hidden ring-1 ring-slate-200">
                                 <div className="h-2 bg-gradient-to-r from-sky-500 via-sky-600 to-sky-500" />
-                                <CardHeader>
-                                    <CardTitle className="flex items-center gap-2"><ClipboardCheck className="w-5 h-5 text-sky-600" />Select Certificates to Sign</CardTitle>
-                                    <CardDescription>
+                                <CardHeader className="px-4 sm:px-6">
+                                    <CardTitle className="flex items-center gap-2 text-sm sm:text-base"><ClipboardCheck className="w-4 h-4 sm:w-5 sm:h-5 text-sky-600" />Select Certificates to Sign</CardTitle>
+                                    <CardDescription className="text-xs sm:text-sm">
                                         {selectedCertIds.size} of {issuedCerts.length} selected
-                                        <button className="ml-3 text-sky-600 hover:text-sky-800 font-semibold underline text-xs"
+                                        <button className="ml-2 sm:ml-3 text-sky-600 hover:text-sky-800 font-semibold underline text-[10px] sm:text-xs"
                                             onClick={() => setSelectedCertIds(new Set(issuedCerts.map(c => c.id)))}>
                                             Select All
                                         </button>
-                                        <button className="ml-2 text-slate-500 hover:text-slate-700 font-semibold underline text-xs"
+                                        <button className="ml-1 sm:ml-2 text-slate-500 hover:text-slate-700 font-semibold underline text-[10px] sm:text-xs"
                                             onClick={() => setSelectedCertIds(new Set())}>
                                             None
                                         </button>
@@ -1007,25 +1007,25 @@ function IssuePageContent() {
                                             const isSigned = cert.signing_status === "signed"
 
                                             return (
-                                                <div key={cert.id || `issued-${i}`} className={`group flex items-center gap-3 p-4 border-b border-slate-100 last:border-0 transition-all ${isSelected ? "bg-sky-50/50" : "bg-white hover:bg-slate-50"}`}>
+                                                <div key={cert.id || `issued-${i}`} className={`group flex items-center gap-2 sm:gap-3 p-3 sm:p-4 border-b border-slate-100 last:border-0 transition-all ${isSelected ? "bg-sky-50/50" : "bg-white hover:bg-slate-50"}`}>
                                                     <button onClick={() => !isSigned && toggleCert(cert.id)}
-                                                        className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all ${isSigned ? "bg-slate-100 border-slate-200 cursor-not-allowed" : isSelected ? "bg-sky-600 border-sky-600 shadow-sm" : "bg-white border-slate-300 group-hover:border-sky-400"}`}>
-                                                        {isSigned ? <Lock className="w-3 h-3 text-slate-400" /> : isSelected && <Check className="w-3.5 h-3.5 text-white stroke-[3px]" />}
+                                                        className={`w-4 h-4 sm:w-5 sm:h-5 rounded-md border flex items-center justify-center transition-all ${isSigned ? "bg-slate-100 border-slate-200 cursor-not-allowed" : isSelected ? "bg-sky-600 border-sky-600 shadow-sm" : "bg-white border-slate-300 group-hover:border-sky-400"}`}>
+                                                        {isSigned ? <Lock className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-slate-400" /> : isSelected && <Check className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-white stroke-[3] />}
                                                     </button>
                                                     <div className="flex-1 min-w-0" onClick={() => !isSigned && toggleCert(cert.id)}>
-                                                        <div className="flex items-center gap-2">
-                                                            <p className="text-sm font-bold text-slate-800 truncate">{cert.student_name}</p>
-                                                            {isSigned && <span className="text-[10px] font-bold text-sky-600 px-1.5 py-0.5 bg-sky-50 rounded-full border border-sky-200">Signed</span>}
+                                                        <div className="flex items-center gap-1.5 sm:gap-2">
+                                                            <p className="text-xs sm:text-sm font-bold text-slate-800 truncate">{cert.student_name}</p>
+                                                            {isSigned && <span className="text-[9px] sm:text-[10px] font-bold text-sky-600 px-1.5 py-0.5 bg-sky-50 rounded-full border border-sky-200">Signed</span>}
                                                         </div>
-                                                        <p className="text-[10px] text-slate-500 font-medium truncate flex items-center gap-1.5 mt-0.5">
-                                                            <BookOpen className="w-3 h-3 text-slate-400" /> {cert.course_name}
+                                                        <p className="text-[9px] sm:text-[10px] text-slate-500 font-medium truncate flex items-center gap-1 sm:gap-1.5 mt-0.5">
+                                                            <BookOpen className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-slate-400" /> {cert.course_name}
                                                         </p>
                                                     </div>
-                                                    <div className="flex items-center gap-2">
+                                                    <div className="flex items-center gap-1.5 sm:gap-2">
                                                         <a href={`${API}/api/download/${cert.id}`} target="_blank" rel="noreferrer"
-                                                            className="p-1.5 text-slate-400 hover:text-sky-600 hover:bg-sky-50 rounded-lg transition-all"
+                                                            className="p-1 sm:p-1.5 text-slate-400 hover:text-sky-600 hover:bg-sky-50 rounded-lg transition-all"
                                                             title="Download Certificate">
-                                                            <Download className="w-4 h-4" />
+                                                            <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                                                         </a>
                                                     </div>
                                                 </div>
@@ -1033,15 +1033,15 @@ function IssuePageContent() {
                                         })}
                                     </div>
                                 </CardContent>
-                                <CardFooter className="border-t border-slate-100 bg-slate-50 p-5">
+                                <CardFooter className="border-t border-slate-100 bg-slate-50 p-4 sm:p-5">
                                     <Button onClick={handleApplySignatures}
-                                        className="w-full h-12 rounded-xl font-bold bg-gradient-to-r from-sky-500 to-sky-600 hover:from-sky-600 hover:to-sky-700 shadow-xl shadow-sky-500/30"
+                                        className="w-full h-10 sm:h-12 rounded-xl font-bold bg-gradient-to-r from-sky-500 to-sky-600 hover:from-sky-600 hover:to-sky-700 shadow-xl shadow-sky-500/30 text-xs sm:text-sm"
                                         disabled={signLoading || !sigRecordId || selectedCertIds.size === 0 || allSigned}>
                                         {signLoading
-                                            ? <><Loader2 className="w-4 h-4 animate-spin mr-2" />Signing…</>
+                                            ? <><Loader2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin mr-2" />Signing…</>
                                             : allSigned
-                                                ? <><CheckCircle2 className="w-4 h-4 mr-2" />All Signed!</>
-                                                : <><Lock className="w-4 h-4 mr-2" />Apply Digital Signature to {selectedCertIds.size} Cert{selectedCertIds.size !== 1 ? "s" : ""}</>
+                                                ? <><CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-2" />All Signed!</>
+                                                : <><Lock className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-2" />Apply Digital Signature to {selectedCertIds.size} Cert{selectedCertIds.size !== 1 ? "s" : ""}</>
                                         }
                                     </Button>
                                 </CardFooter>
@@ -1050,23 +1050,23 @@ function IssuePageContent() {
                             {/* Download section — shown after signing */}
                             {signedResults.length > 0 && (
                                 <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
-                                    <Card className="bg-white border-sky-200 shadow-2xl rounded-2xl overflow-hidden mt-4 ring-1 ring-sky-200">
+                                    <Card className="bg-white border-sky-200 shadow-2xl rounded-2xl overflow-hidden mt-3 sm:mt-4 ring-1 ring-sky-200">
                                         <div className="h-2 bg-gradient-to-r from-sky-500 to-sky-600" />
-                                        <CardHeader className="pb-3">
-                                            <CardTitle className="flex items-center gap-2 text-sky-800">
-                                                <CheckCircle2 className="w-5 h-5 text-sky-600" />
+                                        <CardHeader className="pb-2 sm:pb-3 px-4 sm:px-6">
+                                            <CardTitle className="flex items-center gap-2 text-sky-800 text-sm sm:text-base">
+                                                <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-sky-600" />
                                                 {signedResults.length} Certificate{signedResults.length !== 1 ? "s" : ""} Signed
                                             </CardTitle>
                                         </CardHeader>
-                                        <CardContent className="space-y-2 max-h-48 overflow-y-auto p-4">
+                                        <CardContent className="space-y-1.5 sm:space-y-2 max-h-48 overflow-y-auto p-3 sm:p-4">
                                             {signedResults.map((cert, i) => (
-                                                <div key={`signed-${cert.id}-${i}`} className="flex items-center justify-between p-3 bg-sky-50 rounded-xl border border-sky-200">
+                                                <div key={`signed-${cert.id}-${i}`} className="flex items-center justify-between p-2.5 sm:p-3 bg-sky-50 rounded-xl border border-sky-200">
                                                     <div>
-                                                        <p className="text-sm font-semibold text-sky-900">{cert.student_name}</p>
+                                                        <p className="text-xs sm:text-sm font-semibold text-sky-900">{cert.student_name}</p>
                                                     </div>
                                                     <a href={`${API}/api/download/${cert.id}`} target="_blank" rel="noreferrer"
-                                                        className="flex items-center gap-1.5 text-xs font-bold text-sky-700 hover:text-sky-900 bg-white border border-sky-200 px-3 py-1.5 rounded-lg shadow-sm transition-all hover:shadow">
-                                                        <Download className="w-3.5 h-3.5" /> Download PDF
+                                                        className="flex items-center gap-1 sm:gap-1.5 text-[10px] sm:text-xs font-bold text-sky-700 hover:text-sky-900 bg-white border border-sky-200 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg shadow-sm transition-all hover:shadow">
+                                                        <Download className="w-3 h-3 sm:w-3.5 sm:h-3.5" /> Download PDF
                                                     </a>
                                                 </div>
                                             ))}
