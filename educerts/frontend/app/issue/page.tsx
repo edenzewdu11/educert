@@ -131,23 +131,14 @@ function TemplateUpload({ parsed, parsing, onFile, onClear }: {
                 </div>
                 <div>
                     <h3 className={`text-lg font-bold ${parsed ? "text-sky-800" : "text-slate-800"}`}>
-                        {parsed ? `${parsed.template_name}` : "Upload Certificate Template"}
+                        {parsed ? `${parsed.template_name}` : "Upload Certificate"}
                     </h3>
-                    <p className="text-sm text-slate-500 mt-1">
-                        {parsing ? "Extracting fields…"
-                            : parsed
-                                ? `${parsed.all_fields.length} fields extracted — ${parsed.template_type.toUpperCase()} template ready`
-                                : "Drag & drop or click — .pdf or .html"}
-                    </p>
+                    {!parsed && (
+                        <p className="text-sm text-slate-500 mt-1">
+                            PDF or HTML
+                        </p>
+                    )}
                 </div>
-                {!parsed && (
-                    <div className="text-xs text-slate-400 bg-slate-50 border border-slate-200 rounded-xl p-4 text-left max-w-xs mx-auto space-y-2">
-                        <p className="font-bold text-slate-600">Use {"{{ }}"} placeholders in your template:</p>
-                        <code className="text-sky-600 bg-sky-50 px-2 py-1 rounded">{"{{ student_name }}, {{ course_name }}, {{ gpa }}"}</code>
-                        <p className="font-bold text-slate-600 pt-1">For signing areas:</p>
-                        <code className="text-sky-600 bg-sky-50 px-2 py-1 rounded">{"{{ digital_signature }},  {{ stamp }}"}</code>
-                    </div>
-                )}
                 {parsed && (
                     <button onClick={e => { e.stopPropagation(); onClear() }}
                         className="text-xs text-slate-400 hover:text-red-500 flex items-center gap-1 mx-auto mt-2 font-semibold">
