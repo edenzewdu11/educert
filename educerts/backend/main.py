@@ -526,6 +526,17 @@ def verify_certificate(request: schemas.VerificationRequest, db: Session = Depen
         if not cert:
             raise HTTPException(status_code=404, detail="Certificate not found")
         oa_doc = cert.data_payload
+    elif request.pin:
+        pin = request.pin.strip()
+        if len(pin) != 6 or not pin.isdigit():
+            raise HTTPException(status_code=400, detail="Invalid PIN format. Must be 6 digits.")
+        query = db.query(models.Certificate).filter(models.Certificate.claim_pin == pin)
+        if request.organization:
+            query = query.filter(models.Certificate.organization == request.organization)
+        cert = query.first()
+        if not cert:
+            raise HTTPException(status_code=404, detail="Certificate not found for this PIN")
+        oa_doc = cert.data_payload
     elif request.data_payload:
         oa_doc = request.data_payload
         signature = oa_doc.get("signature", {}).get("signature")

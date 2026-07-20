@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react"
 import { useAuth } from "@/context/AuthContext"
 import { motion, AnimatePresence } from "framer-motion"
-import { Search, ShieldCheck, ShieldAlert, FileSearch, Upload, CheckCircle, XCircle, Info, Hash, Fingerprint, Loader2, ArrowLeft, Award } from "lucide-react"
+import { Search, ShieldCheck, ShieldAlert, FileSearch, Upload, CheckCircle, XCircle, Info, Hash, Fingerprint, Loader2, ArrowLeft, Award, KeyRound } from "lucide-react"
 import axios from "axios"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -36,10 +36,12 @@ interface VerificationResult {
 export default function VerifyPage() {
     const { user } = useAuth()
     const [verifyId, setVerifyId] = useState("")
+    const [verifyPin, setVerifyPin] = useState("")
+    const [verifyOrg, setVerifyOrg] = useState("EduCerts Academy")
     const [loading, setLoading] = useState(false)
     const [result, setResult] = useState<VerificationResult | null>(null)
     const [error, setError] = useState<string | null>(null)
-    const [activeMode, setActiveMode] = useState<"id" | "file">("id")
+    const [activeMode, setActiveMode] = useState<"id" | "pin" | "file">("id")
     const [dragActive, setDragActive] = useState(false)
 
     // Function to determine specific reason for unverified status
@@ -109,6 +111,39 @@ export default function VerifyPage() {
             
             if (err.response?.status === 404) {
                 setError("Certificate not found. Please check the certificate ID and try again.")
+            } else {
+                setError("Verification failed. Please check your connection and try again.")
+            }
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const handleVerifyPin = async () => {
+        const pin = verifyPin.trim()
+        if (pin.length !== 6) return
+        setLoading(true)
+        setResult(null)
+        setError(null)
+
+        try {
+            const res = await axios.post(`${getApiBaseUrl()}/api/verify`, {
+                pin,
+                organization: verifyOrg.trim() || undefined
+            }, {
+                headers: {
+                    'Cache-Control': 'no-cache, no-store, must-revalidate',
+                    'Pragma': 'no-cache',
+                    'Expires': '0'
+                }
+            })
+            setResult(res.data)
+        } catch (err: any) {
+            setResult(null)
+            if (err.response?.status === 404) {
+                setError("No certificate found for this PIN and organization.")
+            } else if (err.response?.status === 400) {
+                setError(err.response?.data?.detail || "Invalid PIN format. Must be 6 digits.")
             } else {
                 setError("Verification failed. Please check your connection and try again.")
             }
@@ -264,6 +299,13 @@ export default function VerifyPage() {
                             By ID
                         </button>
                         <button
+                            onClick={() => { setActiveMode("pin"); setError(null) }}
+                            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold transition-all ${activeMode === "pin" ? "bg-white text-sky-700 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
+                        >
+                            <KeyRound className="w-4 h-4" />
+                            By PIN
+                        </button>
+                        <button
                             onClick={() => { setActiveMode("file"); setError(null) }}
                             className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold transition-all ${activeMode === "file" ? "bg-white text-sky-700 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
                         >
@@ -313,6 +355,50 @@ export default function VerifyPage() {
                                             />
                                         </div>
                                         <Button onClick={() => handleVerifyId()} disabled={loading || !verifyId} className="w-full bg-sky-600 hover:bg-sky-700 h-11 rounded-xl font-bold">
+                                            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Verify Authenticity"}
+                                        </Button>
+                                    </CardContent>
+                                </Card>
+                            </motion.div>
+                        ) : activeMode === "pin" ? (
+                            <motion.div
+                                key="pin"
+                                initial={{ opacity: 0, x: -10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: 10 }}
+                            >
+                                <Card className="bg-white border-slate-200 shadow-lg overflow-hidden rounded-2xl">
+                                    <div className="h-1 bg-sky-600"></div>
+                                    <CardHeader>
+                                        <CardTitle className="text-md">Verify via PIN</CardTitle>
+                                        <CardDescription>Enter the 6-digit PIN and issuing organization.</CardDescription>
+                                    </CardHeader>
+                                    <CardContent className="space-y-4">
+                                        <div className="space-y-1.5">
+                                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">PIN Code</label>
+                                            <input
+                                                type="text"
+                                                inputMode="numeric"
+                                                placeholder="• • • • • •"
+                                                value={verifyPin}
+                                                onChange={(e) => { setVerifyPin(e.target.value.replace(/\D/g, "").slice(0, 6)); setError(null) }}
+                                                onKeyDown={(e) => e.key === "Enter" && handleVerifyPin()}
+                                                maxLength={6}
+                                                className="w-full bg-slate-50 border border-slate-200 rounded-xl h-14 text-center text-xl font-black tracking-[0.5em] focus:ring-2 focus:ring-sky-600/20 focus:border-sky-600 outline-none"
+                                            />
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Organization</label>
+                                            <input
+                                                type="text"
+                                                placeholder="e.g. EduCerts Academy"
+                                                value={verifyOrg}
+                                                onChange={(e) => { setVerifyOrg(e.target.value); setError(null) }}
+                                                onKeyDown={(e) => e.key === "Enter" && handleVerifyPin()}
+                                                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 text-sm font-semibold focus:ring-2 focus:ring-sky-600/20 focus:border-sky-600 outline-none"
+                                            />
+                                        </div>
+                                        <Button onClick={() => handleVerifyPin()} disabled={loading || verifyPin.length !== 6} className="w-full bg-sky-600 hover:bg-sky-700 h-11 rounded-xl font-bold">
                                             {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Verify Authenticity"}
                                         </Button>
                                     </CardContent>
