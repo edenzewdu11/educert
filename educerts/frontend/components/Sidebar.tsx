@@ -52,7 +52,7 @@ export default function Sidebar({ user, onLogout }: { user: any, onLogout: () =>
         initial={false}
         animate={{ x: mobileOpen ? 0 : -256 }}
         transition={{ type: "spring", damping: 25, stiffness: 200 }}
-        className={`fixed left-0 top-0 z-50 h-screen bg-white border-r border-slate-200 flex flex-col shadow-sm lg:translate-x-0 lg:static lg:z-auto ${mobileOpen ? "w-64" : "-translate-x-full lg:translate-x-0 lg:w-64 xl:w-72 2xl:w-80"}`}
+        className={`fixed left-0 top-0 z-50 h-screen bg-white border-r border-slate-200 flex flex-col shadow-sm lg:translate-x-0 lg:static lg:z-auto lg:block ${mobileOpen ? "w-64 block" : "-translate-x-full lg:translate-x-0 lg:w-64 xl:w-72 2xl:w-80 hidden lg:block"}`}
       >
       <div className="p-4 sm:p-6 flex items-center justify-between">
         <div className="flex items-center gap-3">
