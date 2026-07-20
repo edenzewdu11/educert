@@ -231,11 +231,11 @@ export default function VerifyPage() {
 
     const FragmentStatus = ({ label, isValid }: { label: string, isValid: boolean }) => (
         <div className="flex items-center justify-between">
-            <span className="text-xs text-slate-400 flex items-center gap-2">
+            <span className="text-[10px] sm:text-xs text-slate-400 flex items-center gap-2">
                 <div className={`w-1.5 h-1.5 rounded-full ${isValid ? "bg-emerald-500" : "bg-red-500"}`} />
                 {label}
             </span>
-            {isValid ? <CheckCircle className="w-4 h-4 text-emerald-500" /> : <XCircle className="w-4 h-4 text-red-500" />}
+            {isValid ? <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-500" /> : <XCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-red-500" />}
         </div>
     )
 
@@ -256,23 +256,23 @@ export default function VerifyPage() {
                 />
             )}
             
-            <div className="p-8 max-w-4xl mx-auto space-y-12">
+            <div className="p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto space-y-6 sm:space-y-8 lg:space-y-12">
             {/* Header */}
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-2 sm:gap-3">
                     {user && !user.is_admin && (
                         <Link href="/student">
-                            <Button variant="outline" size="icon" className="rounded-xl">
-                                <ArrowLeft className="w-4 h-4" />
+                            <Button variant="outline" size="icon" className="rounded-xl h-9 w-9 sm:h-10 sm:w-10">
+                                <ArrowLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                             </Button>
                         </Link>
                     )}
                     <div>
-                        <h1 className="text-3xl font-bold text-slate-900 tracking-tight flex items-center gap-3">
-                            <Search className="w-8 h-8 text-sky-600" />
+                        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight flex items-center gap-2 sm:gap-3">
+                            <Search className="w-6 h-6 sm:w-8 sm:h-8 text-sky-600" />
                             Verify Credential
                         </h1>
-                        <p className="text-slate-500 font-medium mt-1">
+                        <p className="text-slate-500 font-medium mt-1 text-sm sm:text-base">
                             Verify the authenticity of any EduCerts credential
                         </p>
                     </div>
@@ -280,36 +280,36 @@ export default function VerifyPage() {
                 <Link
                     href="/verify-public"
                     target="_blank"
-                    className="text-sm text-sky-600 hover:text-sky-700 font-semibold flex items-center gap-1"
+                    className="text-xs sm:text-sm text-sky-600 hover:text-sky-700 font-semibold flex items-center gap-1"
                 >
                     Open Public Verifier
-                    <Award className="w-4 h-4" />
+                    <Award className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </Link>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
                 {/* Column 1: Verification Inputs */}
-                <div className="space-y-6">
-                    <div className="flex gap-2 p-1 bg-slate-100 border border-slate-200 rounded-xl shadow-sm">
+                <div className="space-y-4 sm:space-y-6">
+                    <div className="flex gap-1.5 sm:gap-2 p-1 bg-slate-100 border border-slate-200 rounded-xl shadow-sm">
                         <button
                             onClick={() => { setActiveMode("id"); setError(null) }}
-                            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold transition-all ${activeMode === "id" ? "bg-white text-sky-700 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
+                            className={`flex-1 flex items-center justify-center gap-1.5 sm:gap-2 py-2 sm:py-2.5 rounded-lg text-[10px] sm:text-sm font-semibold transition-all ${activeMode === "id" ? "bg-white text-sky-700 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
                         >
-                            <Hash className="w-4 h-4" />
+                            <Hash className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                             By ID
                         </button>
                         <button
                             onClick={() => { setActiveMode("pin"); setError(null) }}
-                            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold transition-all ${activeMode === "pin" ? "bg-white text-sky-700 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
+                            className={`flex-1 flex items-center justify-center gap-1.5 sm:gap-2 py-2 sm:py-2.5 rounded-lg text-[10px] sm:text-sm font-semibold transition-all ${activeMode === "pin" ? "bg-white text-sky-700 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
                         >
-                            <KeyRound className="w-4 h-4" />
+                            <KeyRound className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                             By PIN
                         </button>
                         <button
                             onClick={() => { setActiveMode("file"); setError(null) }}
-                            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold transition-all ${activeMode === "file" ? "bg-white text-sky-700 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
+                            className={`flex-1 flex items-center justify-center gap-1.5 sm:gap-2 py-2 sm:py-2.5 rounded-lg text-[10px] sm:text-sm font-semibold transition-all ${activeMode === "file" ? "bg-white text-sky-700 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
                         >
-                            <Upload className="w-4 h-4" />
+                            <Upload className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                             By Document
                         </button>
                     </div>
@@ -318,12 +318,12 @@ export default function VerifyPage() {
                         <motion.div
                             initial={{ opacity: 0, y: -10 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="flex items-start gap-3 p-4 bg-red-50 border border-red-100 rounded-2xl shadow-sm"
+                            className="flex items-start gap-2 sm:gap-3 p-3 sm:p-4 bg-red-50 border border-red-100 rounded-2xl shadow-sm"
                         >
-                            <ShieldAlert className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+                            <ShieldAlert className="w-4 h-4 sm:w-5 sm:h-5 text-red-500 shrink-0 mt-0.5" />
                             <div>
-                                <p className="text-sm text-red-800 font-bold">Verification Error</p>
-                                <p className="text-xs text-red-600 font-medium mt-0.5">{error}</p>
+                                <p className="text-xs sm:text-sm text-red-800 font-bold">Verification Error</p>
+                                <p className="text-[10px] sm:text-xs text-red-600 font-medium mt-0.5">{error}</p>
                             </div>
                         </motion.div>
                     )}
@@ -338,24 +338,24 @@ export default function VerifyPage() {
                             >
                                 <Card className="bg-white border-slate-200 shadow-lg overflow-hidden rounded-2xl">
                                     <div className="h-1 bg-sky-600"></div>
-                                    <CardHeader>
-                                        <CardTitle className="text-md">Verify via Registry</CardTitle>
-                                        <CardDescription>Enter the unique certificate UUID.</CardDescription>
+                                    <CardHeader className="px-4 sm:px-6">
+                                        <CardTitle className="text-sm sm:text-md">Verify via Registry</CardTitle>
+                                        <CardDescription className="text-xs sm:text-sm">Enter the unique certificate UUID.</CardDescription>
                                     </CardHeader>
-                                    <CardContent className="space-y-4">
+                                    <CardContent className="space-y-3 sm:space-y-4 px-4 sm:px-6">
                                         <div className="relative">
-                                            <Fingerprint className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                            <Fingerprint className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-400" />
                                             <input
                                                 type="text"
                                                 placeholder="Paste Certificate ID (full UUID or 8-char short ID)..."
                                                 value={verifyId}
                                                 onChange={(e) => { setVerifyId(e.target.value); setError(null) }}
                                                 onKeyDown={(e) => e.key === "Enter" && handleVerifyId()}
-                                                className="w-full bg-slate-50 border-slate-200 rounded-xl px-10 py-3 text-slate-900 font-mono text-sm focus:ring-2 focus:ring-sky-600/20 outline-none border font-semibold"
+                                                className="w-full bg-slate-50 border-slate-200 rounded-xl px-9 sm:px-10 py-2.5 sm:py-3 text-slate-900 font-mono text-xs sm:text-sm focus:ring-2 focus:ring-sky-600/20 outline-none border font-semibold"
                                             />
                                         </div>
-                                        <Button onClick={() => handleVerifyId()} disabled={loading || !verifyId} className="w-full bg-sky-600 hover:bg-sky-700 h-11 rounded-xl font-bold">
-                                            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Verify Authenticity"}
+                                        <Button onClick={() => handleVerifyId()} disabled={loading || !verifyId} className="w-full bg-sky-600 hover:bg-sky-700 h-10 sm:h-11 rounded-xl font-bold text-xs sm:text-sm">
+                                            {loading ? <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" /> : "Verify Authenticity"}
                                         </Button>
                                     </CardContent>
                                 </Card>
@@ -369,13 +369,13 @@ export default function VerifyPage() {
                             >
                                 <Card className="bg-white border-slate-200 shadow-lg overflow-hidden rounded-2xl">
                                     <div className="h-1 bg-sky-600"></div>
-                                    <CardHeader>
-                                        <CardTitle className="text-md">Verify via PIN</CardTitle>
-                                        <CardDescription>Enter the 6-digit PIN and issuing organization.</CardDescription>
+                                    <CardHeader className="px-4 sm:px-6">
+                                        <CardTitle className="text-sm sm:text-md">Verify via PIN</CardTitle>
+                                        <CardDescription className="text-xs sm:text-sm">Enter the 6-digit PIN and issuing organization.</CardDescription>
                                     </CardHeader>
-                                    <CardContent className="space-y-4">
+                                    <CardContent className="space-y-3 sm:space-y-4 px-4 sm:px-6">
                                         <div className="space-y-1.5">
-                                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">PIN Code</label>
+                                            <label className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">PIN Code</label>
                                             <input
                                                 type="text"
                                                 inputMode="numeric"
@@ -384,22 +384,22 @@ export default function VerifyPage() {
                                                 onChange={(e) => { setVerifyPin(e.target.value.replace(/\D/g, "").slice(0, 6)); setError(null) }}
                                                 onKeyDown={(e) => e.key === "Enter" && handleVerifyPin()}
                                                 maxLength={6}
-                                                className="w-full bg-slate-50 border border-slate-200 rounded-xl h-14 text-center text-xl font-black tracking-[0.5em] focus:ring-2 focus:ring-sky-600/20 focus:border-sky-600 outline-none"
+                                                className="w-full bg-slate-50 border border-slate-200 rounded-xl h-12 sm:h-14 text-center text-lg sm:text-xl font-black tracking-[0.5em] focus:ring-2 focus:ring-sky-600/20 focus:border-sky-600 outline-none"
                                             />
                                         </div>
                                         <div className="space-y-1.5">
-                                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Organization</label>
+                                            <label className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Organization</label>
                                             <input
                                                 type="text"
                                                 placeholder="e.g. EduCerts Academy"
                                                 value={verifyOrg}
                                                 onChange={(e) => { setVerifyOrg(e.target.value); setError(null) }}
                                                 onKeyDown={(e) => e.key === "Enter" && handleVerifyPin()}
-                                                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-900 text-sm font-semibold focus:ring-2 focus:ring-sky-600/20 focus:border-sky-600 outline-none"
+                                                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 text-slate-900 text-xs sm:text-sm font-semibold focus:ring-2 focus:ring-sky-600/20 focus:border-sky-600 outline-none"
                                             />
                                         </div>
-                                        <Button onClick={() => handleVerifyPin()} disabled={loading || verifyPin.length !== 6} className="w-full bg-sky-600 hover:bg-sky-700 h-11 rounded-xl font-bold">
-                                            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Verify Authenticity"}
+                                        <Button onClick={() => handleVerifyPin()} disabled={loading || verifyPin.length !== 6} className="w-full bg-sky-600 hover:bg-sky-700 h-10 sm:h-11 rounded-xl font-bold text-xs sm:text-sm">
+                                            {loading ? <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" /> : "Verify Authenticity"}
                                         </Button>
                                     </CardContent>
                                 </Card>
@@ -416,20 +416,20 @@ export default function VerifyPage() {
                                     onDragLeave={handleDrag}
                                     onDragOver={handleDrag}
                                     onDrop={handleDrop}
-                                    className={`h-[200px] border-2 border-dashed rounded-2xl flex flex-col items-center justify-center gap-4 transition-all shadow-sm ${dragActive ? "border-sky-600 bg-sky-50 shadow-sky-600/10" : "border-slate-200 bg-white"}`}
+                                    className={`h-[160px] sm:h-[200px] border-2 border-dashed rounded-2xl flex flex-col items-center justify-center gap-3 sm:gap-4 transition-all shadow-sm ${dragActive ? "border-sky-600 bg-sky-50 shadow-sky-600/10" : "border-slate-200 bg-white"}`}
                                 >
-                                    <div className="w-12 h-12 bg-slate-50 rounded-xl flex items-center justify-center border border-slate-100">
+                                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-slate-50 rounded-xl flex items-center justify-center border border-slate-100">
                                         {loading ? (
-                                            <Loader2 className="w-6 h-6 text-sky-600 animate-spin" />
+                                            <Loader2 className="w-5 h-5 sm:w-6 sm:h-6 text-sky-600 animate-spin" />
                                         ) : (
-                                            <FileSearch className="w-6 h-6 text-sky-600" />
+                                            <FileSearch className="w-5 h-5 sm:w-6 sm:h-6 text-sky-600" />
                                         )}
                                     </div>
-                                    <div className="text-center">
-                                        <p className="text-sm font-bold text-slate-900">
+                                    <div className="text-center px-4">
+                                        <p className="text-xs sm:text-sm font-bold text-slate-900">
                                             {loading ? "Processing Document..." : "Drag Certificate PDF here"}
                                         </p>
-                                        <p className="text-[10px] text-slate-400 font-bold mt-1 tracking-wider uppercase">Accepts .pdf or .json</p>
+                                        <p className="text-[9px] sm:text-[10px] text-slate-400 font-bold mt-1 tracking-wider uppercase">Accepts .pdf or .json</p>
                                     </div>
                                     {!loading && (
                                         <>
@@ -440,7 +440,7 @@ export default function VerifyPage() {
                                                 id="file-verify"
                                                 onChange={(e) => e.target.files && handleFileUpload(e.target.files[0])}
                                             />
-                                            <label htmlFor="file-verify" className="text-xs text-sky-400 hover:underline cursor-pointer font-semibold">Or browse files</label>
+                                            <label htmlFor="file-verify" className="text-[10px] sm:text-xs text-sky-400 hover:underline cursor-pointer font-semibold">Or browse files</label>
                                         </>
                                     )}
                                 </div>
@@ -448,9 +448,9 @@ export default function VerifyPage() {
                         )}
                     </AnimatePresence>
 
-                    <div className="p-4 bg-amber-500/5 rounded-2xl border border-amber-500/10 flex gap-3">
-                        <Info className="w-5 h-5 text-amber-500 shrink-0" />
-                        <p className="text-xs text-amber-800 leading-relaxed font-medium">
+                    <div className="p-3 sm:p-4 bg-amber-500/5 rounded-2xl border border-amber-500/10 flex gap-2 sm:gap-3">
+                        <Info className="w-4 h-4 sm:w-5 sm:h-5 text-amber-500 shrink-0" />
+                        <p className="text-[10px] sm:text-xs text-amber-800 leading-relaxed font-medium">
                             Verification involves checking the document's Merkle proof matches the issued hash and validating the Ed25519 signature of the issuer.
                         </p>
                     </div>
@@ -463,27 +463,27 @@ export default function VerifyPage() {
                             <motion.div
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
-                                className="h-full flex flex-col items-center justify-center space-y-4 border border-slate-200 rounded-3xl bg-white border-dashed shadow-inner min-h-[300px]"
+                                className="h-full flex flex-col items-center justify-center space-y-3 sm:space-y-4 border border-slate-200 rounded-3xl bg-white border-dashed shadow-inner min-h-[250px] sm:min-h-[300px]"
                             >
-                                <ShieldCheck className="w-16 h-16 text-slate-100" />
-                                <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">Awaiting Data...</p>
+                                <ShieldCheck className="w-12 h-12 sm:w-16 sm:h-16 text-slate-100" />
+                                <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px] sm:text-xs">Awaiting Data...</p>
                             </motion.div>
                         ) : (
                             <motion.div
                                 initial={{ opacity: 0, scale: 0.95 }}
                                 animate={{ opacity: 1, scale: 1 }}
-                                className={`p-8 rounded-3xl border h-full flex flex-col shadow-xl ${result.summary.all ? "bg-white border-emerald-200" : "bg-white border-red-200"}`}
+                                className={`p-4 sm:p-6 lg:p-8 rounded-3xl border h-full flex flex-col shadow-xl ${result.summary.all ? "bg-white border-emerald-200" : "bg-white border-red-200"}`}
                             >
-                                <div className={`h-1.5 -mx-8 -mt-8 mb-8 rounded-t-3xl ${result.summary.all ? "bg-emerald-500" : "bg-red-500"}`}></div>
-                                <div className="flex items-center gap-4 mb-8">
-                                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${result.summary.all ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/20" : "bg-red-500 text-white shadow-lg shadow-red-500/20"}`}>
-                                        {result.summary.all ? <ShieldCheck className="w-8 h-8" /> : <ShieldAlert className="w-8 h-8" />}
+                                <div className={`h-1.5 -mx-4 sm:-mx-6 lg:-mx-8 -mt-4 sm:-mt-6 lg:-mt-8 mb-4 sm:mb-6 lg:mb-8 rounded-t-3xl ${result.summary.all ? "bg-emerald-500" : "bg-red-500"}`}></div>
+                                <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6 lg:mb-8">
+                                    <div className={`w-10 h-10 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center ${result.summary.all ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/20" : "bg-red-500 text-white shadow-lg shadow-red-500/20"}`}>
+                                        {result.summary.all ? <ShieldCheck className="w-6 h-6 sm:w-8 sm:h-8" /> : <ShieldAlert className="w-6 h-6 sm:w-8 sm:h-8" />}
                                     </div>
                                     <div>
-                                        <h3 className={`text-2xl font-bold ${result.summary.all ? "text-emerald-700" : "text-red-700"}`}>
+                                        <h3 className={`text-xl sm:text-2xl font-bold ${result.summary.all ? "text-emerald-700" : "text-red-700"}`}>
                                             {result.summary.all ? "Verified" : "Unverified"}
                                         </h3>
-                                        <p className={`text-sm font-medium ${result.summary.all ? "text-emerald-600" : "text-red-600"}`}>
+                                        <p className={`text-xs sm:text-sm font-medium ${result.summary.all ? "text-emerald-600" : "text-red-600"}`}>
                                             {result.summary.all 
                                                 ? "This certificate is authentic and has not been tampered with." 
                                                 : getUnverifiedReason(result)
@@ -492,11 +492,11 @@ export default function VerifyPage() {
                                     </div>
                                 </div>
 
-                                <div className="flex-1 space-y-6">
+                                <div className="flex-1 space-y-4 sm:space-y-6">
                                     {result.summary.all && (
-                                        <div className="grid grid-cols-2 gap-4">
+                                        <div className="grid grid-cols-2 gap-3 sm:gap-4">
                                             <div className="space-y-1">
-                                                <p className="text-[10px] text-slate-400 uppercase font-bold tracking-widest">Student</p>
+                                                <p className="text-[9px] sm:text-[10px] text-slate-400 uppercase font-bold tracking-widest">Student</p>
                                                 <p className="text-sm font-bold text-slate-900">{result.certificate?.student_name || "N/A"}</p>
                                             </div>
                                             <div className="space-y-1">
@@ -506,7 +506,7 @@ export default function VerifyPage() {
                                         </div>
                                     )}
 
-                                    <div className="space-y-3 pt-6 border-t border-slate-100">
+                                    <div className="space-y-2.5 sm:space-y-3 pt-4 sm:pt-6 border-t border-slate-100">
                                         <FragmentStatus label="Document Integrity" isValid={result.summary.documentIntegrity} />
                                         <FragmentStatus label="Issuance Status" isValid={result.summary.documentStatus} />
                                         <FragmentStatus label="Issuer Identity" isValid={result.summary.issuerIdentity} />
@@ -520,8 +520,8 @@ export default function VerifyPage() {
                                         )}
                                     </div>
 
-                                    <div className="mt-auto pt-6">
-                                        <button onClick={() => setResult(null)} className="w-full py-3 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-500 text-sm font-bold transition-all border border-slate-200 shadow-sm">
+                                    <div className="mt-auto pt-4 sm:pt-6">
+                                        <button onClick={() => setResult(null)} className="w-full py-2.5 sm:py-3 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-500 text-xs sm:text-sm font-bold transition-all border border-slate-200 shadow-sm">
                                             Clear Result
                                         </button>
                                     </div>
