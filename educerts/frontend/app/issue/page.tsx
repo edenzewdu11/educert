@@ -1010,7 +1010,7 @@ function IssuePageContent() {
                                                 <div key={cert.id || `issued-${i}`} className={`group flex items-center gap-2 sm:gap-3 p-3 sm:p-4 border-b border-slate-100 last:border-0 transition-all ${isSelected ? "bg-sky-50/50" : "bg-white hover:bg-slate-50"}`}>
                                                     <button onClick={() => !isSigned && toggleCert(cert.id)}
                                                         className={`w-4 h-4 sm:w-5 sm:h-5 rounded-md border flex items-center justify-center transition-all ${isSigned ? "bg-slate-100 border-slate-200 cursor-not-allowed" : isSelected ? "bg-sky-600 border-sky-600 shadow-sm" : "bg-white border-slate-300 group-hover:border-sky-400"}`}>
-                                                        {isSigned ? <Lock className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-slate-400" /> : isSelected && <Check className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-white stroke-[3] />}
+                                                        {isSigned ? <Lock className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-slate-400" /> : isSelected && <Check className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-white stroke-[3]" />}
                                                     </button>
                                                     <div className="flex-1 min-w-0" onClick={() => !isSigned && toggleCert(cert.id)}>
                                                         <div className="flex items-center gap-1.5 sm:gap-2">
