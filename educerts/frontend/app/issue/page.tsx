@@ -29,6 +29,8 @@ interface ParsedTemplate {
     signature_fields: string[]
     custom_fields: string[]
     input_fields: string[]
+    field_labels?: Record<string, string>
+    required_fields?: string[]
     template_name: string
     template_type: "html" | "pdf"
 }
@@ -232,31 +234,29 @@ function IssuePageContent() {
     const handleSingleIssue = async () => {
         if (!parsedTemplate) return
 
-        const inputFields = parsedTemplate.input_fields
-        const hasNameField = inputFields.some(isNameField)
-        const hasCourseField = inputFields.some(isCourseField)
-
-        const sNameKey = Object.keys(templateFields).find(isNameField) || "student_name"
-        const cNameKey = Object.keys(templateFields).find(isCourseField) || "course_name"
-
-        const sName = templateFields[sNameKey] || ""
-        const cName = templateFields[cNameKey] || ""
-
-        // ALIGN VALIDATION: If template has specific name/course placeholders, REQUIRE them.
-        // Otherwise, just require at least one field to be non-empty.
-        const nameValid = hasNameField ? sName.trim().length > 0 : true
-        const courseValid = hasCourseField ? cName.trim().length > 0 : true
-        const anyFieldFilled = Object.values(templateFields).some(v => v.trim().length > 0)
-
-        if (!nameValid || !courseValid || !anyFieldFilled) {
-            setError(hasNameField && hasCourseField ? "A Name and Course/Subject are required." : "At least one field must be filled.");
+        // Validate all required fields are filled
+        const required = parsedTemplate.required_fields || []
+        const missing = required.filter(k => !templateFields[k]?.trim())
+        if (missing.length > 0) {
+            setError(`Please fill in: ${missing.join(", ")}`)
             return
         }
+
+        // Also ensure at least one field is filled (fallback for templates without required_fields)
+        const anyFieldFilled = Object.values(templateFields).some(v => v.trim().length > 0)
+        if (!anyFieldFilled) {
+            setError("At least one field must be filled.")
+            return
+        }
+
+        // For built-in templates, student_name and course_name are always in input_fields
+        const sName = templateFields["student_name"] || ""
+        const cName = templateFields["course_name"] || ""
 
         setLoading(true); setError("")
         try {
             // For PDF templates: use bulk-issue-excel with a synthetic single row via the API
-            // For HTML: use the existing /api/issue endpoint  
+            // For HTML: use the existing /api/issue endpoint
             if (parsedTemplate.template_type === "pdf") {
                 // Build a one-row CSV in memory and POST it
                 const headers = Object.keys(templateFields)
@@ -607,15 +607,16 @@ function IssuePageContent() {
                                             {parsedTemplate.input_fields
                                                 .filter(field => !SIG_FIELDS.has(field))
                                                 .map((field, i) => {
-                                                    const isCore = isNameField(field) || isCourseField(field)
+                                                    const label = parsedTemplate.field_labels?.[field] || field.replace(/_/g, " ")
+                                                    const isRequired = parsedTemplate.required_fields?.includes(field) || isNameField(field) || isCourseField(field)
                                                     return (
                                                         <div key={`form-input-${field}-${i}`} className="space-y-1.5 sm:space-y-2">
                                                             <label className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
-                                                                <span className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full inline-block ${isCore ? "bg-sky-500" : "bg-sky-400"}`} />
-                                                                {field.replace(/_/g, " ")}
-                                                                {isCore && <span className="text-red-400">*</span>}
+                                                                <span className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full inline-block ${isRequired ? "bg-sky-500" : "bg-sky-400"}`} />
+                                                                {label}
+                                                                {isRequired && <span className="text-red-400">*</span>}
                                                             </label>
-                                                            <input type="text" placeholder={`Enter ${field.replace(/_/g, " ")}`}
+                                                            <input type="text" placeholder={`Enter ${label.toLowerCase()}`}
                                                                 value={templateFields[field] || ""}
                                                                 onChange={e => setTemplateFields({ ...templateFields, [field]: e.target.value })}
                                                                 className="w-full bg-white border-2 border-slate-200 rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base text-slate-900 focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 outline-none transition-all font-medium placeholder:text-slate-400 shadow-sm focus:shadow-md" />
@@ -684,19 +685,22 @@ function IssuePageContent() {
                                                             </tr>
                                                         </thead>
                                                         <tbody>
-                                                            {parsedTemplate.input_fields.filter(f => !SIG_FIELDS.has(f)).map((field, i) => (
-                                                                <tr key={`input-${field}-${i}`} className={i % 2 === 0 ? "bg-white" : "bg-slate-50/50"}>
-                                                                    <td className="px-2 sm:px-4 py-2 sm:py-2.5">
-                                                                        <div className="flex items-center gap-1.5 sm:gap-2">
-                                                                            <code className="text-sky-600 bg-sky-50 px-1.5 sm:px-2 py-0.5 rounded font-mono text-[10px] sm:text-xs">{field}</code>
-                                                                        </div>
-                                                                    </td>
-                                                                    <td className="px-2 sm:px-4 py-2 sm:py-2.5"><code className="text-sky-600 bg-sky-50 px-1.5 sm:px-2 py-0.5 rounded font-mono text-[10px] sm:text-xs">{"{{ " + field + " }}"}</code></td>
-                                                                    <td className="px-2 sm:px-4 py-2 sm:py-2.5 flex items-center gap-1.5 sm:gap-2">
-                                                                        {(field === "student_name" || field === "course_name" || isNameField(field) || isCourseField(field))
-                                                                            ? <span className="text-[9px] sm:text-[10px] font-bold text-red-600 bg-red-50 px-1.5 sm:px-2 py-0.5 rounded border border-red-200">Required</span>
-                                                                            : <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 bg-slate-100 px-1.5 sm:px-2 py-0.5 rounded">Optional</span>
-                                                                        }
+                                                            {parsedTemplate.input_fields.filter(f => !SIG_FIELDS.has(f)).map((field, i) => {
+                                                                const label = parsedTemplate.field_labels?.[field] || field.replace(/_/g, " ")
+                                                                const isRequired = parsedTemplate.required_fields?.includes(field) || isNameField(field) || isCourseField(field)
+                                                                return (
+                                                                    <tr key={`input-${field}-${i}`} className={i % 2 === 0 ? "bg-white" : "bg-slate-50/50"}>
+                                                                        <td className="px-2 sm:px-4 py-2 sm:py-2.5">
+                                                                            <div className="flex items-center gap-1.5 sm:gap-2">
+                                                                                <code className="text-sky-600 bg-sky-50 px-1.5 sm:px-2 py-0.5 rounded font-mono text-[10px] sm:text-xs">{field}</code>
+                                                                            </div>
+                                                                        </td>
+                                                                        <td className="px-2 sm:px-4 py-2 sm:py-2.5"><code className="text-sky-600 bg-sky-50 px-1.5 sm:px-2 py-0.5 rounded font-mono text-[10px] sm:text-xs">{"{{ " + field + " }}"}</code></td>
+                                                                        <td className="px-2 sm:px-4 py-2 sm:py-2.5 flex items-center gap-1.5 sm:gap-2">
+                                                                            {isRequired
+                                                                                ? <span className="text-[9px] sm:text-[10px] font-bold text-red-600 bg-red-50 px-1.5 sm:px-2 py-0.5 rounded border border-red-200">Required</span>
+                                                                                : <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 bg-slate-100 px-1.5 sm:px-2 py-0.5 rounded">Optional</span>
+                                                                            }
                                                                         {bulkFile && (
                                                                             <span className="text-[9px] sm:text-[10px] font-bold text-sky-600 bg-sky-50 px-1.5 sm:px-2 py-0.5 rounded border border-sky-200 flex items-center gap-0.5 sm:gap-1">
                                                                                 <Check className="w-1.5 h-1.5 sm:w-2 sm:h-2" /> Auto-mapped
@@ -704,7 +708,8 @@ function IssuePageContent() {
                                                                         )}
                                                                     </td>
                                                                 </tr>
-                                                            ))}
+                                                                )
+                                                            })}
                                                             {parsedTemplate.system_fields.filter(f => SYSTEM_AUTO.has(f)).map((field, i) => (
                                                                 <tr key={`system-${field}-${i}`} className={(parsedTemplate.input_fields.length + i) % 2 === 0 ? "bg-white" : "bg-slate-50/50"}>
                                                                     <td className="px-2 sm:px-4 py-2 sm:py-2.5"><span className="text-slate-400 italic text-[10px] sm:text-xs">(auto)</span></td>

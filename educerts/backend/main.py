@@ -195,6 +195,47 @@ def generate_qr_base64(data: str):
     img.save(buffered, format="PNG")
     return base64.b64encode(buffered.getvalue()).decode()
 
+def activate_builtin_template(cert_type: str) -> dict:
+    """
+    Activate the built-in HTML template for a certificate type and return
+    field metadata used by frontend and bulk mapping logic.
+    """
+    normalized_type = (cert_type or "certificate").lower().strip() or "certificate"
+    html = builtin_templates.get_builtin_template_html(normalized_type)
+
+    os.makedirs("user_templates", exist_ok=True)
+    with open("user_templates/custom_certificate.html", "w", encoding="utf-8") as f:
+        f.write(html)
+
+    # Ensure legacy PDF template uploads do not override type-based templates.
+    pdf_template_path = "user_templates/template.pdf"
+    if os.path.exists(pdf_template_path):
+        try:
+            os.remove(pdf_template_path)
+        except OSError:
+            pass
+
+    field_defs = builtin_templates.get_builtin_template_fields(normalized_type)
+    input_fields = [fd["key"] for fd in field_defs]
+    field_labels = {fd["key"]: fd["label"] for fd in field_defs}
+    required_fields = [fd["key"] for fd in field_defs if fd["required"]]
+    custom_fields = [k for k in input_fields if k not in ("student_name", "course_name")]
+
+    system_fields = ["issued_at", "cert_id", "signature", "qr_code", "signer_name", "signer_role"]
+    sig_fields = ["digital_signature", "stamp"]
+
+    return {
+        "normalized_type": normalized_type,
+        "all_fields": input_fields + system_fields + sig_fields,
+        "system_fields": system_fields,
+        "signature_fields": sig_fields,
+        "custom_fields": custom_fields,
+        "input_fields": input_fields,
+        "field_labels": field_labels,
+        "required_fields": required_fields,
+        "template_name": builtin_templates.get_builtin_template_label(normalized_type),
+        "template_type": "html",
+    }
 # ─────────────────────────────────────────────────────────────────────────────
 # Auth Endpoints
 # ─────────────────────────────────────────────────────────────────────────────
@@ -291,6 +332,7 @@ def logout(response: Response):
 @app.post("/api/issue", response_model=schemas.Certificate)
 def issue_certificate(cert_data: schemas.CertificateCreate, db: Session = Depends(get_db)):
     cert_type = (cert_data.cert_type or "certificate").lower()
+    activate_builtin_template(cert_type)
     cert_id = str(uuid.uuid4())
 
     # Build a generic document structure — no hardcoded transcript assumption
@@ -417,7 +459,7 @@ def issue_certificate(cert_data: schemas.CertificateCreate, db: Session = Depend
         claim_pin=claim_pin,
         organization=organization,
         batch_id=batch_id,
-        template_type="pdf" if os.path.exists(pdf_template_path) else "html",
+        template_type="html",
         rendered_pdf_path=rendered_path,
         signing_status="unsigned",
         claimed=False,
@@ -994,13 +1036,10 @@ def get_apply_challenge():
 
 @app.post("/api/templates/upload")
 async def upload_template(file: UploadFile = File(...)):
-    if not file.filename.endswith(".html"):
-        raise HTTPException(status_code=400, detail="Only .html files are allowed")
-    content = await file.read()
-    os.makedirs("user_templates", exist_ok=True)
-    with open("user_templates/custom_certificate.html", "wb") as f:
-        f.write(content)
-    return {"message": "Template uploaded successfully", "template_name": file.filename}
+    raise HTTPException(
+        status_code=410,
+        detail="Template upload is disabled. Select a certificate type and the built-in template will be applied automatically.",
+    )
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -1009,45 +1048,10 @@ async def upload_template(file: UploadFile = File(...)):
 
 @app.post("/api/templates/upload-pdf")
 async def upload_pdf_template(file: UploadFile = File(...)):
-    """
-    Accept a PDF template file, extract all {{placeholder}} fields from its
-    text layer, save the PDF for later use, and return the field list.
-    """
-    import re
-    if not file.filename.lower().endswith(".pdf"):
-        raise HTTPException(status_code=400, detail="Only .pdf files are allowed")
-
-    content = await file.read()
-    os.makedirs("user_templates", exist_ok=True)
-    pdf_template_path = "user_templates/template.pdf"
-    with open(pdf_template_path, "wb") as f:
-        f.write(content)
-
-    # Extract placeholders with their bounding boxes
-    try:
-        placeholder_map = pdf_utils.extract_pdf_placeholders(pdf_template_path)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to parse PDF: {e}")
-
-    all_fields = list(placeholder_map.keys())
-    system_fields = {"issued_at", "cert_id", "signature", "qr_code"}
-    sig_fields = {"digital_signature", "stamp"}
-    auto_fields = system_fields | sig_fields
-
-    custom_fields = [f for f in all_fields if f not in auto_fields]
-    input_fields = [f for f in all_fields if f not in {"issued_at", "cert_id", "signature", "qr_code"}]
-    # Remove signature/stamp from user-facing input (they come from signer later)
-    input_fields = [f for f in input_fields if f not in sig_fields]
-
-    return {
-        "all_fields": all_fields,
-        "system_fields": [f for f in all_fields if f in system_fields],
-        "signature_fields": [f for f in all_fields if f in sig_fields],
-        "custom_fields": custom_fields,
-        "input_fields": input_fields,
-        "template_name": file.filename,
-        "template_type": "pdf"
-    }
+    raise HTTPException(
+        status_code=410,
+        detail="PDF template upload is disabled. Select a certificate type and the built-in template will be applied automatically.",
+    )
 
 @app.post("/api/templates/select")
 async def select_builtin_template(cert_type: str = Form("certificate")):
@@ -1059,93 +1063,26 @@ async def select_builtin_template(cert_type: str = Form("certificate")):
     same field metadata shape as /api/templates/parse so the frontend flow is
     unchanged.
     """
-    import re
-
-    html = builtin_templates.get_builtin_template_html(cert_type)
-
-    os.makedirs("user_templates", exist_ok=True)
-    # Activate HTML template and remove any previously uploaded PDF template so
-    # the HTML path is used consistently.
-    with open("user_templates/custom_certificate.html", "w", encoding="utf-8") as f:
-        f.write(html)
-    pdf_template_path = "user_templates/template.pdf"
-    if os.path.exists(pdf_template_path):
-        try:
-            os.remove(pdf_template_path)
-        except OSError:
-            pass
-
-    placeholders = re.findall(r"\{\{\s*([\w\s]+?)\s*\}\}", html)
-    seen = set()
-    unique_fields = []
-    for p in placeholders:
-        p = p.strip()
-        if p not in seen:
-            seen.add(p)
-            unique_fields.append(p)
-
-    system_fields = {"student_name", "course_name", "issued_at", "cert_id", "signature", "qr_code", "signer_name", "signer_role"}
-    sig_fields = {"digital_signature", "stamp"}
-    auto_only = {"issued_at", "cert_id", "signature", "qr_code", "signer_name", "signer_role"}
-    custom_fields = [f for f in unique_fields if f not in system_fields and f not in sig_fields]
-    input_fields = [f for f in unique_fields if f not in auto_only and f not in sig_fields]
-
+    meta = activate_builtin_template(cert_type)
     return {
-        "all_fields": unique_fields,
-        "system_fields": [f for f in unique_fields if f in system_fields],
-        "signature_fields": [f for f in unique_fields if f in sig_fields],
-        "custom_fields": custom_fields,
-        "input_fields": input_fields,
-        "template_name": builtin_templates.get_builtin_template_label(cert_type),
-        "template_type": "html",
+        "all_fields": meta["all_fields"],
+        "system_fields": meta["system_fields"],
+        "signature_fields": meta["signature_fields"],
+        "custom_fields": meta["custom_fields"],
+        "input_fields": meta["input_fields"],
+        "field_labels": meta["field_labels"],
+        "required_fields": meta["required_fields"],
+        "template_name": meta["template_name"],
+        "template_type": meta["template_type"],
     }
 
 
 @app.post("/api/templates/parse")
 async def parse_template(file: UploadFile = File(...)):
-    """
-    Parses an uploaded HTML or PDF certificate template and extracts all {{placeholder}} fields.
-    """
-    import re
-    filename_lower = file.filename.lower()
-
-    # Redirect PDF uploads to the PDF parser
-    if filename_lower.endswith(".pdf"):
-        return await upload_pdf_template(file)
-
-    if not filename_lower.endswith(".html"):
-        raise HTTPException(status_code=400, detail="Only .html or .pdf files are allowed")
-
-    content = (await file.read()).decode("utf-8", errors="ignore")
-
-    os.makedirs("user_templates", exist_ok=True)
-    with open("user_templates/custom_certificate.html", "w", encoding="utf-8") as f:
-        f.write(content)
-
-    placeholders = re.findall(r"\{\{\s*([\w\s]+?)\s*\}\}", content)
-    seen = set()
-    unique_fields = []
-    for p in placeholders:
-        p = p.strip()
-        if p not in seen:
-            seen.add(p)
-            unique_fields.append(p)
-
-    system_fields = {"student_name", "course_name", "issued_at", "cert_id", "signature", "qr_code"}
-    sig_fields = {"digital_signature", "stamp"}
-    custom_fields = [f for f in unique_fields if f not in system_fields]
-    input_fields = [f for f in unique_fields if f not in {"issued_at", "cert_id", "signature", "qr_code"} and f not in sig_fields]
-
-    return {
-        "all_fields": unique_fields,
-        "system_fields": [f for f in unique_fields if f in system_fields],
-        "signature_fields": [f for f in unique_fields if f in sig_fields],
-        "custom_fields": custom_fields,
-        "input_fields": input_fields,
-        "template_name": file.filename,
-        "template_type": "html",
-        "template_preview": content[:500] + "..." if len(content) > 500 else content
-    }
+    raise HTTPException(
+        status_code=410,
+        detail="Template parsing from upload is disabled. Use /api/templates/select to load built-in templates by certificate type.",
+    )
 
 
 @app.post("/api/templates/bulk-issue")
@@ -1156,34 +1093,18 @@ async def bulk_issue_from_template(
 ):
     """
     Reads a CSV file and issues one certificate per row.
-    The previously uploaded template (user_templates/custom_certificate.html) is used.
-    CSV column names are mapped directly to the template's {{ placeholder }} names.
-    Required CSV columns: student_name, course_name (at minimum).
+    The built-in template for the selected cert_type is used automatically.
+    CSV column names are mapped directly to that type's field set.
     """
-    import re
 
     if not file.filename.endswith(".csv"):
         raise HTTPException(status_code=400, detail="Only CSV files are allowed")
 
-    # Determine which template to use
-    pdf_template_path = "user_templates/template.pdf"
-    html_template_path = "user_templates/custom_certificate.html"
-    use_pdf = os.path.exists(pdf_template_path)
-    use_html = os.path.exists(html_template_path)
+    cert_type = (cert_type or "certificate").lower().strip() or "certificate"
 
-    if not use_pdf and not use_html:
-        raise HTTPException(status_code=400, detail="No template uploaded yet.")
-
-    template_path = pdf_template_path if use_pdf else html_template_path
-    if use_pdf:
-        # USE ROBUST PDF EXTRACTION
-        placeholder_map = pdf_utils.extract_pdf_placeholders(template_path)
-        template_fields = set(placeholder_map.keys())
-    else:
-        with open(template_path, "r", encoding="utf-8") as tf:
-            template_text = tf.read()
-        template_fields = set(re.findall(r"\{\{\s*([\w\s]+?)\s*\}\}", template_text))
-        template_fields = {f.strip() for f in template_fields}
+    template_meta = activate_builtin_template(cert_type)
+    template_fields = set(template_meta["input_fields"])
+    use_pdf = False
 
     # Parse the file
     content_bytes = await file.read()
@@ -1245,7 +1166,7 @@ async def bulk_issue_from_template(
             elif f_norm == "course_name" and course_col:
                 data_payload_fields[field] = str(row[course_col]).strip() if row[course_col] is not None else ""
 
-        curr_cert_type = row.get("cert_type", cert_type).strip() or cert_type
+        curr_cert_type = cert_type
         curr_organization = row.get("organization", organization).strip() or organization
 
         cert_id = str(uuid.uuid4())
@@ -1345,7 +1266,7 @@ async def bulk_issue_from_template(
             claim_pin="".join([str(random.randint(0, 9)) for _ in range(6)]), 
             organization=item["curr_organization"], 
             batch_id=batch_id,
-            template_type="pdf" if use_pdf else "html",
+            template_type="html",
             rendered_pdf_path=rendered_path,
             signing_status="unsigned"
         )
@@ -1376,32 +1297,17 @@ async def bulk_issue_from_excel(
 ):
     """
     Reads an Excel (.xlsx) OR CSV file and issues one certificate per row.
-    Works the same as /api/templates/bulk-issue but supports Excel in addition to CSV.
+    Uses the built-in template matching the selected cert_type.
     """
-    import re
     filename_lower = file.filename.lower()
     if not (filename_lower.endswith(".xlsx") or filename_lower.endswith(".csv")):
         raise HTTPException(status_code=400, detail="Only .xlsx or .csv files are allowed")
 
-    # Determine which template to use
-    pdf_template_path = "user_templates/template.pdf"
-    html_template_path = "user_templates/custom_certificate.html"
-    use_pdf = os.path.exists(pdf_template_path)
-    use_html = os.path.exists(html_template_path)
+    cert_type = (cert_type or "certificate").lower().strip() or "certificate"
 
-    if not use_pdf and not use_html:
-        raise HTTPException(status_code=400, detail="No template uploaded. Upload a PDF or HTML template first.")
-
-    template_path = pdf_template_path if use_pdf else html_template_path
-    if use_pdf:
-        # USE ROBUST PDF EXTRACTION
-        placeholder_map = pdf_utils.extract_pdf_placeholders(template_path)
-        template_fields = set(placeholder_map.keys())
-    else:
-        with open(template_path, "r", encoding="utf-8") as tf:
-            template_text = tf.read()
-        template_fields = set(re.findall(r"\{\{\s*([\w\s]+?)\s*\}\}", template_text))
-        template_fields = {f.strip() for f in template_fields}
+    template_meta = activate_builtin_template(cert_type)
+    template_fields = set(template_meta["input_fields"])
+    use_pdf = False
 
     # Parse the file
     content_bytes = await file.read()
@@ -1479,7 +1385,7 @@ async def bulk_issue_from_excel(
             else:
                 print(f"  - WARNING: Field '{field}' NOT mapped")
 
-        curr_cert_type = row.get("cert_type", cert_type).strip() or cert_type
+        curr_cert_type = cert_type
         curr_organization = row.get("organization", organization).strip() or organization
 
         cert_id = str(uuid.uuid4())
@@ -1585,7 +1491,7 @@ async def bulk_issue_from_excel(
             claim_pin=None,
             organization=item["curr_organization"], 
             batch_id=batch_id,
-            template_type="pdf" if use_pdf else "html",
+            template_type="html",
             rendered_pdf_path=rendered_path,
             signing_status="unsigned"
         )
@@ -1698,9 +1604,7 @@ async def apply_digital_signatures(
     stamp_path = sig_record.stamp_path if sig_record else None
 
     pdf_template_path = "user_templates/template.pdf"
-    html_template_path = "user_templates/custom_certificate.html"
     has_pdf_template = os.path.exists(pdf_template_path)
-    has_html_template = os.path.exists(html_template_path)
 
     os.makedirs("generated_certs", exist_ok=True)
     signed_certs = []
@@ -1800,7 +1704,7 @@ async def apply_digital_signatures(
             except Exception as e:
                 print(f"ERROR: Signing failed for {cert_id}: {e}")
                 continue
-        elif cert.template_type == "html" and has_html_template:
+        elif cert.template_type == "html":
             # Use HTML template for signing
             print(f"DEBUG: Signing HTML certificate {cert_id} using HTML template")
             
@@ -1808,9 +1712,8 @@ async def apply_digital_signatures(
             qr_b64 = generate_qr_base64(verify_url)
             
             try:
-                from jinja2 import FileSystemLoader, Environment
-                env = Environment(loader=FileSystemLoader("user_templates"))
-                tmpl = env.get_template("custom_certificate.html")
+                from jinja2 import Template
+                tmpl = Template(builtin_templates.get_builtin_template_html(cert.cert_type or "certificate"))
 
                 # Encode signature/stamp images as base64 so they render inline
                 def _img_b64(path):
@@ -2337,13 +2240,8 @@ async def preview_signature(
         else:
             verify_url = f"{FRONTEND_URL}/verify?id={cert.id}"
             qr_b64 = generate_qr_base64(verify_url)
-            html_template_path = "user_templates/custom_certificate.html"
-            if os.path.exists(html_template_path):
-                from jinja2 import FileSystemLoader, Environment as JinjaEnv
-                env = JinjaEnv(loader=FileSystemLoader("user_templates"))
-                tmpl = env.get_template("custom_certificate.html")
-            else:
-                tmpl = templates.get_template("certificate.html")
+            from jinja2 import Template
+            tmpl = Template(builtin_templates.get_builtin_template_html(cert.cert_type or "certificate"))
             
             render_ctx = {
                 "student_name": cert.student_name,
@@ -2432,8 +2330,50 @@ def view_certificate(cert_id: str, db: Session = Depends(get_db)):
         except Exception as e:
             print(f"Error rendering PDF: {e}")
             raise HTTPException(status_code=500, detail=f"Error rendering PDF: {str(e)}")
-    
-    raise HTTPException(status_code=404, detail="Certificate PDF not found. Please sign the certificate first.")
+
+    # HTML fallback for type-based built-in templates
+    if cert.template_type != "pdf":
+        verify_url = f"{FRONTEND_URL}/verify?id={cert.id}"
+        qr_base64 = generate_qr_base64(verify_url)
+
+        from jinja2 import Template
+        template = Template(builtin_templates.get_builtin_template_html(cert.cert_type or "certificate"))
+
+        render_ctx = {
+            "student_name": cert.student_name,
+            "course_name": cert.course_name,
+            "issued_at": cert.issued_at.strftime("%Y-%m-%d") if cert.issued_at else "",
+            "cert_id": cert.id,
+            "signature": cert.signature[:30] + "..." if cert.signature else "Unsigned",
+            "qr_code": qr_base64,
+        }
+
+        payload_data = cert.data_payload or {}
+        extra_fields = {}
+        for k, v in payload_data.items():
+            if k not in ("signature", "data", "schema") and isinstance(v, (str, int, float)):
+                extra_fields[k] = v
+        oa_data = payload_data.get("data", {})
+        if isinstance(oa_data, dict):
+            for k, v in oa_data.items():
+                if isinstance(v, dict) and "value" in v:
+                    extra_fields[k] = v["value"]
+                elif isinstance(v, (str, int, float)):
+                    extra_fields[k] = v
+
+        html_content = template.render(**{**extra_fields, **render_ctx})
+        result = BytesIO()
+        pdf = pisa.pisaDocument(BytesIO(html_content.encode("utf-8")), result)
+        if pdf.err:
+            raise HTTPException(status_code=500, detail="Error generating certificate PDF")
+
+        return Response(
+            content=result.getvalue(),
+            media_type="application/pdf",
+            headers={"Content-Disposition": f"inline; filename=cert_{cert.id}.pdf"}
+        )
+
+    raise HTTPException(status_code=404, detail="Certificate PDF not found.")
 
 
 @app.get("/api/download/{cert_id}")
@@ -2524,13 +2464,8 @@ def download_certificate(cert_id: str, db: Session = Depends(get_db)):
     verify_url = f"{FRONTEND_URL}/verify?id={cert.id}"
     qr_base64 = generate_qr_base64(verify_url)
 
-    custom_template_path = "user_templates/custom_certificate.html"
-    if os.path.exists(custom_template_path):
-        from jinja2 import FileSystemLoader, Environment
-        env = Environment(loader=FileSystemLoader("user_templates"))
-        template = env.get_template("custom_certificate.html")
-    else:
-        template = templates.get_template("certificate.html")
+    from jinja2 import Template
+    template = Template(builtin_templates.get_builtin_template_html(cert.cert_type or "certificate"))
 
     render_ctx = {
         "student_name": cert.student_name,
