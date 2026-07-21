@@ -2261,7 +2261,21 @@ async def preview_signature(
                 "signature": (cert.signature or "")[:30] + "...",
                 "qr_code": qr_b64,
             }
-            html_content = tmpl.render(**render_ctx)
+
+            payload_data = cert.data_payload or {}
+            extra_fields = {}
+            for k, v in payload_data.items():
+                if k not in ("signature", "data", "schema") and isinstance(v, (str, int, float)):
+                    extra_fields[k] = v
+            oa_data = payload_data.get("data", {})
+            if isinstance(oa_data, dict):
+                for k, v in oa_data.items():
+                    if isinstance(v, dict) and "value" in v:
+                        extra_fields[k] = v["value"]
+                    elif isinstance(v, (str, int, float)):
+                        extra_fields[k] = v
+
+            html_content = tmpl.render(**{**extra_fields, **render_ctx})
             result = BytesIO()
             pisa.pisaDocument(BytesIO(html_content.encode("utf-8")), result)
             with open(tmp_path, "wb") as f:

@@ -51,6 +51,12 @@ interface SignRecord {
     uploaded_at: string
 }
 
+interface DateParts {
+    year: string
+    month: string
+    day: string
+}
+
 // ── Cert Types ─────────────────────────────────────────────────────────────────
 const CERT_TYPES = [
     { id: "degree", label: "Degree", icon: GraduationCap, color: "from-sky-500 to-sky-600", border: "border-sky-200", ring: "ring-sky-500", bg: "bg-sky-50", desc: "Bachelor's, Master's, PhD" },
@@ -171,6 +177,7 @@ function IssuePageContent() {
     // ── Step 1: Issue mode
     const [issueMode, setIssueMode] = useState<"single" | "bulk">("single")
     const [templateFields, setTemplateFields] = useState<Record<string, string>>({})
+    const [dateFieldParts, setDateFieldParts] = useState<Record<string, DateParts>>({})
     const [selectedType, setSelectedType] = useState<string>("certificate")
     const [categoryOpen, setCategoryOpen] = useState(false)
     const [bulkFile, setBulkFile] = useState<File | null>(null)
@@ -235,8 +242,15 @@ function IssuePageContent() {
             const res = await axios.post<ParsedTemplate>(`${API}/api/templates/select`, fd, { withCredentials: true })
             setParsedTemplate(res.data)
             const init: Record<string, string> = {}
+            const initDateParts: Record<string, DateParts> = {}
             for (const f of res.data.input_fields) init[f] = ""
+            for (const f of res.data.input_fields) {
+                if (isDateField(f, res.data.field_labels?.[f])) {
+                    initDateParts[f] = { year: "", month: "", day: "" }
+                }
+            }
             setTemplateFields(init)
+            setDateFieldParts(initDateParts)
         } catch {
             setError("Failed to load the certificate template. Please try again.")
         } finally { setTemplateParsing(false) }
@@ -252,10 +266,11 @@ function IssuePageContent() {
     }, [parsedTemplate])
 
     const updateDateFieldPart = useCallback((field: string, part: "year" | "month" | "day", value: string) => {
-        setTemplateFields(prev => {
-            const current = getDateParts(prev[field] || "")
+        setDateFieldParts(prev => {
+            const current = prev[field] || { year: "", month: "", day: "" }
             const next = { ...current, [part]: value }
-            return { ...prev, [field]: toIsoDate(next.year, next.month, next.day) }
+            setTemplateFields(prevFields => ({ ...prevFields, [field]: toIsoDate(next.year, next.month, next.day) }))
+            return { ...prev, [field]: next }
         })
     }, [])
 
@@ -317,6 +332,7 @@ function IssuePageContent() {
                 setSelectedCertIds(new Set([cert.id]))
             }
             setTemplateFields({})
+            setDateFieldParts({})
             setStep(2)
         } catch (err: unknown) {
             setError(axios.isAxiosError(err) ? err.response?.data?.detail || "Failed to issue" : "Failed")
@@ -645,7 +661,7 @@ function IssuePageContent() {
                                                     const label = parsedTemplate.field_labels?.[field] || field.replace(/_/g, " ")
                                                     const isRequired = parsedTemplate.required_fields?.includes(field) || isNameField(field)
                                                     const isDateInput = isDateField(field, label)
-                                                    const dateParts = getDateParts(templateFields[field] || "")
+                                                    const dateParts = dateFieldParts[field] || getDateParts(templateFields[field] || "")
                                                     const currentYear = new Date().getFullYear()
                                                     const years = Array.from({ length: 111 }, (_, idx) => String(currentYear - 100 + idx))
                                                     return (

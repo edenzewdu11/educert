@@ -35,6 +35,42 @@ def normalize_field_name(name: str) -> str:
     # Replace spaces, hyphens with underscores
     n = re.sub(r'[\s\-]+', '_', n)
     return n.lower()
+
+
+def _compute_overlay_image_rect(rect: fitz.Rect, page_rect: fitz.Rect, is_stamp: bool) -> fitz.Rect:
+    """
+    Compute a robust image rectangle for signature/stamp overlays.
+    Keeps placement centered on the placeholder while clamping to page bounds.
+    """
+    # Defaults for tiny text placeholders like {{ digital_signature }} / {{ stamp }}
+    default_w, default_h = (120.0, 80.0) if is_stamp else (144.5, 51.0)
+
+    if rect.width >= default_w * 0.6 and rect.height >= default_h * 0.6:
+        target_w = rect.width * 1.05
+        target_h = rect.height * 1.15
+    else:
+        target_w = default_w
+        target_h = default_h
+
+    max_w = max(20.0, page_rect.width - 8.0)
+    max_h = max(20.0, page_rect.height - 8.0)
+    target_w = min(target_w, max_w)
+    target_h = min(target_h, max_h)
+
+    cx = rect.x0 + (rect.width / 2.0)
+    cy = rect.y0 + (rect.height / 2.0)
+
+    x0 = cx - (target_w / 2.0)
+    y0 = cy - (target_h / 2.0)
+
+    min_x, min_y = 4.0, 4.0
+    max_x = page_rect.width - target_w - 4.0
+    max_y = page_rect.height - target_h - 4.0
+
+    x0 = min(max(x0, min_x), max_x)
+    y0 = min(max(y0, min_y), max_y)
+
+    return fitz.Rect(x0, y0, x0 + target_w, y0 + target_h)
 import pdfplumber
 
 # More robust regex to handle potential line breaks or weird spacing inside {{ }}
@@ -345,10 +381,11 @@ def render_pdf_certificate(
                     if op["is_image_field"]:
                         img_path = signature_img_path if op["is_sig_field"] else stamp_img_path
                         if img_path and Path(img_path).exists():
-                            # Formal sizing: 51mm x 18mm
-                            tw, th = 144.5, 51.0
-                            cx, cy = rect.x0 + rect.width/2, rect.y0 + rect.height/2
-                            target_rect = fitz.Rect(cx - tw/2, cy - th/2, cx + tw/2, cy + th/2)
+                            target_rect = _compute_overlay_image_rect(
+                                rect,
+                                page.rect,
+                                is_stamp=not op["is_sig_field"],
+                            )
                             page.insert_image(target_rect, filename=img_path, keep_proportion=True)
                     else:
                         target_widget.field_value = op["value"]
@@ -357,10 +394,8 @@ def render_pdf_certificate(
             elif op["type"] == "image":
                 img_path = op.get("img_path")
                 if img_path and Path(img_path).exists():
-                    # Formal sizing: 51mm x 18mm
-                    tw, th = 144.5, 51.0
-                    cx, cy = rect.x0 + rect.width/2, rect.y0 + rect.height/2
-                    target_rect = fitz.Rect(cx - tw/2, cy - th/2, cx + tw/2, cy + th/2)
+                    is_stamp_img = "stamp" in str(img_path).lower() or "seal" in str(img_path).lower()
+                    target_rect = _compute_overlay_image_rect(rect, page.rect, is_stamp=is_stamp_img)
                     page.insert_image(target_rect, filename=img_path, keep_proportion=True)
 
             elif op["type"] == "text":
@@ -657,20 +692,8 @@ def apply_signatures_to_pdf(
                 page.insert_text(point=fitz.Point(rect.x0, rect.y1), text=str(item["value"]), fontsize=font_size, fontname="helv", color=color_tuple)
 
         elif item["type"] == "image":
-            # Target formal size: 51mm x 18mm ≈ 144.5pt x 51.0pt
-            target_w, target_h = 144.5, 51.0
-            
-            # Center the formal rect within the placeholder rect
-            w, h = rect.width, rect.height
-            
-            # center coordinates
-            cx, cy = rect.x0 + w/2, rect.y0 + h/2
-            
-            # New rect centered at (cx, cy)
-            target_rect = fitz.Rect(cx - target_w/2, cy - target_h/2, cx + target_w/2, cy + target_h/2)
-            
-            # If it's a dedicated placeholder (z > 0), shift it slightly up to sit better on the line if needed
-            # but usually dedicated placeholders for sig/stamp are boxes.
+            is_stamp_img = bool(item.get("is_stmp"))
+            target_rect = _compute_overlay_image_rect(rect, page.rect, is_stamp=is_stamp_img)
             
             try:
                 print(f"DEBUG [apply_sigs]: Inserting image '{item['path']}' at {target_rect} on page {occ['page']}")
