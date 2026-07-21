@@ -249,9 +249,10 @@ function IssuePageContent() {
             return
         }
 
-        // For built-in templates, student_name and course_name are always in input_fields
-        const sName = templateFields["student_name"] || ""
-        const cName = templateFields["course_name"] || ""
+        const sName = (templateFields["student_name"] || "").trim()
+        const selectedTypeMeta = CERT_TYPES.find(t => t.id === selectedType)
+        const fallbackCourseName = selectedTypeMeta?.label || "Certificate"
+        const cName = (templateFields["course_name"] || "").trim() || fallbackCourseName
 
         setLoading(true); setError("")
         try {
@@ -277,7 +278,12 @@ function IssuePageContent() {
                     cert_type: selectedType,
                     data_payload: { ...templateFields }
                 }, { withCredentials: true })
-                const cert: IssuedCert = { id: res.data.id, student_name: sName, course_name: cName, signing_status: "unsigned" }
+                const cert: IssuedCert = {
+                    id: res.data.id,
+                    student_name: res.data.student_name || sName,
+                    course_name: res.data.course_name || cName,
+                    signing_status: "unsigned"
+                }
                 setIssuedCerts([cert])
                 setSelectedCertIds(new Set([cert.id]))
             }

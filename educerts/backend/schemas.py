@@ -52,7 +52,7 @@ class User(UserBase):
 
 class CertificateBase(BaseModel):
     student_name: str
-    course_name: str
+    course_name: Optional[str] = ""
     cert_type: Optional[str] = "certificate"  # degree, diploma, training, professional, attendance, certificate
     data_payload: Dict[str, Any]
 
@@ -66,8 +66,10 @@ class CertificateBase(BaseModel):
 
     @field_validator("course_name")
     @classmethod
-    def course_name_valid(cls, v: str) -> str:
-        v = v.strip()
+    def course_name_valid(cls, v: Optional[str]) -> str:
+        v = (v or "").strip()
+        if not v:
+            return ""
         if len(v) < 2 or len(v) > 200:
             raise ValueError("Course name must be 2-200 characters")
         return v

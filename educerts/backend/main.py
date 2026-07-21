@@ -335,11 +335,21 @@ def issue_certificate(cert_data: schemas.CertificateCreate, db: Session = Depend
     activate_builtin_template(cert_type)
     cert_id = str(uuid.uuid4())
 
+    # Some certificate categories (e.g. birth/business) do not naturally map to
+    # a "course" field. Fill a stable fallback title when omitted.
+    course_name = (cert_data.course_name or "").strip()
+    if not course_name:
+        payload_course = cert_data.data_payload.get("course_name")
+        if isinstance(payload_course, str) and payload_course.strip():
+            course_name = payload_course.strip()
+    if not course_name:
+        course_name = builtin_templates.get_builtin_template_label(cert_type)
+
     # Build a generic document structure — no hardcoded transcript assumption
     raw_data = {
         "id": str(uuid.uuid4())[:8],
         "type": cert_type,
-        "name": cert_data.course_name,
+        "name": course_name,
         "issuedOn": datetime.datetime.now().isoformat(),
         "recipient": {
             "name": cert_data.student_name,
@@ -398,9 +408,9 @@ def issue_certificate(cert_data: schemas.CertificateCreate, db: Session = Depend
             "recipient": cert_data.student_name, # Alias
             "recipient_name": cert_data.student_name, # PDF template field
             "dept_head": cert_data.data_payload.get("dept_head", cert_data.data_payload.get("department_head", cert_data.data_payload.get("head_of_department", ""))), # PDF template field
-            "course_name": cert_data.course_name,
-            "course": cert_data.course_name, # Alias
-            "subject": cert_data.course_name, # Alias
+            "course_name": course_name,
+            "course": course_name, # Alias
+            "subject": course_name, # Alias
             "issued_at": issued_at_str,
             "date": issued_at_str, # Alias
             "cert_id": cert_id,
@@ -452,7 +462,7 @@ def issue_certificate(cert_data: schemas.CertificateCreate, db: Session = Depend
     db_cert = models.Certificate(
         id=cert_id,
         student_name=cert_data.student_name,
-        course_name=cert_data.course_name,
+        course_name=course_name,
         cert_type=cert_type,
         data_payload=oa_doc,
         signature=sig,
