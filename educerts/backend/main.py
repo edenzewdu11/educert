@@ -2286,8 +2286,10 @@ def view_certificate(cert_id: str, db: Session = Depends(get_db)):
     if not cert:
         raise HTTPException(status_code=404, detail="Certificate not found")
 
-    # Check if rendered PDF exists
-    if cert.rendered_pdf_path and os.path.exists(cert.rendered_pdf_path):
+    # Check if rendered PDF exists.
+    # For unsigned HTML certificates, re-render so template improvements apply.
+    should_rerender_html_unsigned = cert.template_type == "html" and cert.signing_status != "signed"
+    if cert.rendered_pdf_path and os.path.exists(cert.rendered_pdf_path) and not should_rerender_html_unsigned:
         return FileResponse(
             path=cert.rendered_pdf_path,
             media_type="application/pdf",
@@ -2382,8 +2384,10 @@ def download_certificate(cert_id: str, db: Session = Depends(get_db)):
     if not cert:
         raise HTTPException(status_code=404, detail="Certificate not found")
 
-    # ── If a rendered/signed PDF already exists, serve it directly ──
-    if cert.rendered_pdf_path and os.path.exists(cert.rendered_pdf_path):
+    # ── If a rendered/signed PDF already exists, serve it directly. ──
+    # Re-render unsigned HTML certificates so new type templates are reflected.
+    should_rerender_html_unsigned = cert.template_type == "html" and cert.signing_status != "signed"
+    if cert.rendered_pdf_path and os.path.exists(cert.rendered_pdf_path) and not should_rerender_html_unsigned:
         return FileResponse(
             path=cert.rendered_pdf_path,
             media_type="application/pdf",

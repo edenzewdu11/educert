@@ -25,6 +25,7 @@ CERT_TYPE_CONFIG: dict[str, dict] = {
     "degree": {
         "title": "Degree Certificate",
         "intro": "This is to certify that",
+        "theme": {"primary": "#0b3d91", "accent": "#b8860b", "soft": "#e8f0ff"},
         "fields": [
             ("student_name", "Graduate Name"),
             ("course_name", "Degree Awarded"),
@@ -36,6 +37,7 @@ CERT_TYPE_CONFIG: dict[str, dict] = {
     "birth_certificate": {
         "title": "Birth Certificate",
         "intro": "This is to certify the birth record of",
+        "theme": {"primary": "#14532d", "accent": "#0f766e", "soft": "#e8f8f2"},
         "fields": [
             ("student_name", "Child's Full Name"),
             ("date_of_birth", "Date of Birth"),
@@ -48,6 +50,7 @@ CERT_TYPE_CONFIG: dict[str, dict] = {
     "trade": {
         "title": "Trade Certificate",
         "intro": "This is to certify that",
+        "theme": {"primary": "#7c2d12", "accent": "#c2410c", "soft": "#fff1e8"},
         "fields": [
             ("student_name", "Recipient Name"),
             ("course_name", "Trade / Skill"),
@@ -58,6 +61,7 @@ CERT_TYPE_CONFIG: dict[str, dict] = {
     "business": {
         "title": "Business License",
         "intro": "This license is granted to",
+        "theme": {"primary": "#1e293b", "accent": "#0f766e", "soft": "#eef2f7"},
         "fields": [
             ("student_name", "Business Name"),
             ("owner_name", "Owner / Proprietor"),
@@ -69,6 +73,7 @@ CERT_TYPE_CONFIG: dict[str, dict] = {
     "education": {
         "title": "Certificate of Education",
         "intro": "This is to certify that",
+        "theme": {"primary": "#1d4ed8", "accent": "#0f766e", "soft": "#edf4ff"},
         "fields": [
             ("student_name", "Student Name"),
             ("course_name", "Course / Subject"),
@@ -79,6 +84,7 @@ CERT_TYPE_CONFIG: dict[str, dict] = {
     "diploma": {
         "title": "Diploma",
         "intro": "This is to certify that",
+        "theme": {"primary": "#4338ca", "accent": "#b45309", "soft": "#eeefff"},
         "fields": [
             ("student_name", "Graduate Name"),
             ("course_name", "Diploma Program"),
@@ -89,6 +95,7 @@ CERT_TYPE_CONFIG: dict[str, dict] = {
     "training": {
         "title": "Certificate of Training",
         "intro": "This is to certify that",
+        "theme": {"primary": "#0f766e", "accent": "#155e75", "soft": "#eafaf8"},
         "fields": [
             ("student_name", "Participant Name"),
             ("course_name", "Training Program"),
@@ -99,6 +106,7 @@ CERT_TYPE_CONFIG: dict[str, dict] = {
     "professional": {
         "title": "Professional Certificate",
         "intro": "This is to certify that",
+        "theme": {"primary": "#7f1d1d", "accent": "#9f1239", "soft": "#fff0f1"},
         "fields": [
             ("student_name", "Recipient Name"),
             ("course_name", "Certification / Profession"),
@@ -109,6 +117,7 @@ CERT_TYPE_CONFIG: dict[str, dict] = {
     "achievement": {
         "title": "Certificate of Achievement",
         "intro": "This certificate is proudly presented to",
+        "theme": {"primary": "#854d0e", "accent": "#a16207", "soft": "#fff8e6"},
         "fields": [
             ("student_name", "Recipient Name"),
             ("course_name", "Achievement / Award"),
@@ -119,6 +128,7 @@ CERT_TYPE_CONFIG: dict[str, dict] = {
     "attendance": {
         "title": "Certificate of Attendance",
         "intro": "This is to certify that",
+        "theme": {"primary": "#0369a1", "accent": "#0f766e", "soft": "#eaf7ff"},
         "fields": [
             ("student_name", "Attendee Name"),
             ("course_name", "Event / Program"),
@@ -129,6 +139,7 @@ CERT_TYPE_CONFIG: dict[str, dict] = {
     "certificate": {
         "title": "Certificate",
         "intro": "This is to certify that",
+        "theme": {"primary": "#334155", "accent": "#0f766e", "soft": "#f1f5f9"},
         "fields": [
             ("student_name", "Recipient Name"),
             ("course_name", "Title / Subject"),
@@ -141,40 +152,49 @@ DEFAULT_TYPE = "certificate"
 # Fields that must always be provided by the admin.
 REQUIRED_KEYS = {"student_name", "course_name"}
 
-_CSS = """
-    @page { size: A4 landscape; margin: 0; }
-    body { font-family: 'Helvetica', 'Arial', sans-serif; margin: 0; padding: 0; color: #1e293b; }
-    .frame { width: 760px; margin: 30px auto; border: 14px solid #0f172a; padding: 6px; background: #ffffff; }
-    .inner { border: 2px solid #0284c7; padding: 32px 48px; text-align: center; }
-    .brand { font-size: 22px; font-weight: bold; color: #0284c7; letter-spacing: 3px; text-transform: uppercase; }
-    .org { font-size: 11px; color: #64748b; letter-spacing: 2px; text-transform: uppercase; margin-top: 4px; }
-    .rule { width: 90px; height: 3px; background: #0284c7; margin: 14px auto 20px auto; }
-    .title { font-size: 38px; font-weight: 800; color: #0f172a; margin: 0 0 6px 0; }
-    .intro { font-size: 15px; color: #64748b; font-style: italic; margin-bottom: 12px; }
-    .recipient { font-size: 30px; font-weight: bold; color: #0f172a; padding-bottom: 8px; margin: 4px auto 4px auto; width: 70%; border-bottom: 2px solid #cbd5e1; }
-    .subject-label { font-size: 11px; color: #94a3b8; letter-spacing: 1px; text-transform: uppercase; margin-top: 16px; }
-    .subject { font-size: 20px; color: #0369a1; font-weight: 700; margin-top: 2px; }
-    .details { width: 80%; margin: 18px auto 0 auto; }
-    .detail-label { font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; padding: 3px 10px; text-align: right; width: 50%; }
-    .detail-value { font-size: 14px; color: #0f172a; font-weight: 600; padding: 3px 10px; text-align: left; width: 50%; }
-    .date { font-size: 13px; color: #94a3b8; margin-top: 18px; }
-    .footer { width: 100%; margin-top: 34px; }
-    .sig-cell { width: 40%; text-align: center; vertical-align: bottom; }
-    .qr-cell { width: 20%; text-align: center; vertical-align: bottom; }
-    .stamp-cell { width: 40%; text-align: center; vertical-align: bottom; }
-    .sig-img { height: 55px; }
-    .stamp-img { height: 85px; }
-    .qr-img { width: 88px; height: 88px; }
-    .sig-line { border-top: 1px solid #0f172a; margin-top: 6px; padding-top: 4px; font-size: 12px; font-weight: 700; color: #475569; }
-    .sig-role { font-size: 10px; color: #94a3b8; }
-    .verify { font-size: 9px; color: #94a3b8; margin-top: 4px; }
-    .certid { font-size: 9px; color: #94a3b8; margin-top: 16px; letter-spacing: 1px; }
-    .crypto { font-size: 8px; color: #cbd5e1; margin-top: 4px; }
+_BASE_CSS = """
+    @page { size: A4 landscape; margin: 11mm; }
+    body { font-family: Helvetica, Arial, sans-serif; margin: 0; padding: 0; color: #1f2937; }
+    .sheet { border: 4px solid %(primary)s; background: #ffffff; }
+    .sheet-inner { border: 1px solid %(accent)s; margin: 5px; padding: 12px 18px; background: %(soft)s; }
+    .header-table { width: 100%%; border-collapse: collapse; }
+    .brand { font-size: 17pt; font-weight: 700; color: %(primary)s; letter-spacing: 1px; text-transform: uppercase; }
+    .org { font-size: 8pt; color: #4b5563; margin-top: 2px; letter-spacing: 0.8px; text-transform: uppercase; }
+    .badge-cell { text-align: right; vertical-align: top; }
+    .badge { display: inline-block; font-size: 8pt; font-weight: 700; color: %(primary)s; border: 1px solid %(primary)s; padding: 4px 8px; background: #ffffff; }
+    .title { font-size: 27pt; font-weight: 700; color: %(primary)s; text-align: center; margin-top: 10px; }
+    .intro { font-size: 10.5pt; color: #4b5563; text-align: center; margin-top: 8px; }
+    .recipient { font-size: 23pt; font-weight: 700; color: #0f172a; text-align: center; margin-top: 10px; padding-bottom: 6px; border-bottom: 1px solid %(accent)s; }
+    .subject-label { font-size: 8pt; color: #6b7280; text-transform: uppercase; text-align: center; margin-top: 10px; }
+    .subject { font-size: 15pt; color: %(accent)s; font-weight: 700; text-align: center; margin-top: 2px; }
+    .details-table { width: 100%%; border-collapse: collapse; margin-top: 12px; background: #ffffff; border: 1px solid #d1d5db; }
+    .detail-label { width: 42%%; font-size: 9pt; color: #374151; font-weight: 700; text-transform: uppercase; padding: 6px 8px; border: 1px solid #e5e7eb; background: #f9fafb; }
+    .detail-value { width: 58%%; font-size: 10pt; color: #111827; font-weight: 600; padding: 6px 8px; border: 1px solid #e5e7eb; }
+    .issue-date { margin-top: 11px; font-size: 9pt; color: #6b7280; text-align: center; }
+    .footer-table { width: 100%%; border-collapse: collapse; margin-top: 14px; }
+    .sig-cell { width: 40%%; text-align: center; vertical-align: bottom; }
+    .qr-cell { width: 20%%; text-align: center; vertical-align: bottom; }
+    .stamp-cell { width: 40%%; text-align: center; vertical-align: bottom; }
+    .sig-img { height: 38px; }
+    .stamp-img { height: 62px; }
+    .qr-img { width: 70px; height: 70px; }
+    .sig-line { margin-top: 5px; border-top: 1px solid %(primary)s; font-size: 9pt; color: #334155; padding-top: 3px; font-weight: 700; }
+    .sig-role { font-size: 8pt; color: #6b7280; }
+    .slot-empty { font-size: 8pt; color: #9ca3af; font-style: italic; border: 1px dashed #d1d5db; padding: 8px 5px; margin: 0 12px; }
+    .verify { font-size: 7.5pt; color: #6b7280; margin-top: 3px; }
+    .meta-row { margin-top: 10px; border-top: 1px solid #d1d5db; padding-top: 6px; }
+    .certid { font-size: 8pt; color: #4b5563; text-align: center; }
+    .crypto { font-size: 7pt; color: #9ca3af; text-align: center; margin-top: 2px; }
 """
 
 
 def _get_config(cert_type: str) -> dict:
     return CERT_TYPE_CONFIG.get(cert_type) or CERT_TYPE_CONFIG[DEFAULT_TYPE]
+
+
+def _get_theme(cert_type: str) -> dict[str, str]:
+    cfg = _get_config(cert_type)
+    return cfg.get("theme", CERT_TYPE_CONFIG[DEFAULT_TYPE]["theme"])
 
 
 def get_builtin_template_fields(cert_type: str) -> list[dict]:
@@ -189,8 +209,10 @@ def get_builtin_template_fields(cert_type: str) -> list[dict]:
 def get_builtin_template_html(cert_type: str) -> str:
     """Return the HTML template string (with {{ placeholders }}) for a category."""
     cfg = _get_config(cert_type)
+    theme = _get_theme(cert_type)
     fields = cfg["fields"]
     field_map = dict(fields)
+    css = _BASE_CSS % theme
 
     # Subject line uses course_name when present.
     subject_html = ""
@@ -212,30 +234,36 @@ def get_builtin_template_html(cert_type: str) -> str:
     details_html = ""
     if detail_rows:
         details_html = (
-            '<table class="details" cellpadding="0" cellspacing="0">\n'
+            '<table class="details-table" cellpadding="0" cellspacing="0">\n'
             + "\n".join(detail_rows)
             + "\n            </table>"
         )
 
     return (
         "<!DOCTYPE html>\n<html>\n<head>\n<meta charset=\"utf-8\" />\n<style>"
-        + _CSS
+        + css
         + "</style>\n</head>\n<body>\n"
-        '    <div class="frame">\n'
-        '        <div class="inner">\n'
-        '            <div class="brand">EduCerts</div>\n'
-        '            <div class="org">Federal Democratic Republic of Ethiopia</div>\n'
-        '            <div class="rule"></div>\n\n'
+        '    <div class="sheet">\n'
+        '        <div class="sheet-inner">\n'
+        '            <table class="header-table" cellpadding="0" cellspacing="0">\n'
+        '                <tr>\n'
+        '                    <td>\n'
+        '                        <div class="brand">EduCerts</div>\n'
+        '                        <div class="org">Federal Democratic Republic of Ethiopia</div>\n'
+        '                    </td>\n'
+        '                    <td class="badge-cell"><span class="badge">Official Document</span></td>\n'
+        '                </tr>\n'
+        '            </table>\n'
         f'            <div class="title">{cfg["title"]}</div>\n'
         f'            <div class="intro">{cfg["intro"]}</div>\n'
         '            <div class="recipient">{{ student_name }}</div>\n'
         f'            {subject_html}\n'
         f'            {details_html}\n'
-        '            <div class="date">Issued on {{ issued_at }}</div>\n\n'
-        '            <table class="footer" cellpadding="0" cellspacing="0">\n'
+        '            <div class="issue-date">Issued on {{ issued_at }}</div>\n'
+        '            <table class="footer-table" cellpadding="0" cellspacing="0">\n'
         '                <tr>\n'
         '                    <td class="sig-cell">\n'
-        '                        <img src="data:image/png;base64,{{ digital_signature }}" class="sig-img" />\n'
+        '                        {% if digital_signature %}<img src="data:image/png;base64,{{ digital_signature }}" class="sig-img" />{% else %}<div class="slot-empty">Signature Pending</div>{% endif %}\n'
         '                        <div class="sig-line">{{ signer_name }}</div>\n'
         '                        <div class="sig-role">{{ signer_role }}</div>\n'
         '                    </td>\n'
@@ -244,12 +272,14 @@ def get_builtin_template_html(cert_type: str) -> str:
         '                        <div class="verify">Scan to Verify</div>\n'
         '                    </td>\n'
         '                    <td class="stamp-cell">\n'
-        '                        <img src="data:image/png;base64,{{ stamp }}" class="stamp-img" />\n'
+        '                        {% if stamp %}<img src="data:image/png;base64,{{ stamp }}" class="stamp-img" />{% else %}<div class="slot-empty">Stamp Pending</div>{% endif %}\n'
         '                    </td>\n'
         '                </tr>\n'
-        '            </table>\n\n'
-        '            <div class="certid">Verification ID: {{ cert_id }}</div>\n'
-        '            <div class="crypto">Secured with Ed25519 &middot; {{ signature }}</div>\n'
+        '            </table>\n'
+        '            <div class="meta-row">\n'
+        '                <div class="certid">Verification ID: {{ cert_id }}</div>\n'
+        '                <div class="crypto">Secured with Ed25519 &middot; {{ signature }}</div>\n'
+        '            </div>\n'
         '        </div>\n'
         '    </div>\n'
         "</body>\n</html>"
