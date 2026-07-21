@@ -90,6 +90,17 @@ const isDateField = (k: string, label?: string) => {
     return n.includes("date") || n.includes("dob") || l.includes("date") || l.includes("dob")
 }
 
+const getDateParts = (isoDate: string) => {
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec((isoDate || "").trim())
+    if (!m) return { year: "", month: "", day: "" }
+    return { year: m[1], month: m[2], day: m[3] }
+}
+
+const toIsoDate = (year: string, month: string, day: string) => {
+    if (!year || !month || !day) return ""
+    return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`
+}
+
 // ── Step Indicator ─────────────────────────────────────────────────────────────
 function StepIndicator({ current, step, label, icon: Icon }: { current: number; step: number; label: string; icon: React.ElementType }) {
     const done = current > step
@@ -239,6 +250,14 @@ function IssuePageContent() {
     const getFieldLabel = useCallback((field: string) => {
         return parsedTemplate?.field_labels?.[field] || field.replace(/_/g, " ")
     }, [parsedTemplate])
+
+    const updateDateFieldPart = useCallback((field: string, part: "year" | "month" | "day", value: string) => {
+        setTemplateFields(prev => {
+            const current = getDateParts(prev[field] || "")
+            const next = { ...current, [part]: value }
+            return { ...prev, [field]: toIsoDate(next.year, next.month, next.day) }
+        })
+    }, [])
 
     const handleSingleIssue = async () => {
         if (!parsedTemplate) return
@@ -625,7 +644,10 @@ function IssuePageContent() {
                                                 .map((field, i) => {
                                                     const label = parsedTemplate.field_labels?.[field] || field.replace(/_/g, " ")
                                                     const isRequired = parsedTemplate.required_fields?.includes(field) || isNameField(field)
-                                                    const inputType = isDateField(field, label) ? "date" : "text"
+                                                    const isDateInput = isDateField(field, label)
+                                                    const dateParts = getDateParts(templateFields[field] || "")
+                                                    const currentYear = new Date().getFullYear()
+                                                    const years = Array.from({ length: 111 }, (_, idx) => String(currentYear - 100 + idx))
                                                     return (
                                                         <div key={`form-input-${field}-${i}`} className="space-y-1.5 sm:space-y-2">
                                                             <label className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
@@ -633,10 +655,45 @@ function IssuePageContent() {
                                                                 {label}
                                                                 {isRequired && <span className="text-red-400">*</span>}
                                                             </label>
-                                                            <input type={inputType} placeholder={inputType === "text" ? `Enter ${label.toLowerCase()}` : undefined}
-                                                                value={templateFields[field] || ""}
-                                                                onChange={e => setTemplateFields({ ...templateFields, [field]: e.target.value })}
-                                                                className="w-full bg-white border-2 border-slate-200 rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base text-slate-900 focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 outline-none transition-all font-medium placeholder:text-slate-400 shadow-sm focus:shadow-md" />
+                                                            {isDateInput ? (
+                                                                <div className="grid grid-cols-3 gap-2">
+                                                                    <select
+                                                                        value={dateParts.day}
+                                                                        onChange={e => updateDateFieldPart(field, "day", e.target.value)}
+                                                                        className="w-full bg-white border-2 border-slate-200 rounded-xl px-2 sm:px-3 py-2.5 sm:py-3 text-sm text-slate-900 focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 outline-none font-medium shadow-sm"
+                                                                    >
+                                                                        <option value="">Day</option>
+                                                                        {Array.from({ length: 31 }, (_, n) => String(n + 1).padStart(2, "0")).map(day => (
+                                                                            <option key={`${field}-day-${day}`} value={day}>{day}</option>
+                                                                        ))}
+                                                                    </select>
+                                                                    <select
+                                                                        value={dateParts.month}
+                                                                        onChange={e => updateDateFieldPart(field, "month", e.target.value)}
+                                                                        className="w-full bg-white border-2 border-slate-200 rounded-xl px-2 sm:px-3 py-2.5 sm:py-3 text-sm text-slate-900 focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 outline-none font-medium shadow-sm"
+                                                                    >
+                                                                        <option value="">Month</option>
+                                                                        {Array.from({ length: 12 }, (_, n) => String(n + 1).padStart(2, "0")).map(month => (
+                                                                            <option key={`${field}-month-${month}`} value={month}>{month}</option>
+                                                                        ))}
+                                                                    </select>
+                                                                    <select
+                                                                        value={dateParts.year}
+                                                                        onChange={e => updateDateFieldPart(field, "year", e.target.value)}
+                                                                        className="w-full bg-white border-2 border-slate-200 rounded-xl px-2 sm:px-3 py-2.5 sm:py-3 text-sm text-slate-900 focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 outline-none font-medium shadow-sm"
+                                                                    >
+                                                                        <option value="">Year</option>
+                                                                        {years.map(year => (
+                                                                            <option key={`${field}-year-${year}`} value={year}>{year}</option>
+                                                                        ))}
+                                                                    </select>
+                                                                </div>
+                                                            ) : (
+                                                                <input type="text" placeholder={`Enter ${label.toLowerCase()}`}
+                                                                    value={templateFields[field] || ""}
+                                                                    onChange={e => setTemplateFields({ ...templateFields, [field]: e.target.value })}
+                                                                    className="w-full bg-white border-2 border-slate-200 rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base text-slate-900 focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 outline-none transition-all font-medium placeholder:text-slate-400 shadow-sm focus:shadow-md" />
+                                                            )}
                                                         </div>
                                                     )
                                                 })}

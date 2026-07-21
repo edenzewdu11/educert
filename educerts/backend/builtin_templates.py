@@ -39,7 +39,7 @@ CERT_TYPE_CONFIG: dict[str, dict] = {
         "intro": "This is to certify the birth record of",
         "theme": {"primary": "#14532d", "accent": "#0f766e", "soft": "#e8f8f2"},
         "fields": [
-            ("student_name", "Child's Full Name"),
+            ("student_name", "First Name"),
             ("date_of_birth", "Date of Birth"),
             ("place_of_birth", "Place of Birth"),
             ("gender", "Gender"),
@@ -52,7 +52,7 @@ CERT_TYPE_CONFIG: dict[str, dict] = {
         "intro": "This is to certify that",
         "theme": {"primary": "#7c2d12", "accent": "#c2410c", "soft": "#fff1e8"},
         "fields": [
-            ("student_name", "Recipient Name"),
+            ("student_name", "First Name"),
             ("course_name", "Trade / Skill"),
             ("skill_level", "Skill Level"),
             ("training_hours", "Training Hours"),
@@ -63,7 +63,7 @@ CERT_TYPE_CONFIG: dict[str, dict] = {
         "intro": "This license is granted to",
         "theme": {"primary": "#1e293b", "accent": "#0f766e", "soft": "#eef2f7"},
         "fields": [
-            ("student_name", "Business Name"),
+            ("student_name", "First Name"),
             ("owner_name", "Owner / Proprietor"),
             ("license_number", "License Number"),
             ("business_type", "Business Type"),
@@ -108,7 +108,7 @@ CERT_TYPE_CONFIG: dict[str, dict] = {
         "intro": "This is to certify that",
         "theme": {"primary": "#7f1d1d", "accent": "#9f1239", "soft": "#fff0f1"},
         "fields": [
-            ("student_name", "Recipient Name"),
+            ("student_name", "First Name"),
             ("course_name", "Certification / Profession"),
             ("license_number", "License / Reg. Number"),
             ("valid_until", "Valid Until"),
@@ -119,7 +119,7 @@ CERT_TYPE_CONFIG: dict[str, dict] = {
         "intro": "This certificate is proudly presented to",
         "theme": {"primary": "#854d0e", "accent": "#a16207", "soft": "#fff8e6"},
         "fields": [
-            ("student_name", "Recipient Name"),
+            ("student_name", "First Name"),
             ("course_name", "Achievement / Award"),
             ("category", "Category"),
             ("date_awarded", "Date Awarded"),
@@ -130,7 +130,7 @@ CERT_TYPE_CONFIG: dict[str, dict] = {
         "intro": "This is to certify that",
         "theme": {"primary": "#0369a1", "accent": "#0f766e", "soft": "#eaf7ff"},
         "fields": [
-            ("student_name", "Attendee Name"),
+            ("student_name", "First Name"),
             ("course_name", "Event / Program"),
             ("event_date", "Event Date"),
             ("location", "Location"),
@@ -141,7 +141,7 @@ CERT_TYPE_CONFIG: dict[str, dict] = {
         "intro": "This is to certify that",
         "theme": {"primary": "#334155", "accent": "#0f766e", "soft": "#f1f5f9"},
         "fields": [
-            ("student_name", "Recipient Name"),
+            ("student_name", "First Name"),
             ("course_name", "Title / Subject"),
         ],
     },
