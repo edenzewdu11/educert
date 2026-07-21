@@ -150,7 +150,7 @@ CERT_TYPE_CONFIG: dict[str, dict] = {
 DEFAULT_TYPE = "certificate"
 
 # Fields that must always be provided by the admin.
-REQUIRED_KEYS = {"student_name", "course_name"}
+REQUIRED_KEYS = {"student_name"}
 
 _BASE_CSS = """
     @page { size: A4 landscape; margin: 11mm; }

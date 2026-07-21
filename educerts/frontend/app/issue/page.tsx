@@ -84,6 +84,11 @@ const isCourseField = (k: string) => {
     const n = normalizeKey(k)
     return n === "coursename" || n === "course" || n === "subject" || n === "program" || n === "training"
 }
+const isDateField = (k: string, label?: string) => {
+    const n = normalizeKey(k)
+    const l = normalizeKey(label || "")
+    return n.includes("date") || n.includes("dob") || l.includes("date") || l.includes("dob")
+}
 
 // ── Step Indicator ─────────────────────────────────────────────────────────────
 function StepIndicator({ current, step, label, icon: Icon }: { current: number; step: number; label: string; icon: React.ElementType }) {
@@ -614,7 +619,8 @@ function IssuePageContent() {
                                                 .filter(field => !SIG_FIELDS.has(field))
                                                 .map((field, i) => {
                                                     const label = parsedTemplate.field_labels?.[field] || field.replace(/_/g, " ")
-                                                    const isRequired = parsedTemplate.required_fields?.includes(field) || isNameField(field) || isCourseField(field)
+                                                    const isRequired = parsedTemplate.required_fields?.includes(field) || isNameField(field)
+                                                    const inputType = isDateField(field, label) ? "date" : "text"
                                                     return (
                                                         <div key={`form-input-${field}-${i}`} className="space-y-1.5 sm:space-y-2">
                                                             <label className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
@@ -622,7 +628,7 @@ function IssuePageContent() {
                                                                 {label}
                                                                 {isRequired && <span className="text-red-400">*</span>}
                                                             </label>
-                                                            <input type="text" placeholder={`Enter ${label.toLowerCase()}`}
+                                                            <input type={inputType} placeholder={inputType === "text" ? `Enter ${label.toLowerCase()}` : undefined}
                                                                 value={templateFields[field] || ""}
                                                                 onChange={e => setTemplateFields({ ...templateFields, [field]: e.target.value })}
                                                                 className="w-full bg-white border-2 border-slate-200 rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base text-slate-900 focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 outline-none transition-all font-medium placeholder:text-slate-400 shadow-sm focus:shadow-md" />
@@ -639,17 +645,15 @@ function IssuePageContent() {
                                         <CardFooter className="bg-slate-50 border-t border-slate-100 p-4 sm:p-5">
                                             {(() => {
                                                 const inputFields = parsedTemplate.input_fields
+                                                const requiredFields = parsedTemplate.required_fields || []
+                                                const missingRequired = requiredFields.filter(k => !(templateFields[k] || "").trim())
+
                                                 const hasNameField = inputFields.some(isNameField)
-                                                const hasCourseField = inputFields.some(isCourseField)
-
                                                 const nameValue = Object.keys(templateFields).find(k => isNameField(k) && templateFields[k].trim())
-                                                const courseValue = Object.keys(templateFields).find(k => isCourseField(k) && templateFields[k].trim())
-
                                                 const nameValid = hasNameField ? !!nameValue : true
-                                                const courseValid = hasCourseField ? !!courseValue : true
                                                 const anyFieldFilled = Object.values(templateFields).some(v => v.trim())
 
-                                                const canIssue = nameValid && courseValid && anyFieldFilled
+                                                const canIssue = nameValid && missingRequired.length === 0 && anyFieldFilled
 
                                                 return (
                                                     <Button onClick={handleSingleIssue}
@@ -693,7 +697,7 @@ function IssuePageContent() {
                                                         <tbody>
                                                             {parsedTemplate.input_fields.filter(f => !SIG_FIELDS.has(f)).map((field, i) => {
                                                                 const label = parsedTemplate.field_labels?.[field] || field.replace(/_/g, " ")
-                                                                const isRequired = parsedTemplate.required_fields?.includes(field) || isNameField(field) || isCourseField(field)
+                                                                const isRequired = parsedTemplate.required_fields?.includes(field) || isNameField(field)
                                                                 return (
                                                                     <tr key={`input-${field}-${i}`} className={i % 2 === 0 ? "bg-white" : "bg-slate-50/50"}>
                                                                         <td className="px-2 sm:px-4 py-2 sm:py-2.5">
