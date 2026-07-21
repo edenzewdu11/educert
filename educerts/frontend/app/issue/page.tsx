@@ -236,6 +236,10 @@ function IssuePageContent() {
         if (step === 1) selectTemplate(selectedType)
     }, [selectedType, step, selectTemplate])
 
+    const getFieldLabel = useCallback((field: string) => {
+        return parsedTemplate?.field_labels?.[field] || field.replace(/_/g, " ")
+    }, [parsedTemplate])
+
     const handleSingleIssue = async () => {
         if (!parsedTemplate) return
 
@@ -243,7 +247,8 @@ function IssuePageContent() {
         const required = parsedTemplate.required_fields || []
         const missing = required.filter(k => !templateFields[k]?.trim())
         if (missing.length > 0) {
-            setError(`Please fill in: ${missing.join(", ")}`)
+            const missingLabels = missing.map(getFieldLabel)
+            setError(`Please fill in: ${missingLabels.join(", ")}`)
             return
         }
 
@@ -701,8 +706,9 @@ function IssuePageContent() {
                                                                 return (
                                                                     <tr key={`input-${field}-${i}`} className={i % 2 === 0 ? "bg-white" : "bg-slate-50/50"}>
                                                                         <td className="px-2 sm:px-4 py-2 sm:py-2.5">
-                                                                            <div className="flex items-center gap-1.5 sm:gap-2">
-                                                                                <code className="text-sky-600 bg-sky-50 px-1.5 sm:px-2 py-0.5 rounded font-mono text-[10px] sm:text-xs">{field}</code>
+                                                                            <div className="flex flex-col gap-0.5 sm:gap-1">
+                                                                                <span className="text-slate-800 font-semibold text-[10px] sm:text-xs">{label}</span>
+                                                                                <code className="text-slate-500 bg-slate-100 px-1.5 sm:px-2 py-0.5 rounded font-mono text-[9px] sm:text-[10px] w-fit">{field}</code>
                                                                             </div>
                                                                         </td>
                                                                         <td className="px-2 sm:px-4 py-2 sm:py-2.5"><code className="text-sky-600 bg-sky-50 px-1.5 sm:px-2 py-0.5 rounded font-mono text-[10px] sm:text-xs">{"{{ " + field + " }}"}</code></td>
