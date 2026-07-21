@@ -155,18 +155,21 @@ REQUIRED_KEYS = {"student_name", "course_name"}
 _BASE_CSS = """
     @page { size: A4 landscape; margin: 11mm; }
     body { font-family: Helvetica, Arial, sans-serif; margin: 0; padding: 0; color: #1f2937; }
-    .sheet { border: 4px solid %(primary)s; background: #ffffff; }
-    .sheet-inner { border: 1px solid %(accent)s; margin: 5px; padding: 12px 18px; background: %(soft)s; }
+    .sheet { border: 5px solid %(primary)s; background: #ffffff; }
+    .sheet-inner { border: 1px solid %(accent)s; margin: 4px; padding: 0; background: #ffffff; }
+    .top-band { height: 8px; background: %(primary)s; }
+    .content-wrap { padding: 12px 18px; background: %(soft)s; }
     .header-table { width: 100%%; border-collapse: collapse; }
-    .brand { font-size: 17pt; font-weight: 700; color: %(primary)s; letter-spacing: 1px; text-transform: uppercase; }
-    .org { font-size: 8pt; color: #4b5563; margin-top: 2px; letter-spacing: 0.8px; text-transform: uppercase; }
+    .brand { font-family: Times-Roman, serif; font-size: 18pt; font-weight: 700; color: %(primary)s; letter-spacing: 0.6px; text-transform: uppercase; }
+    .org { font-size: 8pt; color: #4b5563; margin-top: 2px; letter-spacing: 0.7px; text-transform: uppercase; }
+    .suborg { font-size: 7.5pt; color: #6b7280; margin-top: 1px; letter-spacing: 0.3px; }
     .badge-cell { text-align: right; vertical-align: top; }
-    .badge { display: inline-block; font-size: 8pt; font-weight: 700; color: %(primary)s; border: 1px solid %(primary)s; padding: 4px 8px; background: #ffffff; }
-    .title { font-size: 27pt; font-weight: 700; color: %(primary)s; text-align: center; margin-top: 10px; }
-    .intro { font-size: 10.5pt; color: #4b5563; text-align: center; margin-top: 8px; }
-    .recipient { font-size: 23pt; font-weight: 700; color: #0f172a; text-align: center; margin-top: 10px; padding-bottom: 6px; border-bottom: 1px solid %(accent)s; }
+    .badge { display: inline-block; font-size: 7.5pt; font-weight: 700; color: %(primary)s; border: 1px solid %(primary)s; padding: 4px 8px; background: #ffffff; text-transform: uppercase; letter-spacing: 0.6px; }
+    .title { font-family: Times-Roman, serif; font-size: 29pt; font-weight: 700; color: %(primary)s; text-align: center; margin-top: 10px; letter-spacing: 0.5px; }
+    .intro { font-size: 10.5pt; color: #4b5563; text-align: center; margin-top: 7px; }
+    .recipient { font-family: Times-Roman, serif; font-size: 24pt; font-weight: 700; color: #0f172a; text-align: center; margin-top: 10px; padding-bottom: 7px; border-bottom: 1px solid %(accent)s; }
     .subject-label { font-size: 8pt; color: #6b7280; text-transform: uppercase; text-align: center; margin-top: 10px; }
-    .subject { font-size: 15pt; color: %(accent)s; font-weight: 700; text-align: center; margin-top: 2px; }
+    .subject { font-family: Times-Roman, serif; font-size: 15pt; color: %(accent)s; font-weight: 700; text-align: center; margin-top: 2px; }
     .details-table { width: 100%%; border-collapse: collapse; margin-top: 12px; background: #ffffff; border: 1px solid #d1d5db; }
     .detail-label { width: 42%%; font-size: 9pt; color: #374151; font-weight: 700; text-transform: uppercase; padding: 6px 8px; border: 1px solid #e5e7eb; background: #f9fafb; }
     .detail-value { width: 58%%; font-size: 10pt; color: #111827; font-weight: 600; padding: 6px 8px; border: 1px solid #e5e7eb; }
@@ -184,6 +187,7 @@ _BASE_CSS = """
     .verify { font-size: 7.5pt; color: #6b7280; margin-top: 3px; }
     .meta-row { margin-top: 10px; border-top: 1px solid #d1d5db; padding-top: 6px; }
     .certid { font-size: 8pt; color: #4b5563; text-align: center; }
+    .regcode { font-size: 7.5pt; color: #6b7280; text-align: center; margin-top: 1px; }
     .crypto { font-size: 7pt; color: #9ca3af; text-align: center; margin-top: 2px; }
 """
 
@@ -245,11 +249,14 @@ def get_builtin_template_html(cert_type: str) -> str:
         + "</style>\n</head>\n<body>\n"
         '    <div class="sheet">\n'
         '        <div class="sheet-inner">\n'
+        '            <div class="top-band"></div>\n'
+        '            <div class="content-wrap">\n'
         '            <table class="header-table" cellpadding="0" cellspacing="0">\n'
         '                <tr>\n'
         '                    <td>\n'
         '                        <div class="brand">EduCerts</div>\n'
         '                        <div class="org">Federal Democratic Republic of Ethiopia</div>\n'
+        '                        <div class="suborg">Credential Verification and Trust Registry</div>\n'
         '                    </td>\n'
         '                    <td class="badge-cell"><span class="badge">Official Document</span></td>\n'
         '                </tr>\n'
@@ -278,7 +285,9 @@ def get_builtin_template_html(cert_type: str) -> str:
         '            </table>\n'
         '            <div class="meta-row">\n'
         '                <div class="certid">Verification ID: {{ cert_id }}</div>\n'
+        '                <div class="regcode">Registry Ref: EC-{{ cert_id }}</div>\n'
         '                <div class="crypto">Secured with Ed25519 &middot; {{ signature }}</div>\n'
+        '            </div>\n'
         '            </div>\n'
         '        </div>\n'
         '    </div>\n'
