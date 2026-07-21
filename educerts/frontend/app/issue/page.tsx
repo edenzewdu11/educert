@@ -6,10 +6,10 @@ import { useAuth } from "@/context/AuthContext"
 import { motion, AnimatePresence } from "framer-motion"
 import {
     Shield, Upload, Loader2, Sparkles, Download, FilePlus,
-    Check, ArrowRight, X, Tag, Eye, LayoutTemplate, RefreshCw,
+    Check, ArrowRight, X, Tag, Eye, RefreshCw,
     GraduationCap, Award, BookOpen, Briefcase, Star, Users, FileText,
     AlertCircle, Table2, FileSpreadsheet, CheckCircle2, PenLine,
-    Stamp, UserCheck, ChevronRight, FileSearch, Signature, Lock,
+    Stamp, UserCheck, ChevronRight, Signature, Lock,
     ClipboardCheck, SquarePen, PenTool, ChevronDown
 } from "lucide-react"
 import axios from "axios"
@@ -98,57 +98,6 @@ function StepIndicator({ current, step, label, icon: Icon }: { current: number; 
             </div>
             {active && <ChevronRight className="w-5 h-5 text-sky-500 ml-auto" />}
         </div>
-    )
-}
-
-// ── Template Upload Widget ─────────────────────────────────────────────────────
-function TemplateUpload({ parsed, parsing, onFile, onClear }: {
-    parsed: ParsedTemplate | null; parsing: boolean; onFile: (f: File) => void; onClear: () => void
-}) {
-    const ref = useRef<HTMLInputElement>(null)
-    const [dragging, setDragging] = useState(false)
-
-    return (
-        <Card
-            className={`border-2 border-dashed rounded-2xl transition-all cursor-pointer ${dragging ? "border-sky-500 bg-gradient-to-br from-sky-50 to-white shadow-lg shadow-sky-200" : parsed ? "border-sky-400 bg-gradient-to-br from-sky-50 to-white shadow-md" : "border-slate-200 bg-white hover:border-sky-300 hover:shadow-md"}`}
-            onDragOver={e => { e.preventDefault(); setDragging(true) }}
-            onDragLeave={() => setDragging(false)}
-            onDrop={e => {
-                e.preventDefault(); setDragging(false)
-                const f = e.dataTransfer.files[0]
-                if (f && (f.name.endsWith(".html") || f.name.endsWith(".pdf"))) onFile(f)
-            }}
-            onClick={() => !parsed && ref.current?.click()}
-        >
-            <CardContent className="p-4 sm:p-8 text-center space-y-3 sm:space-y-4">
-                <div className={`w-12 h-12 sm:w-16 sm:h-16 mx-auto rounded-2xl flex items-center justify-center ${parsed ? "bg-gradient-to-br from-sky-100 to-sky-200" : dragging ? "bg-gradient-to-br from-sky-100 to-sky-200" : "bg-slate-50 border-2 border-slate-200"}`}>
-                    {parsing
-                        ? <Loader2 className="w-6 h-6 sm:w-8 sm:h-8 text-sky-500 animate-spin" />
-                        : parsed
-                            ? <Check className="w-6 h-6 sm:w-8 sm:h-8 text-sky-600" />
-                            : <LayoutTemplate className={`w-6 h-6 sm:w-8 sm:h-8 ${dragging ? "text-sky-600" : "text-slate-400"}`} />
-                    }
-                </div>
-                <div>
-                    <h3 className={`text-base sm:text-lg font-bold ${parsed ? "text-sky-800" : "text-slate-800"}`}>
-                        {parsed ? `${parsed.template_name}` : "Upload Certificate"}
-                    </h3>
-                    {!parsed && (
-                        <p className="text-xs sm:text-sm text-slate-500 mt-1">
-                            PDF or HTML
-                        </p>
-                    )}
-                </div>
-                {parsed && (
-                    <button onClick={e => { e.stopPropagation(); onClear() }}
-                        className="text-xs text-slate-400 hover:text-red-500 flex items-center gap-1 mx-auto mt-2 font-semibold">
-                        <RefreshCw className="w-3 h-3" /> Change template
-                    </button>
-                )}
-                <input ref={ref} type="file" accept=".html,.pdf" className="hidden"
-                    onChange={e => { const f = e.target.files?.[0]; if (f) onFile(f) }} />
-            </CardContent>
-        </Card>
     )
 }
 
@@ -260,25 +209,25 @@ function IssuePageContent() {
     // Handlers
     // ─────────────────────────────────────────────────────────────────────────
 
-    const parseTemplate = async (file: File) => {
+    // Activate a built-in template for the selected certificate category.
+    const selectTemplate = useCallback(async (certType: string) => {
         setTemplateParsing(true); setError("")
         try {
-            const fd = new FormData(); fd.append("file", file)
-            const res = await axios.post<ParsedTemplate>(`${API}/api/templates/parse`, fd)
+            const fd = new FormData(); fd.append("cert_type", certType)
+            const res = await axios.post<ParsedTemplate>(`${API}/api/templates/select`, fd, { withCredentials: true })
             setParsedTemplate(res.data)
             const init: Record<string, string> = {}
             for (const f of res.data.input_fields) init[f] = ""
             setTemplateFields(init)
         } catch {
-            setError("Failed to parse template. Ensure it's a valid .html or .pdf file.")
+            setError("Failed to load the certificate template. Please try again.")
         } finally { setTemplateParsing(false) }
-    }
+    }, [])
 
-    const clearTemplate = () => {
-        setParsedTemplate(null); setTemplateFields({})
-        setBulkFile(null)
-        if (bulkInputRef.current) bulkInputRef.current.value = ""
-    }
+    // Auto-load the matching template whenever the category changes (Step 1 only).
+    useEffect(() => {
+        if (step === 1) selectTemplate(selectedType)
+    }, [selectedType, step, selectTemplate])
 
     const handleSingleIssue = async () => {
         if (!parsedTemplate) return
@@ -565,19 +514,19 @@ function IssuePageContent() {
                         })()}
                     </div>
 
-                    {/* Template upload */}
-                    <div>
-                        <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-3 flex items-center gap-2">
-                            <FileSearch className="w-3.5 h-3.5" /> Step 1A — Upload Template <span className="text-red-400 text-[10px] normal-case font-semibold tracking-normal">(Required)</span>
-                        </p>
-                        <TemplateUpload parsed={parsedTemplate} parsing={templateParsing} onFile={parseTemplate} onClear={clearTemplate} />
-                    </div>
+                    {/* Template status — auto-selected from category */}
+                    {templateParsing && (
+                        <div className="flex items-center gap-3 p-4 bg-sky-50 border border-sky-200 rounded-2xl">
+                            <Loader2 className="w-4 h-4 text-sky-500 shrink-0 animate-spin" />
+                            <p className="text-sm text-sky-700 font-medium">Loading the template for this category…</p>
+                        </div>
+                    )}
 
-                    {!parsedTemplate && !templateParsing && (
-                        <div className="flex items-center gap-3 p-4 bg-amber-50 border border-amber-200 rounded-2xl">
-                            <AlertCircle className="w-4 h-4 text-amber-500 shrink-0" />
-                            <p className="text-sm text-amber-700 font-medium">
-                                Upload a <strong>.pdf</strong> or <strong>.html</strong> template above. All <code className="text-amber-800 bg-amber-100 px-1 rounded">{"{{placeholder}}"}</code> fields will become form inputs automatically.
+                    {parsedTemplate && !templateParsing && (
+                        <div className="flex items-center gap-3 p-4 bg-emerald-50 border border-emerald-200 rounded-2xl">
+                            <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                            <p className="text-sm text-emerald-700 font-medium">
+                                Using the <strong>{parsedTemplate.template_name}</strong> template. Just fill in the details below — no upload needed.
                             </p>
                         </div>
                     )}

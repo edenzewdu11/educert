@@ -25,6 +25,7 @@ import fitz  # PyMuPDF
 import models, schemas, crypto_utils, database, auth_utils, oa_logic
 import pdf_utils
 import pdf_hash_utils
+import builtin_templates
 from wps_ribbon_final import add_final_ribbon
 # DISABLED: Remove other ribbon imports - keep only WPS ribbon
 # import pdf_ribbon_utils
@@ -1048,6 +1049,58 @@ async def upload_pdf_template(file: UploadFile = File(...)):
         "template_type": "pdf"
     }
 
+@app.post("/api/templates/select")
+async def select_builtin_template(cert_type: str = Form("certificate")):
+    """
+    Activate a built-in certificate template for the given category.
+
+    Instead of uploading a template, the admin selects a certificate category
+    and the matching professionally designed template is activated. Returns the
+    same field metadata shape as /api/templates/parse so the frontend flow is
+    unchanged.
+    """
+    import re
+
+    html = builtin_templates.get_builtin_template_html(cert_type)
+
+    os.makedirs("user_templates", exist_ok=True)
+    # Activate HTML template and remove any previously uploaded PDF template so
+    # the HTML path is used consistently.
+    with open("user_templates/custom_certificate.html", "w", encoding="utf-8") as f:
+        f.write(html)
+    pdf_template_path = "user_templates/template.pdf"
+    if os.path.exists(pdf_template_path):
+        try:
+            os.remove(pdf_template_path)
+        except OSError:
+            pass
+
+    placeholders = re.findall(r"\{\{\s*([\w\s]+?)\s*\}\}", html)
+    seen = set()
+    unique_fields = []
+    for p in placeholders:
+        p = p.strip()
+        if p not in seen:
+            seen.add(p)
+            unique_fields.append(p)
+
+    system_fields = {"student_name", "course_name", "issued_at", "cert_id", "signature", "qr_code", "signer_name", "signer_role"}
+    sig_fields = {"digital_signature", "stamp"}
+    auto_only = {"issued_at", "cert_id", "signature", "qr_code", "signer_name", "signer_role"}
+    custom_fields = [f for f in unique_fields if f not in system_fields and f not in sig_fields]
+    input_fields = [f for f in unique_fields if f not in auto_only and f not in sig_fields]
+
+    return {
+        "all_fields": unique_fields,
+        "system_fields": [f for f in unique_fields if f in system_fields],
+        "signature_fields": [f for f in unique_fields if f in sig_fields],
+        "custom_fields": custom_fields,
+        "input_fields": input_fields,
+        "template_name": builtin_templates.get_builtin_template_label(cert_type),
+        "template_type": "html",
+    }
+
+
 @app.post("/api/templates/parse")
 async def parse_template(file: UploadFile = File(...)):
     """
@@ -1758,7 +1811,17 @@ async def apply_digital_signatures(
                 from jinja2 import FileSystemLoader, Environment
                 env = Environment(loader=FileSystemLoader("user_templates"))
                 tmpl = env.get_template("custom_certificate.html")
-                
+
+                # Encode signature/stamp images as base64 so they render inline
+                def _img_b64(path):
+                    if path and os.path.exists(path):
+                        try:
+                            with open(path, "rb") as imgf:
+                                return base64.b64encode(imgf.read()).decode("utf-8")
+                        except OSError:
+                            return ""
+                    return ""
+
                 render_ctx = {
                     "student_name": cert.student_name,
                     "course_name": cert.course_name,
@@ -1766,7 +1829,21 @@ async def apply_digital_signatures(
                     "cert_id": cert.id,
                     "signature": cert.signature[:30] + "..." if cert.signature else "N/A",
                     "qr_code": qr_b64,
+                    "signer_name": signer_name,
+                    "signer_role": signer_role,
+                    "digital_signature": _img_b64(sig_path),
+                    "stamp": _img_b64(stamp_path),
                 }
+
+                # Merge any custom fields stored on the certificate's data_payload
+                if cert.data_payload and isinstance(cert.data_payload, dict):
+                    oa_data = cert.data_payload.get("data", {})
+                    if isinstance(oa_data, dict):
+                        for key, salt_value_obj in oa_data.items():
+                            if isinstance(salt_value_obj, dict) and "value" in salt_value_obj:
+                                if key not in ["id", "type", "name", "issuedOn", "recipient.name", "recipient.studentId", "issuers"] and key not in render_ctx:
+                                    render_ctx[key] = str(salt_value_obj["value"]) if salt_value_obj["value"] is not None else ""
+
                 html_content = tmpl.render(**render_ctx)
                 
                 # Convert HTML to PDF
