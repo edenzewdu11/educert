@@ -21,6 +21,7 @@ import qrcode
 import base64
 from dotenv import load_dotenv
 import fitz  # PyMuPDF
+from PIL import Image, UnidentifiedImageError
 
 import models, schemas, crypto_utils, database, auth_utils, oa_logic
 import pdf_utils
@@ -117,6 +118,35 @@ def get_db():
         yield db
     finally:
         db.close()
+
+
+def _normalize_image_bytes_to_png(raw_bytes: bytes) -> bytes:
+    """Decode uploaded image bytes and return canonical PNG bytes."""
+    try:
+        with Image.open(BytesIO(raw_bytes)) as img:
+            if img.mode not in ("RGB", "RGBA"):
+                img = img.convert("RGBA")
+            out = BytesIO()
+            img.save(out, format="PNG")
+            return out.getvalue()
+    except UnidentifiedImageError:
+        raise HTTPException(status_code=400, detail="Invalid image file. Please upload PNG, JPG, or WEBP.")
+
+
+def _read_image_file_as_png_base64(path: Optional[str]) -> str:
+    """Read any supported image file and return PNG base64 for HTML embedding."""
+    if not path or not os.path.exists(path):
+        return ""
+    try:
+        with Image.open(path) as img:
+            if img.mode not in ("RGB", "RGBA"):
+                img = img.convert("RGBA")
+            out = BytesIO()
+            img.save(out, format="PNG")
+            return base64.b64encode(out.getvalue()).decode("utf-8")
+    except Exception as e:
+        print(f"WARNING: Failed to normalize embedded image {path}: {e}")
+        return ""
 
 def normalize_column_name(header: str) -> str:
     """
@@ -1549,15 +1579,17 @@ async def upload_signature_assets(
 
     if signature_file and signature_file.filename:
         sig_bytes = await signature_file.read()
+        sig_png_bytes = _normalize_image_bytes_to_png(sig_bytes)
         sig_path = f"user_templates/signature_{current_user.id}.png"
         with open(sig_path, "wb") as f:
-            f.write(sig_bytes)
+            f.write(sig_png_bytes)
 
     if stamp_file and stamp_file.filename:
         stamp_bytes = await stamp_file.read()
+        stamp_png_bytes = _normalize_image_bytes_to_png(stamp_bytes)
         stamp_path = f"user_templates/stamp_{current_user.id}.png"
         with open(stamp_path, "wb") as f:
-            f.write(stamp_bytes)
+            f.write(stamp_png_bytes)
 
     record = models.DigitalSignatureRecord(
         signer_name=signer_name,
@@ -1727,13 +1759,7 @@ async def apply_digital_signatures(
 
                 # Encode signature/stamp images as base64 so they render inline
                 def _img_b64(path):
-                    if path and os.path.exists(path):
-                        try:
-                            with open(path, "rb") as imgf:
-                                return base64.b64encode(imgf.read()).decode("utf-8")
-                        except OSError:
-                            return ""
-                    return ""
+                    return _read_image_file_as_png_base64(path)
 
                 render_ctx = {
                     "student_name": cert.student_name,
