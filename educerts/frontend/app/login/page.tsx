@@ -58,16 +58,6 @@ export default function LoginPage() {
                     </p>
                 </div>
 
-                <div className="relative z-10 flex gap-12">
-                    <div>
-                        <p className="text-4xl font-bold gradient-text">100%</p>
-                        <p className="text-sm text-slate-500 font-semibold uppercase tracking-wider mt-1">Tamper proof</p>
-                    </div>
-                    <div>
-                        <p className="text-4xl font-bold gradient-text">Ed25519</p>
-                        <p className="text-sm text-slate-500 font-semibold uppercase tracking-wider mt-1">Encryption</p>
-                    </div>
-                </div>
             </div>
 
             {/* Form Section */}
