@@ -2,154 +2,134 @@
 
 import React, { useEffect, useState, useMemo } from "react"
 import { useAuth } from "@/context/AuthContext"
-import { AnimatePresence, motion } from "framer-motion"
-import {
-    Search, FileText, CheckCircle2, Clock, XCircle, ShieldCheck, Eye, Trash2,
-    Calendar, Tag, Download, RefreshCcw, LayoutGrid, List as ListIcon, Loader2,
-    Fingerprint, ShieldAlert, MoreVertical, ExternalLink, Award, CheckSquare,
-    Square, Trash, Ban, DownloadCloud, Lock, FileSpreadsheet
-} from "lucide-react"
-import { useRouter } from "next/navigation"
-import axios from "axios"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Modal } from "@/components/ui/modal"
-import { API_BASE_URL } from "@/lib/api-config"
-import VerificationBanner from "@/components/VerificationBanner"
-import CertificateViewer from "@/components/CertificateViewer"
-
-const API = API_BASE_URL
-
-interface Certificate {
-    id: string
-    course_name: string
-    student_name: string
-    cert_type: string
-    issued_at: string
-    revoked: boolean
-    signing_status: string // "signed" | "unsigned"
-    organization: string
-    claim_pin?: string
-}
-
-const ALL_TYPES = [
-    "degree", "birth_certificate", "trade", "business", "education",
-    "diploma", "training", "professional", "achievement", "attendance", "certificate"
-]
-
-export default function CertificatesPage() {
-    const { user } = useAuth()
-    const [certs, setCerts] = useState<Certificate[]>([])
-    const [loading, setLoading] = useState(true)
-    const [searchTerm, setSearchTerm] = useState("")
-    const [statusFilter, setStatusFilter] = useState("all") // all, signed, unsigned, revoked
-    const [categoryFilter, setCategoryFilter] = useState("all")
-    const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
-    const [viewingCert, setViewingCert] = useState<Certificate | null>(null)
-
-    // Selection State
-    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
-
-    // Modal State
-    const [modalConfig, setModalConfig] = useState<{
-        isOpen: boolean
-        title: string
-        description: string
-        type: "info" | "danger" | "success"
-        actionLabel: string
-        onAction: () => void
-        isLoading: boolean
-    }>({
-        isOpen: false,
-        title: "",
-        description: "",
-        type: "info",
-        actionLabel: "",
-        onAction: () => { },
-        isLoading: false
-    })
-
-    const router = useRouter()
-
-    const fetchCerts = async () => {
-        if (!user) return
-        setLoading(true)
-        setSelectedIds(new Set()) // Clear selection on refresh
-        try {
-            const endpoint = user.is_admin
-                ? `${API}/api/certificates`
-                : `${API}/api/certificates/${user.name}`
-            const res = await axios.get<Certificate[]>(endpoint, { withCredentials: true })
-            setCerts(res.data)
-        } catch (error) {
-            console.error("Error fetching certs", error)
-        } finally {
-            setLoading(false)
-        }
-    }
-
-    useEffect(() => {
-        fetchCerts()
-    }, [user])
-
-    const closeModal = () => setModalConfig(prev => ({ ...prev, isOpen: false }))
-
-    const handleRevoke = (id: string) => {
-        setModalConfig({
-            isOpen: true,
-            title: "Revoke Certificate",
-            description: "Are you sure you want to revoke this certificate? This action will mark it as invalid in the registry and cannot be reversed.",
-            type: "danger",
-            actionLabel: "Yes, Revoke",
-            isLoading: false,
-            onAction: async () => {
-                setModalConfig(p => ({ ...p, isLoading: true }))
-                try {
-                    await axios.post(`${API}/api/revoke/${id}`, {}, { withCredentials: true })
-                    fetchCerts()
-                    closeModal()
-                } catch (err) {
-                    setModalConfig({
-                        isOpen: true,
-                        title: "Revoke Failed",
-                        description: "Failed to revoke the certificate. Please try again.",
-                        type: "danger",
-                        actionLabel: "Close",
-                        isLoading: false,
-                        onAction: closeModal
-                    })
-                }
-            }
-        })
-    }
-
-    const handleDelete = (id: string) => {
-        setModalConfig({
-            isOpen: true,
-            title: "Delete Record",
-            description: "PERMANENTLY DELETE this certificate record? This will remove all data and physical PDF files from the server.",
-            type: "danger",
-            actionLabel: "Delete Forever",
-            isLoading: false,
-            onAction: async () => {
-                setModalConfig(p => ({ ...p, isLoading: true }))
-                try {
-                    await axios.delete(`${API}/api/certificates/${id}`, { withCredentials: true })
-                    fetchCerts()
-                    closeModal()
-                } catch (err) {
-                    setModalConfig({
-                        isOpen: true,
-                        title: "Delete Failed",
-                        description: "Failed to delete the certificate record. Please try again.",
-                        type: "danger",
-                        actionLabel: "Close",
-                        isLoading: false,
-                        onAction: closeModal
-                    })
+            {/* Results */}
+            <AnimatePresence mode="wait">
+                {filteredCerts.length > 0 ? (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="relative z-10"
+                    >
+                        <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
+                            <table className="min-w-[1100px] w-full">
+                                <thead className="bg-slate-50 border-b border-slate-200">
+                                    <tr>
+                                        <th className="text-left text-[10px] uppercase tracking-wider text-slate-500 font-black px-3 py-3">Select</th>
+                                        <th className="text-left text-[10px] uppercase tracking-wider text-slate-500 font-black px-3 py-3">Name</th>
+                                        <th className="text-left text-[10px] uppercase tracking-wider text-slate-500 font-black px-3 py-3">Certificate</th>
+                                        <th className="text-left text-[10px] uppercase tracking-wider text-slate-500 font-black px-3 py-3">Category</th>
+                                        <th className="text-left text-[10px] uppercase tracking-wider text-slate-500 font-black px-3 py-3">PIN</th>
+                                        <th className="text-left text-[10px] uppercase tracking-wider text-slate-500 font-black px-3 py-3">ID</th>
+                                        <th className="text-left text-[10px] uppercase tracking-wider text-slate-500 font-black px-3 py-3">Status</th>
+                                        <th className="text-left text-[10px] uppercase tracking-wider text-slate-500 font-black px-3 py-3">Issued</th>
+                                        <th className="text-left text-[10px] uppercase tracking-wider text-slate-500 font-black px-3 py-3">Actions</th>
+                                        <th className="text-left text-[10px] uppercase tracking-wider text-slate-500 font-black px-3 py-3">Verify</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {filteredCerts.map((cert) => (
+                                        <tr
+                                            key={cert.id}
+                                            className={`border-b border-slate-100 hover:bg-sky-50/40 transition-colors ${selectedIds.has(cert.id) ? "bg-sky-50/60" : ""}`}
+                                        >
+                                            <td className="px-3 py-3 align-middle">
+                                                <Checkbox
+                                                    checked={selectedIds.has(cert.id)}
+                                                    onCheckedChange={() => toggleSelect(cert.id)}
+                                                    className="bg-white border-slate-300 data-[state=checked]:bg-sky-600 data-[state=checked]:border-sky-600"
+                                                />
+                                            </td>
+                                            <td className="px-3 py-3 align-middle">
+                                                <div className="text-sm font-bold text-slate-900 capitalize">{cert.student_name}</div>
+                                                <div className="text-[11px] text-slate-500 font-medium">{cert.organization || "Academic Institute"}</div>
+                                            </td>
+                                            <td className="px-3 py-3 align-middle">
+                                                <div className="text-sm font-bold text-slate-800 max-w-[260px] truncate" title={cert.course_name}>{cert.course_name}</div>
+                                            </td>
+                                            <td className="px-3 py-3 align-middle">
+                                                <span className="text-xs font-bold text-slate-700 capitalize">{cert.cert_type?.replace(/_/g, " ") || "certificate"}</span>
+                                            </td>
+                                            <td className="px-3 py-3 align-middle">
+                                                {(cert.claim_pin && cert.signing_status === "signed") ? (
+                                                    <span className="inline-flex items-center gap-1 px-2 py-1 bg-amber-50 border border-amber-200 rounded text-[11px] font-bold text-amber-700">
+                                                        <Lock className="w-3 h-3" />
+                                                        {cert.claim_pin}
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-xs text-slate-400">-</span>
+                                                )}
+                                            </td>
+                                            <td className="px-3 py-3 align-middle">
+                                                <span className="font-mono text-[11px] font-bold text-slate-600">#{cert.id.slice(0, 8).toUpperCase()}</span>
+                                            </td>
+                                            <td className="px-3 py-3 align-middle">
+                                                {cert.revoked ? (
+                                                    <Badge variant="destructive" className="rounded-full font-black uppercase text-[9px] px-2 py-1">Revoked</Badge>
+                                                ) : cert.signing_status === "signed" ? (
+                                                    <Badge className="bg-gradient-to-r from-sky-500 to-sky-600 text-white rounded-full font-black uppercase text-[9px] px-2 py-1">Signed</Badge>
+                                                ) : (
+                                                    <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 rounded-full font-black uppercase text-[9px] px-2 py-1">Draft</Badge>
+                                                )}
+                                            </td>
+                                            <td className="px-3 py-3 align-middle text-xs font-semibold text-slate-600">
+                                                {new Date(cert.issued_at).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
+                                            </td>
+                                            <td className="px-3 py-3 align-middle">
+                                                <div className="flex items-center gap-2">
+                                                    {!cert.revoked && user?.is_admin && cert.signing_status === "unsigned" && (
+                                                        <Button
+                                                            size="sm"
+                                                            className="h-8 px-3 text-[11px] font-black bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white"
+                                                            onClick={() => handleSignRedirect(cert.id)}
+                                                        >
+                                                            Sign
+                                                        </Button>
+                                                    )}
+                                                    {!cert.revoked && (
+                                                        <Button
+                                                            size="sm"
+                                                            className="h-8 px-3 text-[11px] font-black bg-slate-900 hover:bg-slate-800 text-white"
+                                                            onClick={() => {
+                                                                if (cert.signing_status === "signed" && !cert.revoked) {
+                                                                    setViewingCert(cert)
+                                                                } else {
+                                                                    window.open(`${API}/api/download/${cert.id}`)
+                                                                }
+                                                            }}
+                                                            title={cert.signing_status === "unsigned" ? "Preview Draft PDF" : "View Verified Certificate"}
+                                                        >
+                                                            {cert.signing_status === "unsigned" ? "Preview" : "View"}
+                                                        </Button>
+                                                    )}
+                                                    {user?.is_admin && (
+                                                        <Button
+                                                            variant="outline"
+                                                            size="icon"
+                                                            className="h-8 w-8 border-slate-200 text-slate-400 hover:text-rose-600 hover:bg-rose-50 hover:border-rose-200"
+                                                            onClick={() => handleDelete(cert.id)}
+                                                        >
+                                                            <Trash2 className="w-3.5 h-3.5" />
+                                                        </Button>
+                                                    )}
+                                                </div>
+                                            </td>
+                                            <td className="px-3 py-3 align-middle">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="h-8 px-3 text-[11px] font-black text-sky-600 hover:bg-sky-50"
+                                                    onClick={() => window.location.href = `/verify?id=${cert.id}`}
+                                                >
+                                                    Verify
+                                                </Button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </motion.div>
+                ) : (
                 }
             }
         })
