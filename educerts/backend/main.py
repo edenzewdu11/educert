@@ -499,7 +499,7 @@ def issue_certificate(cert_data: schemas.CertificateCreate, db: Session = Depend
         claim_pin=claim_pin,
         organization=organization,
         batch_id=batch_id,
-        template_type="html",
+        template_type="pdf" if rendered_path and os.path.exists(rendered_path) else "html",
         rendered_pdf_path=rendered_path,
         signing_status="unsigned",
         claimed=False,
@@ -1306,7 +1306,7 @@ async def bulk_issue_from_template(
             claim_pin="".join([str(random.randint(0, 9)) for _ in range(6)]), 
             organization=item["curr_organization"], 
             batch_id=batch_id,
-            template_type="html",
+            template_type="pdf" if rendered_path and os.path.exists(rendered_path) else "html",
             rendered_pdf_path=rendered_path,
             signing_status="unsigned"
         )
@@ -1531,7 +1531,7 @@ async def bulk_issue_from_excel(
             claim_pin=None,
             organization=item["curr_organization"], 
             batch_id=batch_id,
-            template_type="html",
+            template_type="pdf" if rendered_path and os.path.exists(rendered_path) else "html",
             rendered_pdf_path=rendered_path,
             signing_status="unsigned"
         )
@@ -1659,7 +1659,11 @@ async def apply_digital_signatures(
 
         signed_pdf_path = f"generated_certs/{cert_id}_signed.pdf"
 
-        if cert.template_type == "pdf" and has_pdf_template:
+        uses_pdf_template = cert.template_type == "pdf" or (
+            cert.rendered_pdf_path and os.path.exists(cert.rendered_pdf_path) and cert.rendered_pdf_path.lower().endswith(".pdf")
+        )
+
+        if uses_pdf_template and has_pdf_template:
             # Use PDF template for signing - FIRST re-render with all data, then apply signatures
             print(f"DEBUG: Signing PDF certificate {cert_id} - re-rendering with full data first")
             
