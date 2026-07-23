@@ -1645,6 +1645,24 @@ async def apply_digital_signatures(
     sig_path = sig_record.signature_path if sig_record else None
     stamp_path = sig_record.stamp_path if sig_record else None
 
+    # Backfill missing assets from latest available records to avoid "pending" outputs
+    if not sig_path:
+        latest_sig = db.query(models.DigitalSignatureRecord).filter(
+            models.DigitalSignatureRecord.signature_path.isnot(None)
+        ).order_by(models.DigitalSignatureRecord.uploaded_at.desc()).first()
+        if latest_sig and latest_sig.signature_path and os.path.exists(latest_sig.signature_path):
+            sig_path = latest_sig.signature_path
+
+    if not stamp_path:
+        latest_stamp = db.query(models.DigitalSignatureRecord).filter(
+            models.DigitalSignatureRecord.stamp_path.isnot(None)
+        ).order_by(models.DigitalSignatureRecord.uploaded_at.desc()).first()
+        if latest_stamp and latest_stamp.stamp_path and os.path.exists(latest_stamp.stamp_path):
+            stamp_path = latest_stamp.stamp_path
+
+    if not sig_path and not stamp_path:
+        raise HTTPException(status_code=400, detail="No signature or stamp assets found. Upload assets first.")
+
     pdf_template_path = "user_templates/template.pdf"
     has_pdf_template = os.path.exists(pdf_template_path)
 
@@ -2233,6 +2251,21 @@ async def preview_signature(
 
         sig_path = sig_record.signature_path
         stamp_path = sig_record.stamp_path
+
+        # Backfill missing assets from latest available records for preview parity with signing.
+        if not sig_path:
+            latest_sig = db.query(models.DigitalSignatureRecord).filter(
+                models.DigitalSignatureRecord.signature_path.isnot(None)
+            ).order_by(models.DigitalSignatureRecord.uploaded_at.desc()).first()
+            if latest_sig and latest_sig.signature_path and os.path.exists(latest_sig.signature_path):
+                sig_path = latest_sig.signature_path
+
+        if not stamp_path:
+            latest_stamp = db.query(models.DigitalSignatureRecord).filter(
+                models.DigitalSignatureRecord.stamp_path.isnot(None)
+            ).order_by(models.DigitalSignatureRecord.uploaded_at.desc()).first()
+            if latest_stamp and latest_stamp.stamp_path and os.path.exists(latest_stamp.stamp_path):
+                stamp_path = latest_stamp.stamp_path
         pdf_template_path = "user_templates/template.pdf"
 
         os.makedirs("generated_certs", exist_ok=True)
@@ -2290,6 +2323,10 @@ async def preview_signature(
                 "cert_id": cert.id,
                 "signature": (cert.signature or "")[:30] + "...",
                 "qr_code": qr_b64,
+                "signer_name": sig_record.signer_name,
+                "signer_role": sig_record.signer_role,
+                "digital_signature": _read_image_file_as_png_base64(sig_path),
+                "stamp": _read_image_file_as_png_base64(stamp_path),
             }
 
             payload_data = cert.data_payload or {}
