@@ -153,39 +153,39 @@ DEFAULT_TYPE = "certificate"
 REQUIRED_KEYS = {"student_name"}
 
 _BASE_CSS = """
-    @page { size: A4 landscape; margin: 11mm; }
+    @page { size: A4 landscape; margin: 5mm; }
     body { font-family: Helvetica, Arial, sans-serif; margin: 0; padding: 0; color: #1f2937; }
     .sheet { border: 5px solid %(primary)s; background: #ffffff; }
-    .sheet-inner { border: 1px solid %(accent)s; margin: 4px; padding: 0; background: #ffffff; }
-    .top-band { height: 8px; background: %(primary)s; }
-    .content-wrap { padding: 12px 18px; background: %(soft)s; }
+    .sheet-inner { border: 1px solid %(accent)s; margin: 3px; padding: 0; background: #ffffff; }
+    .top-band { height: 6px; background: %(primary)s; }
+    .content-wrap { padding: 8px 16px; background: %(soft)s; }
     .header-table { width: 100%%; border-collapse: collapse; }
-    .brand { font-family: Times-Roman, serif; font-size: 18pt; font-weight: 700; color: %(primary)s; letter-spacing: 0.6px; text-transform: uppercase; }
-    .org { font-size: 8pt; color: #4b5563; margin-top: 2px; letter-spacing: 0.7px; text-transform: uppercase; }
-    .suborg { font-size: 7.5pt; color: #6b7280; margin-top: 1px; letter-spacing: 0.3px; }
+    .brand { font-family: Times-Roman, serif; font-size: 16pt; font-weight: 700; color: %(primary)s; letter-spacing: 0.6px; text-transform: uppercase; }
+    .org { font-size: 7.5pt; color: #4b5563; margin-top: 1px; letter-spacing: 0.7px; text-transform: uppercase; }
+    .suborg { font-size: 7pt; color: #6b7280; margin-top: 1px; letter-spacing: 0.3px; }
     .badge-cell { text-align: right; vertical-align: top; }
-    .badge { display: inline-block; font-size: 7.5pt; font-weight: 700; color: %(primary)s; border: 1px solid %(primary)s; padding: 4px 8px; background: #ffffff; text-transform: uppercase; letter-spacing: 0.6px; }
-    .title { font-family: Times-Roman, serif; font-size: 29pt; font-weight: 700; color: %(primary)s; text-align: center; margin-top: 10px; letter-spacing: 0.5px; }
-    .intro { font-size: 10.5pt; color: #4b5563; text-align: center; margin-top: 7px; }
-    .recipient { font-family: Times-Roman, serif; font-size: 24pt; font-weight: 700; color: #0f172a; text-align: center; margin-top: 10px; padding-bottom: 7px; border-bottom: 1px solid %(accent)s; }
-    .subject-label { font-size: 8pt; color: #6b7280; text-transform: uppercase; text-align: center; margin-top: 10px; }
-    .subject { font-family: Times-Roman, serif; font-size: 15pt; color: %(accent)s; font-weight: 700; text-align: center; margin-top: 2px; }
-    .details-table { width: 100%%; border-collapse: collapse; margin-top: 12px; background: #ffffff; border: 1px solid #d1d5db; }
-    .detail-label { width: 42%%; font-size: 9pt; color: #374151; font-weight: 700; text-transform: uppercase; padding: 6px 8px; border: 1px solid #e5e7eb; background: #f9fafb; }
-    .detail-value { width: 58%%; font-size: 10pt; color: #111827; font-weight: 600; padding: 6px 8px; border: 1px solid #e5e7eb; }
-    .issue-date { margin-top: 11px; font-size: 9pt; color: #6b7280; text-align: center; }
-    .footer-table { width: 100%%; border-collapse: collapse; margin-top: 14px; }
-    .sig-cell { width: 40%%; text-align: center; vertical-align: bottom; }
-    .qr-cell { width: 20%%; text-align: center; vertical-align: bottom; }
-    .stamp-cell { width: 40%%; text-align: center; vertical-align: bottom; }
-    .sig-img { height: 38px; }
-    .stamp-img { height: 62px; }
+    .badge { display: inline-block; font-size: 7pt; font-weight: 700; color: %(primary)s; border: 1px solid %(primary)s; padding: 3px 7px; background: #ffffff; text-transform: uppercase; letter-spacing: 0.6px; }
+    .title { font-family: Times-Roman, serif; font-size: 23pt; font-weight: 700; color: %(primary)s; text-align: center; margin-top: 6px; letter-spacing: 0.5px; }
+    .intro { font-size: 9.5pt; color: #4b5563; text-align: center; margin-top: 4px; }
+    .recipient { font-family: Times-Roman, serif; font-size: 19pt; font-weight: 700; color: #0f172a; text-align: center; margin-top: 6px; padding-bottom: 4px; border-bottom: 1px solid %(accent)s; }
+    .subject-label { font-size: 7.5pt; color: #6b7280; text-transform: uppercase; text-align: center; margin-top: 6px; }
+    .subject { font-family: Times-Roman, serif; font-size: 13pt; color: %(accent)s; font-weight: 700; text-align: center; margin-top: 1px; }
+    .details-table { width: 100%%; border-collapse: collapse; margin-top: 7px; background: #ffffff; border: 1px solid #d1d5db; }
+    .detail-label { width: 42%%; font-size: 8.5pt; color: #374151; font-weight: 700; text-transform: uppercase; padding: 4px 8px; border: 1px solid #e5e7eb; background: #f9fafb; }
+    .detail-value { width: 58%%; font-size: 9.5pt; color: #111827; font-weight: 600; padding: 4px 8px; border: 1px solid #e5e7eb; }
+    .issue-date { margin-top: 6px; font-size: 8.5pt; color: #6b7280; text-align: center; }
+    .footer-table { width: 100%%; border-collapse: collapse; margin-top: 8px; }
+    .sig-cell { width: 300pt; text-align: center; vertical-align: bottom; }
+    .qr-cell { width: 150pt; text-align: center; vertical-align: bottom; }
+    .stamp-cell { width: 300pt; text-align: center; vertical-align: bottom; }
+    .sig-img { height: 38px; max-width: 140px; }
+    .stamp-img { height: 62px; max-width: 90px; }
     .qr-img { width: 70px; height: 70px; }
     .sig-line { margin-top: 5px; border-top: 1px solid %(primary)s; font-size: 9pt; color: #334155; padding-top: 3px; font-weight: 700; }
     .sig-role { font-size: 8pt; color: #6b7280; }
     .slot-empty { font-size: 8pt; color: #9ca3af; font-style: italic; border: 1px dashed #d1d5db; padding: 8px 5px; margin: 0 12px; }
     .verify { font-size: 7.5pt; color: #6b7280; margin-top: 3px; }
-    .meta-row { margin-top: 10px; border-top: 1px solid #d1d5db; padding-top: 6px; }
+    .meta-row { margin-top: 4px; border-top: 1px solid #d1d5db; padding-top: 3px; }
     .certid { font-size: 8pt; color: #4b5563; text-align: center; }
     .regcode { font-size: 7.5pt; color: #6b7280; text-align: center; margin-top: 1px; }
     .crypto { font-size: 7pt; color: #9ca3af; text-align: center; margin-top: 2px; }
