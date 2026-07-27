@@ -1,8 +1,8 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { Shield, LayoutDashboard, FilePlus, Search, Settings, LogOut, User, GraduationCap, Smartphone, Award, Menu, X } from "lucide-react"
+import { usePathname, useSearchParams } from "next/navigation"
+import { Shield, LayoutDashboard, FilePlus, Search, Settings, LogOut, User, GraduationCap, Smartphone, Award, Menu, X, CreditCard } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { useState } from "react"
 
@@ -18,11 +18,23 @@ const studentNavItems = [
   { name: "My Credentials", href: "/student", icon: Award },
   { name: "Verify", href: "/verify", icon: Search },
   { name: "Wallet", href: "/wallet", icon: Smartphone },
+  { name: "Payments", href: "/wallet?tab=topup", icon: CreditCard },
 ]
 
 export default function Sidebar({ user, onLogout }: { user: any, onLogout: () => void }) {
   const pathname = usePathname()
+  const searchParams = useSearchParams()
   const [mobileOpen, setMobileOpen] = useState(false)
+
+  const isItemActive = (href: string) => {
+    if (href === "/wallet?tab=topup") {
+      return pathname === "/wallet" && searchParams.get("tab") === "topup"
+    }
+    if (href === "/wallet") {
+      return pathname === "/wallet" && searchParams.get("tab") !== "topup"
+    }
+    return pathname === href
+  }
 
   return (
     <>
@@ -103,7 +115,7 @@ export default function Sidebar({ user, onLogout }: { user: any, onLogout: () =>
                 })
               ) : (
                 studentNavItems.map((item) => {
-                  const isActive = pathname === item.href
+                  const isActive = isItemActive(item.href)
                   return (
                     <Link
                       key={item.href}
@@ -209,7 +221,7 @@ export default function Sidebar({ user, onLogout }: { user: any, onLogout: () =>
             })
           ) : (
             studentNavItems.map((item) => {
-              const isActive = pathname === item.href
+              const isActive = isItemActive(item.href)
               return (
                 <Link
                   key={item.href}

@@ -148,6 +148,11 @@ export default function WalletPage() {
     }, [user])
 
     useEffect(() => {
+        const tabParam = new URLSearchParams(window.location.search).get("tab")
+        if (tabParam && ["wallet", "scan", "claim", "topup"].includes(tabParam)) {
+            setActiveTab(tabParam)
+        }
+
         const paymentState = new URLSearchParams(window.location.search).get("payment")
         if (paymentState === "success") {
             setSuccessMessage("Payment received. Your wallet purchase is being confirmed.")
@@ -414,31 +419,31 @@ export default function WalletPage() {
 
                 {/* Main Tabs */}
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
-                    <TabsList className="w-full bg-white border border-slate-200 rounded-2xl h-12 sm:h-14 p-1 sm:p-1.5 shadow-sm">
+                    <TabsList className="w-full bg-white border border-slate-200 rounded-2xl h-12 sm:h-14 p-1 sm:p-1.5 shadow-sm overflow-x-auto justify-start sm:justify-stretch">
                         <TabsTrigger
                             value="wallet"
-                            className="flex-1 rounded-xl data-[state=active]:bg-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all font-bold text-[10px] sm:text-xs uppercase tracking-widest"
+                            className="min-w-[88px] sm:min-w-0 sm:flex-1 rounded-xl data-[state=active]:bg-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all font-bold text-[10px] sm:text-xs uppercase tracking-widest"
                         >
                             <Award className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-1.5" />
                             Credentials
                         </TabsTrigger>
                         <TabsTrigger
                             value="scan"
-                            className="flex-1 rounded-xl data-[state=active]:bg-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all font-bold text-[10px] sm:text-xs uppercase tracking-widest"
+                            className="min-w-[88px] sm:min-w-0 sm:flex-1 rounded-xl data-[state=active]:bg-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all font-bold text-[10px] sm:text-xs uppercase tracking-widest"
                         >
                             <Camera className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-1.5" />
                             Scan
                         </TabsTrigger>
                         <TabsTrigger
                             value="claim"
-                            className="flex-1 rounded-xl data-[state=active]:bg-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all font-bold text-[10px] sm:text-xs uppercase tracking-widest"
+                            className="min-w-[88px] sm:min-w-0 sm:flex-1 rounded-xl data-[state=active]:bg-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all font-bold text-[10px] sm:text-xs uppercase tracking-widest"
                         >
                             <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-1.5" />
                             Claim
                         </TabsTrigger>
                         <TabsTrigger
                             value="topup"
-                            className="flex-1 rounded-xl data-[state=active]:bg-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all font-bold text-[10px] sm:text-xs uppercase tracking-widest"
+                            className="min-w-[88px] sm:min-w-0 sm:flex-1 rounded-xl data-[state=active]:bg-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all font-bold text-[10px] sm:text-xs uppercase tracking-widest"
                         >
                             <CreditCard className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-1.5" />
                             Top Up
@@ -857,39 +862,49 @@ export default function WalletPage() {
 
             {/* Bottom Navigation */}
             <nav className="fixed bottom-0 inset-x-0 bg-white/95 backdrop-blur-xl border-t border-slate-200 z-50 mobile-safe-area">
-                <div className="max-w-lg mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-around">
+                <div className="max-w-lg mx-auto px-3 sm:px-6 h-16 sm:h-20 grid grid-cols-4 items-center gap-1 sm:gap-2">
                     <button
                         onClick={() => setActiveTab("wallet")}
-                        className={`flex flex-col items-center gap-1 py-2 px-3 sm:px-4 rounded-xl transition-all ${activeTab === "wallet"
+                        className={`flex flex-col items-center gap-1 py-2 px-2 sm:px-3 rounded-xl transition-all ${activeTab === "wallet"
                                 ? "text-indigo-600 bg-indigo-50"
                                 : "text-slate-400"
                             }`}
                     >
-                        <Award className="w-5 h-5 sm:w-6 sm:h-6" />
+                        <Award className="w-4.5 h-4.5 sm:w-5 sm:h-5" />
                         <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-widest">Credentials</span>
                     </button>
 
                     <button
                         onClick={() => setActiveTab("scan")}
-                        className="relative -top-4 sm:-top-6"
-                    >
-                        <div className={`w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center shadow-2xl border-4 border-white transition-all active:scale-95 ${activeTab === "scan"
-                                ? "bg-gradient-to-br from-indigo-600 to-violet-600 shadow-indigo-600/40"
-                                : "bg-slate-800 shadow-slate-800/30"
-                            }`}>
-                            <Camera className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
-                        </div>
-                    </button>
-
-                    <button
-                        onClick={() => setActiveTab("claim")}
-                        className={`flex flex-col items-center gap-1 py-2 px-3 sm:px-4 rounded-xl transition-all ${activeTab === "claim"
+                        className={`flex flex-col items-center gap-1 py-2 px-2 sm:px-3 rounded-xl transition-all ${activeTab === "scan"
                                 ? "text-indigo-600 bg-indigo-50"
                                 : "text-slate-400"
                             }`}
                     >
-                        <Plus className="w-5 h-5 sm:w-6 sm:h-6" />
+                        <Camera className="w-4.5 h-4.5 sm:w-5 sm:h-5" />
+                        <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-widest">Scan</span>
+                    </button>
+
+                    <button
+                        onClick={() => setActiveTab("claim")}
+                        className={`flex flex-col items-center gap-1 py-2 px-2 sm:px-3 rounded-xl transition-all ${activeTab === "claim"
+                                ? "text-indigo-600 bg-indigo-50"
+                                : "text-slate-400"
+                            }`}
+                    >
+                        <Plus className="w-4.5 h-4.5 sm:w-5 sm:h-5" />
                         <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-widest">Claim</span>
+                    </button>
+
+                    <button
+                        onClick={() => setActiveTab("topup")}
+                        className={`flex flex-col items-center gap-1 py-2 px-2 sm:px-3 rounded-xl transition-all ${activeTab === "topup"
+                                ? "text-indigo-600 bg-indigo-50"
+                                : "text-slate-400"
+                            }`}
+                    >
+                        <CreditCard className="w-4.5 h-4.5 sm:w-5 sm:h-5" />
+                        <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-widest">Top Up</span>
                     </button>
                 </div>
             </nav>
