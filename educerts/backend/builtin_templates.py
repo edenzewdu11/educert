@@ -155,38 +155,43 @@ REQUIRED_KEYS = {"student_name"}
 _BASE_CSS = """
     @page { size: A4 landscape; margin: 5mm; }
     body { font-family: Helvetica, Arial, sans-serif; margin: 0; padding: 0; color: #1f2937; }
-    .sheet { border: 5px solid %(primary)s; background: #ffffff; }
-    .sheet-inner { border: 1px solid %(accent)s; margin: 3px; padding: 0; background: #ffffff; }
-    .top-band { height: 6px; background: %(primary)s; }
-    .content-wrap { padding: 8px 16px; background: %(soft)s; }
+    .sheet { border: 3px solid %(primary)s; padding: 5px; background: #ffffff; }
+    .sheet-gold { border: 1.5px solid %(accent)s; padding: 3px; }
+    .sheet-inner-table { width: 100%%; border-collapse: collapse; }
+    .sheet-inner { border: 1px solid %(primary)s; padding: 0; background: #ffffff; }
+    .top-band { height: 4px; background: %(accent)s; }
+    .content-wrap { padding: 5px 26px; background: %(soft)s; }
     .header-table { width: 100%%; border-collapse: collapse; }
-    .brand { font-family: Times-Roman, serif; font-size: 16pt; font-weight: 700; color: %(primary)s; letter-spacing: 0.6px; text-transform: uppercase; }
-    .org { font-size: 7.5pt; color: #4b5563; margin-top: 1px; letter-spacing: 0.7px; text-transform: uppercase; }
-    .suborg { font-size: 7pt; color: #6b7280; margin-top: 1px; letter-spacing: 0.3px; }
-    .badge-cell { text-align: right; vertical-align: top; }
-    .badge { display: inline-block; font-size: 7pt; font-weight: 700; color: %(primary)s; border: 1px solid %(primary)s; padding: 3px 7px; background: #ffffff; text-transform: uppercase; letter-spacing: 0.6px; }
-    .title { font-family: Times-Roman, serif; font-size: 23pt; font-weight: 700; color: %(primary)s; text-align: center; margin-top: 6px; letter-spacing: 0.5px; }
-    .intro { font-size: 9.5pt; color: #4b5563; text-align: center; margin-top: 4px; }
-    .recipient { font-family: Times-Roman, serif; font-size: 19pt; font-weight: 700; color: #0f172a; text-align: center; margin-top: 6px; padding-bottom: 4px; border-bottom: 1px solid %(accent)s; }
-    .subject-label { font-size: 7.5pt; color: #6b7280; text-transform: uppercase; text-align: center; margin-top: 6px; }
-    .subject { font-family: Times-Roman, serif; font-size: 13pt; color: %(accent)s; font-weight: 700; text-align: center; margin-top: 1px; }
-    .details-table { width: 100%%; border-collapse: collapse; margin-top: 7px; background: #ffffff; border: 1px solid #d1d5db; }
-    .detail-label { width: 42%%; font-size: 8.5pt; color: #374151; font-weight: 700; text-transform: uppercase; padding: 4px 8px; border: 1px solid #e5e7eb; background: #f9fafb; }
-    .detail-value { width: 58%%; font-size: 9.5pt; color: #111827; font-weight: 600; padding: 4px 8px; border: 1px solid #e5e7eb; }
-    .issue-date { margin-top: 6px; font-size: 8.5pt; color: #6b7280; text-align: center; }
-    .footer-table { width: 100%%; border-collapse: collapse; margin-top: 8px; }
+    .brand { font-family: Times-Roman, serif; font-size: 15pt; font-weight: 700; color: %(primary)s; letter-spacing: 0.8px; text-transform: uppercase; }
+    .org { font-size: 7pt; color: #4b5563; margin-top: 1px; letter-spacing: 0.7px; text-transform: uppercase; }
+    .suborg { font-size: 6.5pt; color: #6b7280; margin-top: 1px; letter-spacing: 0.3px; font-style: italic; }
+    .seal-cell { text-align: center; vertical-align: middle; width: 50pt; padding: 0; }
+    .seal { width: 36pt; height: 36pt; border-radius: 18pt; background: %(primary)s; border: 1.5px solid %(accent)s; color: #ffffff; text-align: center; font-family: Times-Roman, serif; padding: 0; }
+    .seal-star { font-size: 9pt; color: %(accent)s; padding-top: 5pt; }
+    .seal-txt { font-size: 4.5pt; font-weight: 700; letter-spacing: 0.5px; color: #ffffff; }
+    .title { font-family: Times-Roman, serif; font-size: 21pt; font-weight: 700; color: %(primary)s; text-align: center; margin-top: 3px; letter-spacing: 1px; }
+    .title-rule { text-align: center; color: %(accent)s; font-size: 8pt; margin-top: 1px; letter-spacing: 5px; }
+    .intro { font-family: Times-Italic, serif; font-size: 9.5pt; color: #4b5563; text-align: center; margin-top: 4px; }
+    .recipient { font-family: Times-Roman, serif; font-size: 18pt; font-weight: 700; color: #0f172a; text-align: center; margin-top: 4px; padding-bottom: 3px; }
+    .subject-label { font-size: 7pt; color: #6b7280; text-transform: uppercase; letter-spacing: 1px; text-align: center; margin-top: 5px; }
+    .subject { font-family: Times-Roman, serif; font-size: 12pt; color: %(accent)s; font-weight: 700; text-align: center; margin-top: 1px; }
+    .details-table { width: 88%%; margin: 5px auto 0 auto; border-collapse: collapse; background: #ffffff; border: 1px solid %(primary)s; }
+    .detail-label { width: 42%%; font-size: 8pt; color: #374151; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; padding: 3px 10px; border: 1px solid #e5e7eb; background: %(soft)s; }
+    .detail-value { width: 58%%; font-size: 9pt; color: #111827; font-weight: 600; padding: 3px 10px; border: 1px solid #e5e7eb; }
+    .issue-date { margin-top: 4px; font-size: 8pt; color: #4b5563; text-align: center; letter-spacing: 0.3px; }
+    .footer-table { width: 100%%; border-collapse: collapse; margin-top: 6px; }
     .sig-cell { width: 300pt; text-align: center; vertical-align: bottom; }
     .qr-cell { width: 150pt; text-align: center; vertical-align: bottom; }
     .stamp-cell { width: 300pt; text-align: center; vertical-align: bottom; }
-    .sig-img { height: 38px; max-width: 140px; }
-    .stamp-img { height: 62px; max-width: 90px; }
-    .qr-img { width: 70px; height: 70px; }
-    .sig-line { margin-top: 5px; border-top: 1px solid %(primary)s; font-size: 9pt; color: #334155; padding-top: 3px; font-weight: 700; }
-    .sig-role { font-size: 8pt; color: #6b7280; }
+    .sig-img { height: 36px; max-width: 140px; }
+    .stamp-img { height: 60px; max-width: 90px; }
+    .qr-img { width: 62px; height: 62px; }
+    .sig-line { margin-top: 4px; border-top: 1.25px solid %(primary)s; font-family: Times-Roman, serif; font-size: 10pt; color: #1f2937; padding-top: 3px; font-weight: 700; width: 170pt; margin-left: auto; margin-right: auto; }
+    .sig-role { font-size: 7.5pt; color: #6b7280; text-transform: uppercase; letter-spacing: 0.4px; margin-top: 1px; }
     .slot-empty { font-size: 8pt; color: #9ca3af; font-style: italic; border: 1px dashed #d1d5db; padding: 8px 5px; margin: 0 12px; }
-    .verify { font-size: 7.5pt; color: #6b7280; margin-top: 3px; }
-    .meta-row { margin-top: 4px; border-top: 1px solid #d1d5db; padding-top: 3px; }
-    .certid { font-size: 8pt; color: #4b5563; text-align: center; }
+    .verify { font-size: 7pt; color: #6b7280; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.4px; }
+    .meta-row { margin-top: 5px; }
+    .certid { font-size: 8pt; color: #4b5563; text-align: center; border-top: 1px solid #e2e8f0; padding-top: 3px; }
     .regcode { font-size: 7.5pt; color: #6b7280; text-align: center; margin-top: 1px; }
     .crypto { font-size: 7pt; color: #9ca3af; text-align: center; margin-top: 2px; }
 """
@@ -248,7 +253,8 @@ def get_builtin_template_html(cert_type: str) -> str:
         + css
         + "</style>\n</head>\n<body>\n"
         '    <div class="sheet">\n'
-        '        <div class="sheet-inner">\n'
+        '        <div class="sheet-gold">\n'
+        '        <table class="sheet-inner-table" cellpadding="0" cellspacing="0"><tr><td class="sheet-inner">\n'
         '            <div class="top-band"></div>\n'
         '            <div class="content-wrap">\n'
         '            <table class="header-table" cellpadding="0" cellspacing="0">\n'
@@ -258,15 +264,21 @@ def get_builtin_template_html(cert_type: str) -> str:
         '                        <div class="org">Federal Democratic Republic of Ethiopia</div>\n'
         '                        <div class="suborg">Credential Verification and Trust Registry</div>\n'
         '                    </td>\n'
-        '                    <td class="badge-cell"><span class="badge">Official Document</span></td>\n'
+        '                    <td class="seal-cell">\n'
+        '                        <table cellpadding="0" cellspacing="0" style="margin: 0 auto;"><tr><td class="seal">\n'
+        '                            <div class="seal-star">&#9733;</div>\n'
+        '                            <div class="seal-txt">OFFICIAL</div>\n'
+        '                        </td></tr></table>\n'
+        '                    </td>\n'
         '                </tr>\n'
         '            </table>\n'
         f'            <div class="title">{cfg["title"]}</div>\n'
+        '            <div class="title-rule">&#10022; &#10022; &#10022;</div>\n'
         f'            <div class="intro">{cfg["intro"]}</div>\n'
         '            <div class="recipient">{{ student_name }}</div>\n'
         f'            {subject_html}\n'
         f'            {details_html}\n'
-        '            <div class="issue-date">Issued on {{ issued_at }}</div>\n'
+        '            <div class="issue-date">Issued on the {{ issued_at }}</div>\n'
         '            <table class="footer-table" cellpadding="0" cellspacing="0">\n'
         '                <tr>\n'
         '                    <td class="sig-cell">\n'
@@ -289,6 +301,7 @@ def get_builtin_template_html(cert_type: str) -> str:
         '                <div class="crypto">Secured with Ed25519 &middot; {{ signature }}</div>\n'
         '            </div>\n'
         '            </div>\n'
+        '        </td></tr></table>\n'
         '        </div>\n'
         '    </div>\n'
         "</body>\n</html>"
