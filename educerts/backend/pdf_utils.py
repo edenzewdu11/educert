@@ -63,9 +63,12 @@ def _compute_overlay_image_rect(rect: fitz.Rect, page_rect: fitz.Rect, is_stamp:
     x0 = cx - (target_w / 2.0)
     y0 = cy - (target_h / 2.0)
 
-    min_x, min_y = 4.0, 4.0
-    max_x = page_rect.width - target_w - 4.0
-    max_y = page_rect.height - target_h - 4.0
+    # Use absolute page coordinates. Some PDFs have negative x0/y0 origins,
+    # so clamping to width/height alone can place images off the visible page.
+    min_x = max(0.0, page_rect.x0 + 4.0)
+    min_y = max(0.0, page_rect.y0 + 4.0)
+    max_x = max(min_x, page_rect.x1 - target_w - 4.0)
+    max_y = max(min_y, page_rect.y1 - target_h - 4.0)
 
     x0 = min(max(x0, min_x), max_x)
     y0 = min(max(y0, min_y), max_y)

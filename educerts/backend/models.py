@@ -76,3 +76,28 @@ class DigitalSignatureRecord(Base):
     signature_path = Column(String(500), nullable=True)  # path to signature PNG
     stamp_path = Column(String(500), nullable=True)       # path to stamp PNG
     uploaded_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
+class PaymentTransaction(Base):
+    __tablename__ = "payment_transactions"
+
+    id = Column(String(36), primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    provider = Column(String(30), default="stripe")
+    plan_id = Column(String(100), nullable=False)
+    checkout_session_id = Column(String(255), unique=True, index=True)
+    payment_intent_id = Column(String(255), nullable=True, index=True)
+    amount_cents = Column(Integer, nullable=False)
+    currency = Column(String(10), default="usd")
+    status = Column(String(30), default="pending", index=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+    user = relationship("User", back_populates="payment_transactions")
+
+
+User.payment_transactions = relationship(
+    "PaymentTransaction",
+    back_populates="user",
+    order_by="PaymentTransaction.created_at.desc()"
+)

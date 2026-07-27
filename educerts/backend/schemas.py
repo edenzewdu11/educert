@@ -106,3 +106,36 @@ class VerificationRequest(BaseModel):
 
 class BulkActionRequest(BaseModel):
     cert_ids: list[str]
+
+
+class PaymentPlan(BaseModel):
+    id: str
+    name: str
+    description: str
+    amount_cents: int
+    currency: str
+    credits: int
+
+
+class PaymentCheckoutRequest(BaseModel):
+    plan_id: str
+
+
+class PaymentCheckoutResponse(BaseModel):
+    checkout_url: str
+    session_id: str
+
+
+class PaymentTransaction(BaseModel):
+    id: str
+    provider: str
+    plan_id: str
+    checkout_session_id: str
+    payment_intent_id: Optional[str] = None
+    amount_cents: int
+    currency: str
+    status: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True

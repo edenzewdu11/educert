@@ -5,11 +5,12 @@ from fastapi.templating import Jinja2Templates
 from fastapi.exceptions import RequestValidationError
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from datetime import timedelta
 import uuid
 import csv
 import io
+import json
 import datetime
 import hashlib
 import random
@@ -22,6 +23,7 @@ import base64
 from dotenv import load_dotenv
 import fitz  # PyMuPDF
 from PIL import Image, UnidentifiedImageError
+import stripe
 
 import models, schemas, crypto_utils, database, auth_utils, oa_logic
 import pdf_utils
@@ -68,6 +70,58 @@ templates = Jinja2Templates(directory="templates")
 
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
 ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
+
+PAYMENT_PROVIDER = os.getenv("PAYMENT_PROVIDER", "stripe")
+PAYMENT_SUCCESS_URL = os.getenv("PAYMENT_SUCCESS_URL", f"{FRONTEND_URL.rstrip('/')}/wallet?payment=success")
+PAYMENT_CANCEL_URL = os.getenv("PAYMENT_CANCEL_URL", f"{FRONTEND_URL.rstrip('/')}/wallet?payment=cancel")
+
+PAYMENT_PLANS: Dict[str, Dict[str, Any]] = {
+    "starter": {
+        "name": "Starter Pack",
+        "description": "50 credential issuance credits",
+        "amount_cents": 999,
+        "currency": "usd",
+        "credits": 50,
+        "stripe_price_id": os.getenv("STRIPE_PRICE_ID_STARTER", ""),
+    },
+    "growth": {
+        "name": "Growth Pack",
+        "description": "150 credential issuance credits",
+        "amount_cents": 2499,
+        "currency": "usd",
+        "credits": 150,
+        "stripe_price_id": os.getenv("STRIPE_PRICE_ID_GROWTH", ""),
+    },
+    "scale": {
+        "name": "Scale Pack",
+        "description": "500 credential issuance credits",
+        "amount_cents": 6999,
+        "currency": "usd",
+        "credits": 500,
+        "stripe_price_id": os.getenv("STRIPE_PRICE_ID_SCALE", ""),
+    },
+}
+
+
+def _get_stripe_secret_key() -> str:
+    key = os.getenv("STRIPE_SECRET_KEY", "").strip()
+    if not key:
+        raise HTTPException(status_code=503, detail="Stripe is not configured. Set STRIPE_SECRET_KEY.")
+    return key
+
+
+def _get_public_payment_plans() -> List[schemas.PaymentPlan]:
+    return [
+        schemas.PaymentPlan(
+            id=plan_id,
+            name=plan["name"],
+            description=plan["description"],
+            amount_cents=plan["amount_cents"],
+            currency=plan["currency"],
+            credits=plan["credits"],
+        )
+        for plan_id, plan in PAYMENT_PLANS.items()
+    ]
 
 # CORS setup - origins come from env (FRONTEND_URL, comma-separated) plus local dev defaults
 _default_origins = [
@@ -354,6 +408,149 @@ def logout(response: Response):
         samesite="none" if is_production else "lax",
     )
     return {"message": "Logged out successfully"}
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Payments (Stripe Checkout)
+# ─────────────────────────────────────────────────────────────────────────────
+
+@app.get("/api/payments/plans", response_model=List[schemas.PaymentPlan])
+def get_payment_plans(current_user: models.User = Depends(require_user)):
+    _ = current_user
+    return _get_public_payment_plans()
+
+
+@app.post("/api/payments/checkout", response_model=schemas.PaymentCheckoutResponse)
+def create_checkout_session(
+    checkout_request: schemas.PaymentCheckoutRequest,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(require_user),
+):
+    if PAYMENT_PROVIDER.lower() != "stripe":
+        raise HTTPException(status_code=400, detail="Only Stripe payment provider is currently supported.")
+
+    plan = PAYMENT_PLANS.get(checkout_request.plan_id)
+    if not plan:
+        raise HTTPException(status_code=404, detail="Unknown payment plan.")
+
+    stripe.api_key = _get_stripe_secret_key()
+
+    transaction = models.PaymentTransaction(
+        id=str(uuid.uuid4()),
+        user_id=current_user.id,
+        provider="stripe",
+        plan_id=checkout_request.plan_id,
+        amount_cents=plan["amount_cents"],
+        currency=plan["currency"],
+        status="pending",
+    )
+    db.add(transaction)
+    db.commit()
+
+    separator = "&" if "?" in PAYMENT_SUCCESS_URL else "?"
+    success_url = f"{PAYMENT_SUCCESS_URL}{separator}session_id={{CHECKOUT_SESSION_ID}}"
+    cancel_url = PAYMENT_CANCEL_URL
+
+    line_item: Dict[str, Any]
+    configured_price_id = (plan.get("stripe_price_id") or "").strip()
+    if configured_price_id:
+        line_item = {"price": configured_price_id, "quantity": 1}
+    else:
+        line_item = {
+            "price_data": {
+                "currency": plan["currency"],
+                "product_data": {
+                    "name": plan["name"],
+                    "description": plan["description"],
+                },
+                "unit_amount": plan["amount_cents"],
+            },
+            "quantity": 1,
+        }
+
+    session = stripe.checkout.Session.create(
+        mode="payment",
+        success_url=success_url,
+        cancel_url=cancel_url,
+        line_items=[line_item],
+        metadata={
+            "transaction_id": transaction.id,
+            "plan_id": checkout_request.plan_id,
+            "credits": str(plan["credits"]),
+            "user_id": str(current_user.id),
+            "username": current_user.name,
+        },
+    )
+
+    transaction.checkout_session_id = session.id
+    db.add(transaction)
+    db.commit()
+
+    return schemas.PaymentCheckoutResponse(checkout_url=session.url, session_id=session.id)
+
+
+@app.post("/api/payments/webhook")
+async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
+    stripe.api_key = _get_stripe_secret_key()
+    payload = await request.body()
+    signature = request.headers.get("stripe-signature")
+    webhook_secret = os.getenv("STRIPE_WEBHOOK_SECRET", "").strip()
+
+    try:
+        if webhook_secret:
+            event = stripe.Webhook.construct_event(payload=payload, sig_header=signature, secret=webhook_secret)
+        else:
+            event = stripe.Event.construct_from(json.loads(payload.decode("utf-8")), stripe.api_key)
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=f"Invalid webhook event: {str(exc)}")
+
+    event_type = event.get("type", "")
+    event_object = event.get("data", {}).get("object", {})
+    checkout_session_id = event_object.get("id")
+    transaction_id = event_object.get("metadata", {}).get("transaction_id")
+    payment_intent_id = event_object.get("payment_intent")
+
+    transaction = None
+    if transaction_id:
+        transaction = db.query(models.PaymentTransaction).filter(models.PaymentTransaction.id == transaction_id).first()
+    if not transaction and checkout_session_id:
+        transaction = (
+            db.query(models.PaymentTransaction)
+            .filter(models.PaymentTransaction.checkout_session_id == checkout_session_id)
+            .first()
+        )
+
+    if not transaction:
+        return {"ok": True, "message": "Webhook received; transaction not found."}
+
+    if event_type == "checkout.session.completed":
+        transaction.status = "paid" if event_object.get("payment_status") == "paid" else "pending"
+    elif event_type == "checkout.session.async_payment_succeeded":
+        transaction.status = "paid"
+    elif event_type in ("checkout.session.async_payment_failed", "checkout.session.expired"):
+        transaction.status = "failed"
+
+    if payment_intent_id:
+        transaction.payment_intent_id = payment_intent_id
+
+    db.add(transaction)
+    db.commit()
+
+    return {"ok": True}
+
+
+@app.get("/api/payments/history", response_model=List[schemas.PaymentTransaction])
+def get_payment_history(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(require_user),
+):
+    return (
+        db.query(models.PaymentTransaction)
+        .filter(models.PaymentTransaction.user_id == current_user.id)
+        .order_by(models.PaymentTransaction.created_at.desc())
+        .limit(30)
+        .all()
+    )
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Certificate Issuance (Phase 3: Document Registry)
@@ -1576,20 +1773,28 @@ async def upload_signature_assets(
     os.makedirs("user_templates", exist_ok=True)
     sig_path = None
     stamp_path = None
+    user_sig_path = f"user_templates/signature_{current_user.id}.png"
+    user_stamp_path = f"user_templates/stamp_{current_user.id}.png"
 
     if signature_file and signature_file.filename:
         sig_bytes = await signature_file.read()
         sig_png_bytes = _normalize_image_bytes_to_png(sig_bytes)
-        sig_path = f"user_templates/signature_{current_user.id}.png"
+        sig_path = user_sig_path
         with open(sig_path, "wb") as f:
             f.write(sig_png_bytes)
 
     if stamp_file and stamp_file.filename:
         stamp_bytes = await stamp_file.read()
         stamp_png_bytes = _normalize_image_bytes_to_png(stamp_bytes)
-        stamp_path = f"user_templates/stamp_{current_user.id}.png"
+        stamp_path = user_stamp_path
         with open(stamp_path, "wb") as f:
             f.write(stamp_png_bytes)
+
+    # Preserve existing per-user assets when only one file is uploaded in this request.
+    if not sig_path and os.path.exists(user_sig_path):
+        sig_path = user_sig_path
+    if not stamp_path and os.path.exists(user_stamp_path):
+        stamp_path = user_stamp_path
 
     record = models.DigitalSignatureRecord(
         signer_name=signer_name,
@@ -1605,8 +1810,8 @@ async def upload_signature_assets(
         "id": record.id,
         "signer_name": signer_name,
         "signer_role": signer_role,
-        "has_signature": sig_path is not None,
-        "has_stamp": stamp_path is not None,
+        "has_signature": bool(sig_path and os.path.exists(sig_path)),
+        "has_stamp": bool(stamp_path and os.path.exists(stamp_path)),
         "uploaded_at": record.uploaded_at.isoformat() if record.uploaded_at else None
     }
 

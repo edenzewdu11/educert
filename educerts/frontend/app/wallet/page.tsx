@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import {
     Wallet,
     Plus,
+    CreditCard,
     Award,
     Download,
     FileText,
@@ -37,7 +38,7 @@ import qrcode from "qrcode"
 import { getApiBaseUrl } from "@/lib/api-config"
 
 // Dynamically import QR Scanner to avoid SSR issues
-const QRScanner = dynamic(() => import("@/components/QRScanner"), { 
+const QRScanner = dynamic(() => import("@/components/QRScanner"), {
     ssr: false,
     loading: () => (
         <div className="w-full aspect-square bg-slate-100 rounded-[2rem] flex items-center justify-center">
@@ -53,6 +54,25 @@ interface Certificate {
     issued_at: string
     revoked: boolean
     organization: string
+}
+
+interface PaymentPlan {
+    id: string
+    name: string
+    description: string
+    amount_cents: number
+    currency: string
+    credits: number
+}
+
+interface PaymentTransaction {
+    id: string
+    provider: string
+    plan_id: string
+    amount_cents: number
+    currency: string
+    status: string
+    created_at: string
 }
 
 export default function WalletPage() {
@@ -71,6 +91,10 @@ export default function WalletPage() {
     const [scanResult, setScanResult] = useState<string | null>(null)
     const [verifying, setVerifying] = useState(false)
     const [verificationResult, setVerificationResult] = useState<any>(null)
+    const [paymentPlans, setPaymentPlans] = useState<PaymentPlan[]>([])
+    const [paymentHistory, setPaymentHistory] = useState<PaymentTransaction[]>([])
+    const [loadingPayments, setLoadingPayments] = useState(false)
+    const [checkoutingPlanId, setCheckoutingPlanId] = useState<string | null>(null)
     const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
     const [showInstallBanner, setShowInstallBanner] = useState(false)
     const [isInstalled, setIsInstalled] = useState(false)
@@ -105,10 +129,10 @@ export default function WalletPage() {
 
     const handleInstallClick = async () => {
         if (!deferredPrompt) return
-        
+
         deferredPrompt.prompt()
         const { outcome } = await deferredPrompt.userChoice
-        
+
         if (outcome === 'accepted') {
             setShowInstallBanner(false)
         }
@@ -118,8 +142,22 @@ export default function WalletPage() {
     useEffect(() => {
         if (user) {
             fetchClaimedCerts()
+            fetchPaymentPlans()
+            fetchPaymentHistory()
         }
     }, [user])
+
+    useEffect(() => {
+        const paymentState = new URLSearchParams(window.location.search).get("payment")
+        if (paymentState === "success") {
+            setSuccessMessage("Payment received. Your wallet purchase is being confirmed.")
+            fetchPaymentHistory()
+            window.history.replaceState({}, "", window.location.pathname)
+        } else if (paymentState === "cancel") {
+            setErrorMessage("Payment was canceled.")
+            window.history.replaceState({}, "", window.location.pathname)
+        }
+    }, [])
 
     const fetchClaimedCerts = async () => {
         setLoading(true)
@@ -130,6 +168,42 @@ export default function WalletPage() {
             console.error(error)
         } finally {
             setLoading(false)
+        }
+    }
+
+    const fetchPaymentPlans = async () => {
+        setLoadingPayments(true)
+        try {
+            const res = await axios.get<PaymentPlan[]>(`${getApiBaseUrl()}/api/payments/plans`)
+            setPaymentPlans(res.data)
+        } catch (error) {
+            console.error("Failed to load payment plans", error)
+        } finally {
+            setLoadingPayments(false)
+        }
+    }
+
+    const fetchPaymentHistory = async () => {
+        try {
+            const res = await axios.get<PaymentTransaction[]>(`${getApiBaseUrl()}/api/payments/history`)
+            setPaymentHistory(res.data)
+        } catch (error) {
+            console.error("Failed to load payment history", error)
+        }
+    }
+
+    const startCheckout = async (planId: string) => {
+        setCheckoutingPlanId(planId)
+        setErrorMessage("")
+        try {
+            const res = await axios.post<{ checkout_url: string }>(`${getApiBaseUrl()}/api/payments/checkout`, {
+                plan_id: planId,
+            })
+            window.location.href = res.data.checkout_url
+        } catch (error: any) {
+            setErrorMessage(error.response?.data?.detail || "Unable to start payment.")
+        } finally {
+            setCheckoutingPlanId(null)
         }
     }
 
@@ -215,7 +289,7 @@ export default function WalletPage() {
 
     const shareCredential = async (cert: Certificate) => {
         const shareUrl = `${window.location.origin}/verify-public?id=${cert.id}`
-        
+
         if (navigator.share) {
             try {
                 await navigator.share({
@@ -315,7 +389,7 @@ export default function WalletPage() {
                 </AnimatePresence>
 
                 {/* User Profile Card */}
-                <motion.div 
+                <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     className="mb-4 sm:mb-6 flex items-center gap-3 sm:gap-4 bg-white p-4 sm:p-5 rounded-[2rem] shadow-xl shadow-slate-200/50 border border-slate-100"
@@ -361,6 +435,13 @@ export default function WalletPage() {
                         >
                             <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-1.5" />
                             Claim
+                        </TabsTrigger>
+                        <TabsTrigger
+                            value="topup"
+                            className="flex-1 rounded-xl data-[state=active]:bg-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all font-bold text-[10px] sm:text-xs uppercase tracking-widest"
+                        >
+                            <CreditCard className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-1.5" />
+                            Top Up
                         </TabsTrigger>
                     </TabsList>
 
@@ -441,18 +522,16 @@ export default function WalletPage() {
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, y: -20 }}
-                                    className={`p-4 sm:p-6 rounded-2xl border-2 ${
-                                        verificationResult.summary?.all 
-                                            ? "bg-emerald-50 border-emerald-200" 
+                                    className={`p-4 sm:p-6 rounded-2xl border-2 ${verificationResult.summary?.all
+                                            ? "bg-emerald-50 border-emerald-200"
                                             : "bg-red-50 border-red-200"
-                                    }`}
+                                        }`}
                                 >
                                     <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
-                                        <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center ${
-                                            verificationResult.summary?.all 
-                                                ? "bg-emerald-500" 
+                                        <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center ${verificationResult.summary?.all
+                                                ? "bg-emerald-500"
                                                 : "bg-red-500"
-                                        }`}>
+                                            }`}>
                                             {verificationResult.summary?.all ? (
                                                 <ShieldCheck className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                                             ) : (
@@ -460,11 +539,10 @@ export default function WalletPage() {
                                             )}
                                         </div>
                                         <div>
-                                            <h4 className={`font-bold text-sm sm:text-base ${
-                                                verificationResult.summary?.all 
-                                                    ? "text-emerald-700" 
+                                            <h4 className={`font-bold text-sm sm:text-base ${verificationResult.summary?.all
+                                                    ? "text-emerald-700"
                                                     : "text-red-700"
-                                            }`}>
+                                                }`}>
                                                 {verificationResult.summary?.all ? "Verified!" : "Invalid"}
                                             </h4>
                                             <p className="text-[10px] sm:text-xs text-slate-500">
@@ -539,6 +617,107 @@ export default function WalletPage() {
                             </p>
                         </div>
                     </TabsContent>
+
+                    <TabsContent value="topup" className="space-y-3 sm:space-y-4 outline-none">
+                        <div className="text-center">
+                            <h3 className="text-base sm:text-lg font-black tracking-tight">Add Wallet Credits</h3>
+                            <p className="text-slate-500 text-[10px] sm:text-xs font-medium mt-1">
+                                Purchase credential issuance credits securely with Stripe
+                            </p>
+                        </div>
+
+                        {loadingPayments ? (
+                            <div className="py-12 sm:py-16 text-center bg-white rounded-2xl border border-slate-200">
+                                <Loader2 className="w-6 h-6 sm:w-8 sm:h-8 text-indigo-600 animate-spin mx-auto mb-3 sm:mb-4" />
+                                <p className="text-slate-400 text-[10px] sm:text-xs font-bold uppercase tracking-widest">Loading payment plans...</p>
+                            </div>
+                        ) : (
+                            <div className="space-y-3 sm:space-y-4">
+                                {paymentPlans.map((plan) => (
+                                    <div
+                                        key={plan.id}
+                                        className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-lg shadow-slate-200/40"
+                                    >
+                                        <div className="flex items-start justify-between gap-3">
+                                            <div>
+                                                <h4 className="text-sm sm:text-base font-black text-slate-900">{plan.name}</h4>
+                                                <p className="text-[10px] sm:text-xs text-slate-500 mt-1">{plan.description}</p>
+                                            </div>
+                                            <span className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-indigo-600 bg-indigo-50 border border-indigo-100 px-2.5 py-1.5 rounded-full">
+                                                {plan.credits} Credits
+                                            </span>
+                                        </div>
+
+                                        <div className="mt-4 flex items-center justify-between">
+                                            <div>
+                                                <p className="text-xl sm:text-2xl font-black text-slate-900">
+                                                    {(plan.amount_cents / 100).toLocaleString(undefined, {
+                                                        style: "currency",
+                                                        currency: plan.currency.toUpperCase(),
+                                                    })}
+                                                </p>
+                                            </div>
+
+                                            <Button
+                                                onClick={() => startCheckout(plan.id)}
+                                                disabled={checkoutingPlanId === plan.id}
+                                                className="h-10 sm:h-11 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white font-black text-xs sm:text-sm"
+                                            >
+                                                {checkoutingPlanId === plan.id ? (
+                                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                                ) : (
+                                                    <>
+                                                        <CreditCard className="w-4 h-4 mr-1.5" />
+                                                        Buy Now
+                                                    </>
+                                                )}
+                                            </Button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-sm">
+                            <div className="flex items-center justify-between mb-3">
+                                <h4 className="text-xs sm:text-sm font-black uppercase tracking-widest text-slate-500">Recent Payments</h4>
+                                <Button
+                                    onClick={fetchPaymentHistory}
+                                    variant="ghost"
+                                    className="h-8 px-2 text-[10px] sm:text-xs font-bold text-indigo-600"
+                                >
+                                    Refresh
+                                </Button>
+                            </div>
+                            {paymentHistory.length === 0 ? (
+                                <p className="text-[10px] sm:text-xs text-slate-400">No payment records yet.</p>
+                            ) : (
+                                <div className="space-y-2">
+                                    {paymentHistory.map((txn) => (
+                                        <div key={txn.id} className="flex items-center justify-between bg-slate-50 border border-slate-100 rounded-xl px-3 py-2.5">
+                                            <div>
+                                                <p className="text-xs sm:text-sm font-bold text-slate-800">{txn.plan_id}</p>
+                                                <p className="text-[10px] sm:text-xs text-slate-400">
+                                                    {new Date(txn.created_at).toLocaleString()}
+                                                </p>
+                                            </div>
+                                            <div className="text-right">
+                                                <p className="text-xs sm:text-sm font-black text-slate-900">
+                                                    {(txn.amount_cents / 100).toLocaleString(undefined, {
+                                                        style: "currency",
+                                                        currency: txn.currency.toUpperCase(),
+                                                    })}
+                                                </p>
+                                                <p className={`text-[10px] sm:text-xs font-bold uppercase ${txn.status === "paid" ? "text-emerald-600" : txn.status === "pending" ? "text-amber-600" : "text-red-600"}`}>
+                                                    {txn.status}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </TabsContent>
                 </Tabs>
             </main>
 
@@ -605,7 +784,7 @@ export default function WalletPage() {
                                             <QrCode className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2" />
                                             Show QR Code
                                         </Button>
-                                        
+
                                         <div className="grid grid-cols-2 gap-2 sm:gap-3">
                                             <Button
                                                 onClick={() => window.open(`${getApiBaseUrl()}/api/download/${selectedCert.id}`)}
@@ -641,7 +820,7 @@ export default function WalletPage() {
                                     <div className="text-center">
                                         <h3 className="text-base sm:text-lg font-black text-slate-900 mb-2">Scan to Verify</h3>
                                         <p className="text-[10px] sm:text-xs text-slate-500 mb-4 sm:mb-6">Share this QR code to verify your credential</p>
-                                        
+
                                         <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-xl inline-block mb-4 sm:mb-6 border border-slate-100">
                                             <img src={qrCodeData} alt="QR Code" className="w-48 h-48 sm:w-56 sm:h-56" />
                                         </div>
@@ -681,36 +860,33 @@ export default function WalletPage() {
                 <div className="max-w-lg mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-around">
                     <button
                         onClick={() => setActiveTab("wallet")}
-                        className={`flex flex-col items-center gap-1 py-2 px-3 sm:px-4 rounded-xl transition-all ${
-                            activeTab === "wallet" 
-                                ? "text-indigo-600 bg-indigo-50" 
+                        className={`flex flex-col items-center gap-1 py-2 px-3 sm:px-4 rounded-xl transition-all ${activeTab === "wallet"
+                                ? "text-indigo-600 bg-indigo-50"
                                 : "text-slate-400"
-                        }`}
+                            }`}
                     >
                         <Award className="w-5 h-5 sm:w-6 sm:h-6" />
                         <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-widest">Credentials</span>
                     </button>
-                    
+
                     <button
                         onClick={() => setActiveTab("scan")}
                         className="relative -top-4 sm:-top-6"
                     >
-                        <div className={`w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center shadow-2xl border-4 border-white transition-all active:scale-95 ${
-                            activeTab === "scan"
+                        <div className={`w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center shadow-2xl border-4 border-white transition-all active:scale-95 ${activeTab === "scan"
                                 ? "bg-gradient-to-br from-indigo-600 to-violet-600 shadow-indigo-600/40"
                                 : "bg-slate-800 shadow-slate-800/30"
-                        }`}>
+                            }`}>
                             <Camera className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
                         </div>
                     </button>
-                    
+
                     <button
                         onClick={() => setActiveTab("claim")}
-                        className={`flex flex-col items-center gap-1 py-2 px-3 sm:px-4 rounded-xl transition-all ${
-                            activeTab === "claim" 
-                                ? "text-indigo-600 bg-indigo-50" 
+                        className={`flex flex-col items-center gap-1 py-2 px-3 sm:px-4 rounded-xl transition-all ${activeTab === "claim"
+                                ? "text-indigo-600 bg-indigo-50"
                                 : "text-slate-400"
-                        }`}
+                            }`}
                     >
                         <Plus className="w-5 h-5 sm:w-6 sm:h-6" />
                         <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-widest">Claim</span>

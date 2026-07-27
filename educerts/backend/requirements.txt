@@ -15,3 +15,4 @@ Pillow
 python-dotenv
 qrcode[pil]
 psycopg2-binary
+stripe
