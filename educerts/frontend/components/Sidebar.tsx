@@ -10,6 +10,7 @@ const navItems = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard },
   { name: "Issue Credentials", href: "/issue", icon: FilePlus, adminOnly: true },
   { name: "Certificates", href: "/certificates", icon: Award, adminOnly: true },
+  { name: "Payments", href: "/wallet?tab=topup", icon: CreditCard },
   { name: "Verify", href: "/verify", icon: Search },
   { name: "Settings", href: "/settings", icon: Settings, adminOnly: true },
 ]
@@ -91,7 +92,7 @@ export default function Sidebar({ user, onLogout }: { user: any, onLogout: () =>
               {user?.is_admin ? (
                 navItems.map((item) => {
                   if (item.adminOnly && !user?.is_admin) return null
-                  const isActive = pathname === item.href
+                  const isActive = isItemActive(item.href)
                   return (
                     <Link
                       key={item.href}
@@ -201,7 +202,7 @@ export default function Sidebar({ user, onLogout }: { user: any, onLogout: () =>
           {user?.is_admin ? (
             navItems.map((item) => {
               if (item.adminOnly && !user?.is_admin) return null
-              const isActive = pathname === item.href
+              const isActive = isItemActive(item.href)
               return (
                 <Link
                   key={item.href}
