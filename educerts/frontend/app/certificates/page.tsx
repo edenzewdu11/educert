@@ -7,7 +7,7 @@ import { useAuth } from "@/context/AuthContext"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { getApiBaseUrl } from "@/lib/api-config"
-import { Download, Loader2, Search, Shield, Tag } from "lucide-react"
+import { ChevronLeft, ChevronRight, Download, Loader2, Search, Shield, Tag } from "lucide-react"
 
 interface Certificate {
     id: string
@@ -43,6 +43,9 @@ export default function CertificatesPage() {
 
     const [nameQuery, setNameQuery] = useState("")
     const [categoryFilter, setCategoryFilter] = useState("all")
+    const [currentPage, setCurrentPage] = useState(1)
+
+    const PAGE_SIZE = 10
 
     useEffect(() => {
         const fetchCertificates = async () => {
@@ -85,6 +88,22 @@ export default function CertificatesPage() {
         })
     }, [certs, nameQuery, categoryFilter])
 
+    const totalPages = Math.max(1, Math.ceil(filteredCerts.length / PAGE_SIZE))
+    const safeCurrentPage = Math.min(currentPage, totalPages)
+    const startIndex = (safeCurrentPage - 1) * PAGE_SIZE
+    const endIndex = startIndex + PAGE_SIZE
+    const paginatedCerts = filteredCerts.slice(startIndex, endIndex)
+
+    useEffect(() => {
+        setCurrentPage(1)
+    }, [nameQuery, categoryFilter])
+
+    useEffect(() => {
+        if (currentPage > totalPages) {
+            setCurrentPage(totalPages)
+        }
+    }, [currentPage, totalPages])
+
     return (
         <div className="min-h-screen bg-slate-50 p-4 sm:p-6 lg:p-8">
             <div className="max-w-7xl mx-auto space-y-6">
@@ -123,7 +142,7 @@ export default function CertificatesPage() {
                         </div>
 
                         <div className="text-xs text-slate-500">
-                            Showing {filteredCerts.length} of {certs.length} certificates
+                            Showing {filteredCerts.length === 0 ? 0 : startIndex + 1}-{Math.min(endIndex, filteredCerts.length)} of {filteredCerts.length} certificates (total {certs.length})
                         </div>
 
                         {loading ? (
@@ -153,7 +172,7 @@ export default function CertificatesPage() {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {filteredCerts.map((cert, i) => {
+                                        {paginatedCerts.map((cert, i) => {
                                             const category = (cert.cert_type || "certificate").toLowerCase()
                                             const signed = cert.signing_status === "signed"
                                             const statusText = cert.revoked ? "Revoked" : signed ? "Signed" : "Unsigned"
@@ -200,6 +219,32 @@ export default function CertificatesPage() {
                                         })}
                                     </tbody>
                                 </table>
+                            </div>
+
+                            <div className="flex items-center justify-between gap-3 pt-3">
+                                <p className="text-xs text-slate-500">
+                                    Page {safeCurrentPage} of {totalPages}
+                                </p>
+                                <div className="flex items-center gap-2">
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="h-8"
+                                        disabled={safeCurrentPage <= 1}
+                                        onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                                    >
+                                        <ChevronLeft className="w-4 h-4" />
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="h-8"
+                                        disabled={safeCurrentPage >= totalPages}
+                                        onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                                    >
+                                        <ChevronRight className="w-4 h-4" />
+                                    </Button>
+                                </div>
                             </div>
                         )}
                     </CardContent>
