@@ -105,12 +105,25 @@ export default function CertificatesPage() {
     }, [currentPage, totalPages])
 
     return (
-        <div className="min-h-screen bg-slate-50 p-4 sm:p-6 lg:p-8">
-            <div className="max-w-7xl mx-auto space-y-6">
-                <Card className="border border-slate-200">
+        <div className="relative min-h-screen bg-gradient-to-br from-slate-50 via-white to-sky-50 p-4 sm:p-6 lg:p-8 overflow-hidden">
+            <div className="pointer-events-none absolute -top-16 -left-16 w-64 h-64 rounded-full bg-sky-300/20 blur-3xl" />
+            <div className="pointer-events-none absolute -bottom-24 -right-16 w-72 h-72 rounded-full bg-cyan-300/20 blur-3xl" />
+
+            <div className="max-w-7xl mx-auto space-y-6 relative z-10">
+                <div className="relative overflow-hidden rounded-3xl p-5 sm:p-7 border border-sky-400/40 bg-gradient-to-r from-sky-600 via-cyan-600 to-sky-700 shadow-2xl shadow-cyan-600/20">
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_25%,rgba(255,255,255,0.22),transparent_40%),radial-gradient(circle_at_85%_0%,rgba(255,255,255,0.16),transparent_30%)]" />
+                    <div className="relative">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/30 bg-white/15 text-white text-[10px] sm:text-xs font-black uppercase tracking-widest mb-3">
+                            <Tag className="w-3.5 h-3.5" /> Certificate Registry
+                        </div>
+                        <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">Certificates</h1>
+                        <p className="text-sky-100/95 font-medium mt-1 text-sm sm:text-base">Table view with quick filters by category and student name.</p>
+                    </div>
+                </div>
+
+                <Card className="border border-slate-200/80 bg-white/90 backdrop-blur shadow-xl shadow-slate-200/50 rounded-2xl">
                     <CardHeader className="pb-3">
-                        <CardTitle className="text-xl sm:text-2xl font-bold text-slate-900">Certificates</CardTitle>
-                        <p className="text-sm text-slate-500">Table view with quick filters by category and student name.</p>
+                        <CardTitle className="text-base sm:text-lg font-bold text-slate-900">Browse and Filter Certificates</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -158,9 +171,9 @@ export default function CertificatesPage() {
                             </div>
                         ) : (
                             <>
-                                <div className="overflow-x-auto border border-slate-200 rounded-lg bg-white">
+                                <div className="overflow-x-auto border border-slate-200 rounded-xl bg-white shadow-inner">
                                     <table className="w-full min-w-[980px] text-sm">
-                                        <thead className="bg-slate-100 border-b border-slate-200">
+                                        <thead className="bg-gradient-to-r from-slate-100 to-slate-50 border-b border-slate-200">
                                             <tr>
                                                 <th className="text-left px-4 py-3 font-semibold text-slate-700">Student Name</th>
                                                 <th className="text-left px-4 py-3 font-semibold text-slate-700">Category</th>
