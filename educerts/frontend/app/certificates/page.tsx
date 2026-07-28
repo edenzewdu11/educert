@@ -157,95 +157,97 @@ export default function CertificatesPage() {
                                 No certificates match this filter.
                             </div>
                         ) : (
-                            <div className="overflow-x-auto border border-slate-200 rounded-lg bg-white">
-                                <table className="w-full min-w-[980px] text-sm">
-                                    <thead className="bg-slate-100 border-b border-slate-200">
-                                        <tr>
-                                            <th className="text-left px-4 py-3 font-semibold text-slate-700">Student Name</th>
-                                            <th className="text-left px-4 py-3 font-semibold text-slate-700">Category</th>
-                                            <th className="text-left px-4 py-3 font-semibold text-slate-700">Certificate</th>
-                                            <th className="text-left px-4 py-3 font-semibold text-slate-700">Certificate ID</th>
-                                            <th className="text-left px-4 py-3 font-semibold text-slate-700">PIN</th>
-                                            <th className="text-left px-4 py-3 font-semibold text-slate-700">Status</th>
-                                            <th className="text-left px-4 py-3 font-semibold text-slate-700">Issued</th>
-                                            <th className="text-right px-4 py-3 font-semibold text-slate-700">Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {paginatedCerts.map((cert, i) => {
-                                            const category = (cert.cert_type || "certificate").toLowerCase()
-                                            const signed = cert.signing_status === "signed"
-                                            const statusText = cert.revoked ? "Revoked" : signed ? "Signed" : "Unsigned"
-                                            const statusClass = cert.revoked
-                                                ? "text-red-700 bg-red-50 border-red-200"
-                                                : signed
-                                                    ? "text-emerald-700 bg-emerald-50 border-emerald-200"
-                                                    : "text-amber-700 bg-amber-50 border-amber-200"
+                            <>
+                                <div className="overflow-x-auto border border-slate-200 rounded-lg bg-white">
+                                    <table className="w-full min-w-[980px] text-sm">
+                                        <thead className="bg-slate-100 border-b border-slate-200">
+                                            <tr>
+                                                <th className="text-left px-4 py-3 font-semibold text-slate-700">Student Name</th>
+                                                <th className="text-left px-4 py-3 font-semibold text-slate-700">Category</th>
+                                                <th className="text-left px-4 py-3 font-semibold text-slate-700">Certificate</th>
+                                                <th className="text-left px-4 py-3 font-semibold text-slate-700">Certificate ID</th>
+                                                <th className="text-left px-4 py-3 font-semibold text-slate-700">PIN</th>
+                                                <th className="text-left px-4 py-3 font-semibold text-slate-700">Status</th>
+                                                <th className="text-left px-4 py-3 font-semibold text-slate-700">Issued</th>
+                                                <th className="text-right px-4 py-3 font-semibold text-slate-700">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {paginatedCerts.map((cert, i) => {
+                                                const category = (cert.cert_type || "certificate").toLowerCase()
+                                                const signed = cert.signing_status === "signed"
+                                                const statusText = cert.revoked ? "Revoked" : signed ? "Signed" : "Unsigned"
+                                                const statusClass = cert.revoked
+                                                    ? "text-red-700 bg-red-50 border-red-200"
+                                                    : signed
+                                                        ? "text-emerald-700 bg-emerald-50 border-emerald-200"
+                                                        : "text-amber-700 bg-amber-50 border-amber-200"
 
-                                            return (
-                                                <tr key={cert.id} className={i % 2 === 0 ? "bg-white" : "bg-slate-50/50"}>
-                                                    <td className="px-4 py-3 font-medium text-slate-900">{cert.student_name}</td>
-                                                    <td className="px-4 py-3 text-slate-700">{CATEGORY_LABELS[category] || category}</td>
-                                                    <td className="px-4 py-3 text-slate-700">{cert.course_name || "-"}</td>
-                                                    <td className="px-4 py-3 text-slate-600 font-mono text-xs">{cert.id}</td>
-                                                    <td className="px-4 py-3 text-slate-700 font-semibold">{cert.claim_pin || "-"}</td>
-                                                    <td className="px-4 py-3">
-                                                        <span className={`inline-flex items-center rounded-full border px-2 py-1 text-xs font-semibold ${statusClass}`}>
-                                                            {statusText}
-                                                        </span>
-                                                    </td>
-                                                    <td className="px-4 py-3 text-slate-600">{new Date(cert.issued_at).toLocaleDateString()}</td>
-                                                    <td className="px-4 py-3">
-                                                        <div className="flex items-center justify-end gap-2">
-                                                            <Button
-                                                                size="sm"
-                                                                variant="outline"
-                                                                className="h-8"
-                                                                onClick={() => window.open(`${getApiBaseUrl()}/api/download/${cert.id}`, "_blank")}
-                                                            >
-                                                                <Download className="w-3.5 h-3.5 mr-1" />
-                                                                PDF
-                                                            </Button>
-                                                            <Link href={`/verify?id=${cert.id}`}>
-                                                                <Button size="sm" className="h-8 bg-sky-600 hover:bg-sky-700 text-white">
-                                                                    <Shield className="w-3.5 h-3.5 mr-1" />
-                                                                    Verify
+                                                return (
+                                                    <tr key={cert.id} className={i % 2 === 0 ? "bg-white" : "bg-slate-50/50"}>
+                                                        <td className="px-4 py-3 font-medium text-slate-900">{cert.student_name}</td>
+                                                        <td className="px-4 py-3 text-slate-700">{CATEGORY_LABELS[category] || category}</td>
+                                                        <td className="px-4 py-3 text-slate-700">{cert.course_name || "-"}</td>
+                                                        <td className="px-4 py-3 text-slate-600 font-mono text-xs">{cert.id}</td>
+                                                        <td className="px-4 py-3 text-slate-700 font-semibold">{cert.claim_pin || "-"}</td>
+                                                        <td className="px-4 py-3">
+                                                            <span className={`inline-flex items-center rounded-full border px-2 py-1 text-xs font-semibold ${statusClass}`}>
+                                                                {statusText}
+                                                            </span>
+                                                        </td>
+                                                        <td className="px-4 py-3 text-slate-600">{new Date(cert.issued_at).toLocaleDateString()}</td>
+                                                        <td className="px-4 py-3">
+                                                            <div className="flex items-center justify-end gap-2">
+                                                                <Button
+                                                                    size="sm"
+                                                                    variant="outline"
+                                                                    className="h-8"
+                                                                    onClick={() => window.open(`${getApiBaseUrl()}/api/download/${cert.id}`, "_blank")}
+                                                                >
+                                                                    <Download className="w-3.5 h-3.5 mr-1" />
+                                                                    PDF
                                                                 </Button>
-                                                            </Link>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            )
-                                        })}
-                                    </tbody>
-                                </table>
-                            </div>
-
-                            <div className="flex items-center justify-between gap-3 pt-3">
-                                <p className="text-xs text-slate-500">
-                                    Page {safeCurrentPage} of {totalPages}
-                                </p>
-                                <div className="flex items-center gap-2">
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        className="h-8"
-                                        disabled={safeCurrentPage <= 1}
-                                        onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                                    >
-                                        <ChevronLeft className="w-4 h-4" />
-                                    </Button>
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        className="h-8"
-                                        disabled={safeCurrentPage >= totalPages}
-                                        onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                                    >
-                                        <ChevronRight className="w-4 h-4" />
-                                    </Button>
+                                                                <Link href={`/verify?id=${cert.id}`}>
+                                                                    <Button size="sm" className="h-8 bg-sky-600 hover:bg-sky-700 text-white">
+                                                                        <Shield className="w-3.5 h-3.5 mr-1" />
+                                                                        Verify
+                                                                    </Button>
+                                                                </Link>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                )
+                                            })}
+                                        </tbody>
+                                    </table>
                                 </div>
-                            </div>
+
+                                <div className="flex items-center justify-between gap-3 pt-3">
+                                    <p className="text-xs text-slate-500">
+                                        Page {safeCurrentPage} of {totalPages}
+                                    </p>
+                                    <div className="flex items-center gap-2">
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            className="h-8"
+                                            disabled={safeCurrentPage <= 1}
+                                            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                                        >
+                                            <ChevronLeft className="w-4 h-4" />
+                                        </Button>
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            className="h-8"
+                                            disabled={safeCurrentPage >= totalPages}
+                                            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                                        >
+                                            <ChevronRight className="w-4 h-4" />
+                                        </Button>
+                                    </div>
+                                </div>
+                            </>
                         )}
                     </CardContent>
                 </Card>
