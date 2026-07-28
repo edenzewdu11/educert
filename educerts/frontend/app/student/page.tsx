@@ -17,6 +17,10 @@ interface Certificate {
     issued_at: string
     revoked: boolean
     signature: string
+    organization?: string
+    claim_pin?: string | null
+    cert_type?: string
+    signing_status?: string
 }
 
 export default function StudentPortal() {
@@ -150,7 +154,7 @@ export default function StudentPortal() {
                     <div className="lg:col-span-2 space-y-6">
                         <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
                             <Award className="w-5 h-5 text-indigo-600" />
-                            Issued Credentials
+                            Issued Credentials (All Organizations)
                         </h3>
 
                         <div className="space-y-4">
@@ -175,6 +179,24 @@ export default function StudentPortal() {
                                                             {new Date(cert.issued_at).toLocaleDateString()}
                                                         </span>
                                                         <span className="text-xs text-slate-400 font-mono">ID: {cert.id.slice(0, 8)}...</span>
+                                                    </div>
+                                                    <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                                        <div className="text-[11px] text-slate-600 font-medium">
+                                                            <span className="text-slate-400 uppercase tracking-wider mr-1">Organization:</span>
+                                                            {cert.organization || "N/A"}
+                                                        </div>
+                                                        <div className="text-[11px] text-slate-600 font-medium">
+                                                            <span className="text-slate-400 uppercase tracking-wider mr-1">Category:</span>
+                                                            {(cert.cert_type || "certificate").replace(/_/g, " ")}
+                                                        </div>
+                                                        <div className="text-[11px] text-slate-600 font-medium">
+                                                            <span className="text-slate-400 uppercase tracking-wider mr-1">Certificate ID:</span>
+                                                            <span className="font-mono">{cert.id}</span>
+                                                        </div>
+                                                        <div className="text-[11px] text-slate-600 font-medium">
+                                                            <span className="text-slate-400 uppercase tracking-wider mr-1">PIN:</span>
+                                                            <span className="font-mono">{cert.claim_pin || "N/A"}</span>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -209,6 +231,12 @@ export default function StudentPortal() {
                                                     <span className="text-[9px] uppercase text-slate-400 font-bold tracking-tighter">Status</span>
                                                     <span className={`text-[10px] font-bold tracking-wider ${cert.revoked ? "text-red-500" : "text-emerald-500"}`}>
                                                         {cert.revoked ? "Revoked" : "Live & Active"}
+                                                    </span>
+                                                </div>
+                                                <div className="flex flex-col">
+                                                    <span className="text-[9px] uppercase text-slate-400 font-bold tracking-tighter">Verification</span>
+                                                    <span className={`text-[10px] font-bold tracking-wider ${cert.revoked ? "text-red-500" : "text-emerald-500"}`}>
+                                                        {cert.revoked ? "Not Verified" : "Verified"}
                                                     </span>
                                                 </div>
                                             </div>
