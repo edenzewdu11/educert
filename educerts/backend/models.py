@@ -101,3 +101,22 @@ User.payment_transactions = relationship(
     back_populates="user",
     order_by="PaymentTransaction.created_at.desc()"
 )
+
+
+class PaymentUsage(Base):
+    __tablename__ = "payment_usages"
+
+    id = Column(String(36), primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    action = Column(String(50), nullable=False, index=True)  # verify_id | verify_pin | verify_pdf | download
+    reference = Column(String(255), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    user = relationship("User", back_populates="payment_usages")
+
+
+User.payment_usages = relationship(
+    "PaymentUsage",
+    back_populates="user",
+    order_by="PaymentUsage.created_at.desc()"
+)

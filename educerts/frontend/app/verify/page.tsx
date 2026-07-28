@@ -1,9 +1,9 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, useMemo } from "react"
 import { useAuth } from "@/context/AuthContext"
 import { motion, AnimatePresence } from "framer-motion"
-import { Search, ShieldCheck, ShieldAlert, FileSearch, Upload, CheckCircle, XCircle, Info, Hash, Fingerprint, Loader2, ArrowLeft, Award, KeyRound } from "lucide-react"
+import { Search, ShieldCheck, ShieldAlert, FileSearch, Upload, CheckCircle, XCircle, Info, Hash, Fingerprint, Loader2, ArrowLeft, Award, KeyRound, CreditCard, ChevronRight } from "lucide-react"
 import axios from "axios"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -33,6 +33,17 @@ interface VerificationResult {
     }
 }
 
+interface SearchCertificate {
+    id: string
+    student_name: string
+    course_name: string
+    cert_type: string
+}
+
+interface PaymentBalance {
+    credits_available: number
+}
+
 export default function VerifyPage() {
     const { user } = useAuth()
     const [verifyId, setVerifyId] = useState("")
@@ -41,8 +52,13 @@ export default function VerifyPage() {
     const [loading, setLoading] = useState(false)
     const [result, setResult] = useState<VerificationResult | null>(null)
     const [error, setError] = useState<string | null>(null)
-    const [activeMode, setActiveMode] = useState<"id" | "pin" | "file">("id")
+    const [activeMode, setActiveMode] = useState<"id" | "pin" | "file" | "search">("id")
     const [dragActive, setDragActive] = useState(false)
+    const [paymentBlocked, setPaymentBlocked] = useState(false)
+    const [paymentBalance, setPaymentBalance] = useState<number | null>(null)
+    const [searchName, setSearchName] = useState("")
+    const [searchType, setSearchType] = useState("all")
+    const [searchCerts, setSearchCerts] = useState<SearchCertificate[]>([])
 
     // Function to determine specific reason for unverified status
     const getUnverifiedReason = (result: VerificationResult): string => {
@@ -79,6 +95,53 @@ export default function VerifyPage() {
         }
     }, [])
 
+    useEffect(() => {
+        const fetchBalanceAndSearchPool = async () => {
+            if (!user) return
+
+            try {
+                if (!user.is_admin) {
+                    const balanceRes = await axios.get<PaymentBalance>(`${getApiBaseUrl()}/api/payments/balance`)
+                    setPaymentBalance(balanceRes.data.credits_available)
+                }
+            } catch {
+                setPaymentBalance(null)
+            }
+
+            try {
+                const endpoint = user.is_admin
+                    ? `${getApiBaseUrl()}/api/certificates`
+                    : `${getApiBaseUrl()}/api/certificates/${encodeURIComponent(user.name)}`
+                const certRes = await axios.get<SearchCertificate[]>(endpoint)
+                setSearchCerts(Array.isArray(certRes.data) ? certRes.data : [])
+            } catch {
+                setSearchCerts([])
+            }
+        }
+
+        fetchBalanceAndSearchPool()
+    }, [user])
+
+    const filteredSearchCerts = useMemo(() => {
+        const nameQuery = searchName.trim().toLowerCase()
+        return searchCerts.filter((cert) => {
+            const type = (cert.cert_type || "certificate").toLowerCase()
+            const nameMatch = !nameQuery || (cert.student_name || "").toLowerCase().includes(nameQuery)
+            const typeMatch = searchType === "all" || type === searchType
+            return nameMatch && typeMatch
+        })
+    }, [searchCerts, searchName, searchType])
+
+    const searchTypeOptions = useMemo(() => {
+        return Array.from(new Set(searchCerts.map((c) => (c.cert_type || "certificate").toLowerCase()))).sort()
+    }, [searchCerts])
+
+    const handlePaymentRequired = (message?: string) => {
+        setPaymentBlocked(true)
+        setError(message || "Payment required. Please buy credits in Wallet > Payments.")
+        setResult(null)
+    }
+
     const handleVerifyId = async (id?: string) => {
         const certId = (id || verifyId).trim().toLowerCase()
         if (!certId) return
@@ -105,9 +168,15 @@ export default function VerifyPage() {
             console.log(`[${timestamp}] Content integrity:`, res.data.summary.contentIntegrity)
             
             setResult(res.data)
+            setPaymentBlocked(false)
         } catch (err: any) {
             setResult(null)
             console.error(`[${timestamp}] ID verification error:`, err)
+
+            if (err.response?.status === 402) {
+                handlePaymentRequired(err.response?.data?.detail)
+                return
+            }
             
             if (err.response?.status === 404) {
                 setError("Certificate not found. Please check the certificate ID and try again.")
@@ -138,8 +207,13 @@ export default function VerifyPage() {
                 }
             })
             setResult(res.data)
+            setPaymentBlocked(false)
         } catch (err: any) {
             setResult(null)
+            if (err.response?.status === 402) {
+                handlePaymentRequired(err.response?.data?.detail)
+                return
+            }
             if (err.response?.status === 404) {
                 setError("No certificate found for this PIN and organization.")
             } else if (err.response?.status === 400) {
@@ -180,6 +254,7 @@ export default function VerifyPage() {
                 console.log(`[${timestamp}] Content integrity:`, res.data.summary.contentIntegrity)
                 
                 setResult(res.data)
+                setPaymentBlocked(false)
             } else {
                 const text = await file.text()
                 try {
@@ -196,12 +271,17 @@ export default function VerifyPage() {
                     
                     console.log(`[${timestamp}] JSON verification response:`, res.data)
                     setResult(res.data)
+                    setPaymentBlocked(false)
                 } catch (e) {
                     setError("Invalid JSON document format.")
                 }
             }
         } catch (err: any) {
             setResult(null)
+            if (err.response?.status === 402) {
+                handlePaymentRequired(err.response?.data?.detail)
+                return
+            }
             const errorMsg = err.response?.data?.detail || err.message || "Invalid document format."
             console.error(`[${timestamp}] Verification error:`, err)
             setError(`Verification failed: ${errorMsg}`)
@@ -312,7 +392,34 @@ export default function VerifyPage() {
                             <Upload className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                             By Document
                         </button>
+                        <button
+                            onClick={() => { setActiveMode("search"); setError(null) }}
+                            className={`flex-1 flex items-center justify-center gap-1.5 sm:gap-2 py-2 sm:py-2.5 rounded-lg text-[10px] sm:text-sm font-semibold transition-all ${activeMode === "search" ? "bg-white text-sky-700 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}
+                        >
+                            <Search className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                            Search
+                        </button>
                     </div>
+
+                    {paymentBlocked && !user?.is_admin && (
+                        <div className="p-3 sm:p-4 bg-amber-50 border border-amber-200 rounded-2xl">
+                            <div className="flex items-center justify-between gap-3">
+                                <div>
+                                    <p className="text-xs sm:text-sm font-bold text-amber-900">Payment Required</p>
+                                    <p className="text-[10px] sm:text-xs text-amber-800 mt-0.5">
+                                        Buy credits first to verify certificates.
+                                        {paymentBalance !== null ? ` Credits left: ${paymentBalance}` : ""}
+                                    </p>
+                                </div>
+                                <Link href="/wallet?tab=topup">
+                                    <Button className="h-9 bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold">
+                                        <CreditCard className="w-3.5 h-3.5 mr-1" />
+                                        Go to Payments
+                                    </Button>
+                                </Link>
+                            </div>
+                        </div>
+                    )}
 
                     {error && (
                         <motion.div
@@ -404,7 +511,7 @@ export default function VerifyPage() {
                                     </CardContent>
                                 </Card>
                             </motion.div>
-                        ) : (
+                        ) : activeMode === "file" ? (
                             <motion.div
                                 key="file"
                                 initial={{ opacity: 0, x: 10 }}
@@ -444,6 +551,66 @@ export default function VerifyPage() {
                                         </>
                                     )}
                                 </div>
+                            </motion.div>
+                        ) : (
+                            <motion.div
+                                key="search"
+                                initial={{ opacity: 0, x: 10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: -10 }}
+                            >
+                                <Card className="bg-white border-slate-200 shadow-lg overflow-hidden rounded-2xl">
+                                    <div className="h-1 bg-sky-600"></div>
+                                    <CardHeader className="px-4 sm:px-6">
+                                        <CardTitle className="text-sm sm:text-md">Search by Name and Type</CardTitle>
+                                        <CardDescription className="text-xs sm:text-sm">Find a certificate, then verify by selecting it.</CardDescription>
+                                    </CardHeader>
+                                    <CardContent className="space-y-3 sm:space-y-4 px-4 sm:px-6">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
+                                            <input
+                                                type="text"
+                                                placeholder="Student name"
+                                                value={searchName}
+                                                onChange={(e) => setSearchName(e.target.value)}
+                                                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-slate-900 text-xs sm:text-sm font-semibold focus:ring-2 focus:ring-sky-600/20 focus:border-sky-600 outline-none"
+                                            />
+                                            <select
+                                                value={searchType}
+                                                onChange={(e) => setSearchType(e.target.value)}
+                                                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-slate-900 text-xs sm:text-sm font-semibold focus:ring-2 focus:ring-sky-600/20 focus:border-sky-600 outline-none"
+                                            >
+                                                <option value="all">All Types</option>
+                                                {searchTypeOptions.map((type) => (
+                                                    <option key={type} value={type}>{type}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+
+                                        <div className="max-h-56 overflow-y-auto space-y-2">
+                                            {filteredSearchCerts.slice(0, 25).map((cert) => (
+                                                <button
+                                                    key={cert.id}
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setVerifyId(cert.id)
+                                                        setActiveMode("id")
+                                                        handleVerifyId(cert.id)
+                                                    }}
+                                                    className="w-full flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 px-3 py-2 text-left"
+                                                >
+                                                    <div>
+                                                        <p className="text-xs sm:text-sm font-bold text-slate-900">{cert.student_name}</p>
+                                                        <p className="text-[10px] sm:text-xs text-slate-500">{cert.cert_type} • {cert.course_name || "Untitled"}</p>
+                                                    </div>
+                                                    <ChevronRight className="w-4 h-4 text-slate-400" />
+                                                </button>
+                                            ))}
+                                            {filteredSearchCerts.length === 0 && (
+                                                <p className="text-xs text-slate-500 text-center py-3">No certificates found.</p>
+                                            )}
+                                        </div>
+                                    </CardContent>
+                                </Card>
                             </motion.div>
                         )}
                     </AnimatePresence>

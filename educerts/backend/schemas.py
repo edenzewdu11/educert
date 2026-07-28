@@ -139,3 +139,9 @@ class PaymentTransaction(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class PaymentBalance(BaseModel):
+    credits_purchased: int
+    credits_used: int
+    credits_available: int

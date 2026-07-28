@@ -123,6 +123,65 @@ def _get_public_payment_plans() -> List[schemas.PaymentPlan]:
         for plan_id, plan in PAYMENT_PLANS.items()
     ]
 
+
+def _get_user_payment_balance(user_id: int, db: Session) -> dict:
+    paid_transactions = (
+        db.query(models.PaymentTransaction)
+        .filter(
+            models.PaymentTransaction.user_id == user_id,
+            models.PaymentTransaction.status == "paid",
+        )
+        .all()
+    )
+
+    credits_purchased = 0
+    for txn in paid_transactions:
+        plan = PAYMENT_PLANS.get(txn.plan_id, {})
+        credits_purchased += int(plan.get("credits", 0))
+
+    credits_used = (
+        db.query(models.PaymentUsage)
+        .filter(models.PaymentUsage.user_id == user_id)
+        .count()
+    )
+
+    return {
+        "credits_purchased": credits_purchased,
+        "credits_used": credits_used,
+        "credits_available": max(credits_purchased - credits_used, 0),
+    }
+
+
+def _require_payment_credit(current_user: Optional[models.User], db: Session):
+    if not current_user or current_user.is_admin:
+        return
+
+    balance = _get_user_payment_balance(current_user.id, db)
+    if balance["credits_available"] <= 0:
+        raise HTTPException(
+            status_code=402,
+            detail="Payment required. Please buy credits in Wallet > Payments to continue.",
+        )
+
+
+def _consume_payment_credit(
+    current_user: Optional[models.User],
+    action: str,
+    db: Session,
+    reference: Optional[str] = None,
+):
+    if not current_user or current_user.is_admin:
+        return
+
+    usage = models.PaymentUsage(
+        id=str(uuid.uuid4()),
+        user_id=current_user.id,
+        action=action,
+        reference=reference,
+    )
+    db.add(usage)
+    db.commit()
+
 # CORS setup - origins come from env (FRONTEND_URL, comma-separated) plus local dev defaults
 _default_origins = [
     "http://localhost:3000",
@@ -552,6 +611,14 @@ def get_payment_history(
         .all()
     )
 
+
+@app.get("/api/payments/balance", response_model=schemas.PaymentBalance)
+def get_payment_balance(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(require_user),
+):
+    return _get_user_payment_balance(current_user.id, db)
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Certificate Issuance (Phase 3: Document Registry)
 # ─────────────────────────────────────────────────────────────────────────────
@@ -791,7 +858,19 @@ def claim_certificate(claim_data: dict, db: Session = Depends(get_db), current_u
 # ─────────────────────────────────────────────────────────────────────────────
 
 @app.post("/api/verify")
-def verify_certificate(request: schemas.VerificationRequest, db: Session = Depends(get_db)):
+def verify_certificate(
+    request: schemas.VerificationRequest,
+    db: Session = Depends(get_db),
+    current_user: Optional[models.User] = Depends(get_current_user_from_cookie),
+):
+    verification_action = "verify_id"
+    if request.pin:
+        verification_action = "verify_pin"
+    elif request.data_payload:
+        verification_action = "verify_document"
+
+    _require_payment_credit(current_user, db)
+
     oa_doc = None
     cert = None
 
@@ -871,7 +950,7 @@ def verify_certificate(request: schemas.VerificationRequest, db: Session = Depen
 
     all_valid = is_integrity_valid and is_issued and is_not_revoked and is_identity_valid and is_signature_valid and is_registry_valid
 
-    return {
+    response = {
         "summary": {
             "all": all_valid,
             "documentStatus": is_issued and is_not_revoked,
@@ -918,14 +997,23 @@ def verify_certificate(request: schemas.VerificationRequest, db: Session = Depen
         }
     }
 
+    _consume_payment_credit(current_user, verification_action, db, cert.id if cert else request.certificate_id)
+    return response
+
 @app.post("/api/verify/pdf")
-async def verify_pdf_certificate(file: UploadFile = File(...), db: Session = Depends(get_db)):
+async def verify_pdf_certificate(
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    current_user: Optional[models.User] = Depends(get_current_user_from_cookie),
+):
     """
     COMPREHENSIVE PDF VERIFICATION using hash-based certificate matching.
     This system compares uploaded PDFs against ALL certificates in the database
     using multiple hash algorithms to detect ANY type of tampering.
     """
     
+    _require_payment_credit(current_user, db)
+
     content = await file.read()
 
     # Validate it's actually a PDF
@@ -1025,7 +1113,7 @@ async def verify_pdf_certificate(file: UploadFile = File(...), db: Session = Dep
         
         if not hash_match_found:
             print("❌ NO HASH MATCHES FOUND - Certificate is TAMPERED, FAKE, or NOT FROM THIS SYSTEM")
-            return {
+            response = {
                 "summary": {
                     "all": False,
                     "documentStatus": False,
@@ -1085,13 +1173,15 @@ async def verify_pdf_certificate(file: UploadFile = File(...), db: Session = Dep
                     "course_name": "INVALID - Tampered/Fake Certificate"
                 }
             }
+            _consume_payment_credit(current_user, "verify_pdf", db, file.filename)
+            return response
         
         # Step 3: Hash match found - certificate is VALID
         print(f"✅ Certificate VERIFIED - Hash match found with cert: {matched_cert.id}")
         
         # Run standard verification checks on the matched certificate
         request = schemas.VerificationRequest(certificate_id=matched_cert.id)
-        verification_result = verify_certificate(request, db)
+        verification_result = verify_certificate(request, db, None)
         
         # Override content integrity to VALID since hash match was found
         verification_result["summary"]["contentIntegrity"] = True
@@ -1130,6 +1220,7 @@ async def verify_pdf_certificate(file: UploadFile = File(...), db: Session = Dep
             "course_name": matched_cert.course_name
         }
         
+        _consume_payment_credit(current_user, "verify_pdf", db, matched_cert.id)
         return verification_result
         
     finally:
@@ -2675,15 +2766,30 @@ def view_certificate(cert_id: str, db: Session = Depends(get_db)):
 
 
 @app.get("/api/download/{cert_id}")
-def download_certificate(cert_id: str, db: Session = Depends(get_db)):
+def download_certificate(
+    cert_id: str,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(require_user),
+):
     cert = db.query(models.Certificate).filter(models.Certificate.id == cert_id).first()
     if not cert:
         raise HTTPException(status_code=404, detail="Certificate not found")
+
+    should_consume_credit = not current_user.is_admin
+    if not current_user.is_admin:
+        if cert.student_id and cert.student_id != current_user.id:
+            raise HTTPException(status_code=403, detail="You can only download your own certificates.")
+        _require_payment_credit(current_user, db)
+
+    def _charge_download_credit_once():
+        if should_consume_credit:
+            _consume_payment_credit(current_user, "download", db, cert.id)
 
     # ── If a rendered/signed PDF already exists, serve it directly. ──
     # Re-render unsigned HTML certificates so new type templates are reflected.
     should_rerender_html_unsigned = cert.template_type == "html" and cert.signing_status != "signed"
     if cert.rendered_pdf_path and os.path.exists(cert.rendered_pdf_path) and not should_rerender_html_unsigned:
+        _charge_download_credit_once()
         return FileResponse(
             path=cert.rendered_pdf_path,
             media_type="application/pdf",
@@ -2750,6 +2856,7 @@ def download_certificate(cert_id: str, db: Session = Depends(get_db)):
         cert.rendered_pdf_path = out_path
         db.commit()
 
+        _charge_download_credit_once()
         return FileResponse(
             path=out_path,
             media_type="application/pdf",
@@ -2797,6 +2904,7 @@ def download_certificate(cert_id: str, db: Session = Depends(get_db)):
     if pdf.err:
         raise HTTPException(status_code=500, detail="Error generating PDF")
 
+    _charge_download_credit_once()
     return Response(
         content=result.getvalue(),
         media_type="application/pdf",

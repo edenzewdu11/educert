@@ -24,6 +24,29 @@ export default function StudentPortal() {
     const [certs, setCerts] = useState<Certificate[]>([])
     const [loading, setLoading] = useState(true)
 
+    const handleDownload = async (certId: string) => {
+        try {
+            const res = await axios.get(`${getApiBaseUrl()}/api/download/${certId}`, {
+                responseType: "blob",
+            })
+
+            const url = window.URL.createObjectURL(new Blob([res.data], { type: "application/pdf" }))
+            const a = document.createElement("a")
+            a.href = url
+            a.download = `cert_${certId}.pdf`
+            document.body.appendChild(a)
+            a.click()
+            a.remove()
+            window.URL.revokeObjectURL(url)
+        } catch (error: any) {
+            if (error.response?.status === 402) {
+                window.location.href = "/wallet?tab=topup"
+                return
+            }
+            alert("Download failed. Please try again.")
+        }
+    }
+
     useEffect(() => {
         if (user) {
             const fetchCerts = async () => {
@@ -158,7 +181,7 @@ export default function StudentPortal() {
 
                                             <div className="flex items-center gap-3">
                                                 <Button
-                                                    onClick={() => window.open(`${getApiBaseUrl()}/api/download/${cert.id}`)}
+                                                    onClick={() => handleDownload(cert.id)}
                                                     className="bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-lg shadow-slate-900/10 px-6 font-bold"
                                                 >
                                                     <Download className="w-4 h-4 mr-2" />

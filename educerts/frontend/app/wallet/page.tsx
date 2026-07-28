@@ -310,6 +310,32 @@ export default function WalletPage() {
         }
     }
 
+    const handleDownload = async (certId: string) => {
+        try {
+            const res = await axios.get(`${getApiBaseUrl()}/api/download/${certId}`, {
+                responseType: "blob",
+            })
+
+            const url = window.URL.createObjectURL(new Blob([res.data], { type: "application/pdf" }))
+            const a = document.createElement("a")
+            a.href = url
+            a.download = `cert_${certId}.pdf`
+            document.body.appendChild(a)
+            a.click()
+            a.remove()
+            window.URL.revokeObjectURL(url)
+        } catch (error: any) {
+            if (error.response?.status === 402) {
+                setErrorMessage("Payment required before download. Redirecting to Payments...")
+                setTimeout(() => {
+                    window.location.href = "/wallet?tab=topup"
+                }, 700)
+                return
+            }
+            setErrorMessage("Download failed. Please try again.")
+        }
+    }
+
     return (
         <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 text-slate-900 font-sans selection:bg-indigo-100">
             {/* Mobile Header */}
@@ -792,7 +818,7 @@ export default function WalletPage() {
 
                                         <div className="grid grid-cols-2 gap-2 sm:gap-3">
                                             <Button
-                                                onClick={() => window.open(`${getApiBaseUrl()}/api/download/${selectedCert.id}`)}
+                                                onClick={() => handleDownload(selectedCert.id)}
                                                 variant="outline"
                                                 className="h-10 sm:h-12 rounded-xl border-slate-200 font-bold text-xs sm:text-sm"
                                             >
