@@ -451,7 +451,9 @@ function IssuePageContent() {
 
     if (!user?.is_admin) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-[80vh] p-8 text-center">
+            <div className="relative overflow-hidden flex flex-col items-center justify-center min-h-[80vh] p-8 text-center bg-gradient-to-br from-slate-50 via-sky-50 to-cyan-50 rounded-3xl border border-slate-200">
+                <div className="absolute -top-16 -left-16 w-44 h-44 rounded-full bg-sky-300/20 blur-3xl" />
+                <div className="absolute -bottom-16 -right-16 w-52 h-52 rounded-full bg-cyan-300/20 blur-3xl" />
                 <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mb-6 border border-red-100">
                     <Shield className="w-8 h-8 text-red-500" />
                 </div>
@@ -464,20 +466,31 @@ function IssuePageContent() {
     const allSigned = issuedCerts.length > 0 && issuedCerts.every(c => c.signing_status === "signed")
 
     return (
-        <div className="p-4 sm:p-6 max-w-5xl mx-auto space-y-6 sm:space-y-8">
+        <div className="relative overflow-hidden p-4 sm:p-6 max-w-5xl mx-auto space-y-6 sm:space-y-8 bg-gradient-to-br from-slate-50 via-white to-sky-50/60 rounded-3xl border border-slate-200 shadow-[0_20px_60px_-30px_rgba(14,116,144,0.4)]">
+            <div className="pointer-events-none absolute -top-20 -left-20 w-56 h-56 rounded-full bg-sky-300/20 blur-3xl" />
+            <div className="pointer-events-none absolute -bottom-24 -right-16 w-64 h-64 rounded-full bg-cyan-300/20 blur-3xl" />
+            <div className="pointer-events-none absolute top-28 right-20 w-36 h-36 rounded-full bg-indigo-200/20 blur-2xl" />
 
             {/* ── Page Header ── */}
-            <div>
-                <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 flex items-center gap-2 sm:gap-3">
-                    <FilePlus className="w-6 h-6 sm:w-8 sm:h-8 text-sky-600" />Issue Credentials
-                </h1>
-                <p className="text-slate-500 font-medium mt-1 text-sm sm:text-base">Two-step process: generate certificates from a template, then apply digital signatures.</p>
+            <div className="relative z-10 bg-gradient-to-r from-sky-600 via-cyan-600 to-sky-700 rounded-3xl p-5 sm:p-7 border border-sky-400/50 shadow-2xl shadow-cyan-600/20">
+                <div className="absolute inset-0 rounded-3xl bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.22),transparent_38%),radial-gradient(circle_at_80%_0%,rgba(255,255,255,0.16),transparent_32%)]" />
+                <div className="relative">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/30 bg-white/15 text-white text-[10px] sm:text-xs font-black uppercase tracking-widest mb-3">
+                        <Sparkles className="w-3.5 h-3.5" /> Credential Studio
+                    </div>
+                    <h1 className="text-2xl sm:text-3xl font-black text-white flex items-center gap-2 sm:gap-3 tracking-tight">
+                        <FilePlus className="w-6 h-6 sm:w-8 sm:h-8 text-white" />Issue Credentials
+                    </h1>
+                    <p className="text-sky-100/95 font-medium mt-2 text-sm sm:text-base">Two-step process: generate certificates from a template, then apply digital signatures.</p>
+                </div>
             </div>
 
             {/* ── Step Indicators ── */}
-            <div className="grid grid-cols-2 gap-2 sm:gap-3">
-                <StepIndicator current={step} step={1} label="Generate Certificates" icon={FilePlus} />
-                <StepIndicator current={step} step={2} label="Sign & Stamp" icon={PenLine} />
+            <div className="relative z-10 rounded-2xl border border-slate-200 bg-white/85 backdrop-blur p-2 sm:p-3 shadow-lg shadow-slate-200/50">
+                <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                    <StepIndicator current={step} step={1} label="Generate Certificates" icon={FilePlus} />
+                    <StepIndicator current={step} step={2} label="Sign & Stamp" icon={PenLine} />
+                </div>
             </div>
 
             {/* ── Global error / success ── */}
