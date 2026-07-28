@@ -650,6 +650,18 @@ export default function WalletPage() {
                     </TabsContent>
 
                     <TabsContent value="topup" className="space-y-3 sm:space-y-4 outline-none">
+                        <div className="flex justify-end">
+                            <Link href="/">
+                                <Button
+                                    variant="outline"
+                                    className="h-9 rounded-xl border-slate-200 text-slate-700 font-bold text-xs sm:text-sm"
+                                >
+                                    <ArrowLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5" />
+                                    Back to Dashboard
+                                </Button>
+                            </Link>
+                        </div>
+
                         <div className="text-center">
                             <h3 className="text-base sm:text-lg font-black tracking-tight">Add Wallet Credits</h3>
                             <p className="text-slate-500 text-[10px] sm:text-xs font-medium mt-1">
