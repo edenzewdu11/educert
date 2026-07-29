@@ -469,7 +469,7 @@ export default function WalletPage() {
                         </TabsTrigger>
                         <TabsTrigger
                             value="topup"
-                            className="min-w-[88px] sm:min-w-0 sm:flex-1 rounded-xl data-[state=active]:bg-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all font-bold text-[10px] sm:text-xs uppercase tracking-widest"
+                            className="min-w-[88px] sm:min-w-0 sm:flex-1 rounded-xl data-[state=active]:bg-sky-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all font-bold text-[10px] sm:text-xs uppercase tracking-widest"
                         >
                             <CreditCard className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-1.5" />
                             Top Up
@@ -649,117 +649,126 @@ export default function WalletPage() {
                         </div>
                     </TabsContent>
 
-                    <TabsContent value="topup" className="space-y-3 sm:space-y-4 outline-none">
+                    <TabsContent value="topup" className="space-y-4 sm:space-y-6 outline-none">
                         <div className="flex justify-end">
                             <Link href="/">
                                 <Button
                                     variant="outline"
-                                    className="h-9 rounded-xl border-slate-200 text-slate-700 font-bold text-xs sm:text-sm"
+                                    className="flex items-center gap-2 border-slate-200 hover:border-sky-400 hover:bg-sky-50 text-sm"
                                 >
-                                    <ArrowLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5" />
+                                    <ArrowLeft className="w-4 h-4" />
                                     Back to Dashboard
                                 </Button>
                             </Link>
                         </div>
 
-                        <div className="text-center">
-                            <h3 className="text-base sm:text-lg font-black tracking-tight">Add Wallet Credits</h3>
-                            <p className="text-slate-500 text-[10px] sm:text-xs font-medium mt-1">
-                                Purchase credential issuance credits securely with Stripe
-                            </p>
-                        </div>
+                        <Card className="border border-slate-200 relative z-10">
+                            <CardHeader>
+                                <CardTitle className="text-lg font-semibold text-slate-900">Add Wallet Credits</CardTitle>
+                                <p className="text-slate-500 text-sm">Purchase credential issuance credits securely with Stripe</p>
+                            </CardHeader>
+                        </Card>
 
                         {loadingPayments ? (
-                            <div className="py-12 sm:py-16 text-center bg-white rounded-2xl border border-slate-200">
-                                <Loader2 className="w-6 h-6 sm:w-8 sm:h-8 text-indigo-600 animate-spin mx-auto mb-3 sm:mb-4" />
-                                <p className="text-slate-400 text-[10px] sm:text-xs font-bold uppercase tracking-widest">Loading payment plans...</p>
+                            <div className="py-16 text-center">
+                                <Loader2 className="w-8 h-8 text-sky-600 animate-spin mx-auto mb-4" />
+                                <p className="text-slate-500 text-sm">Loading payment plans...</p>
                             </div>
                         ) : (
-                            <div className="space-y-3 sm:space-y-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                                 {paymentPlans.map((plan) => (
-                                    <div
-                                        key={plan.id}
-                                        className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-lg shadow-slate-200/40"
-                                    >
-                                        <div className="flex items-start justify-between gap-3">
-                                            <div>
-                                                <h4 className="text-sm sm:text-base font-black text-slate-900">{plan.name}</h4>
-                                                <p className="text-[10px] sm:text-xs text-slate-500 mt-1">{plan.description}</p>
+                                    <Card key={plan.id} className="border border-slate-200 hover:border-sky-300 hover:shadow-lg transition-all duration-300">
+                                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+                                            <CardTitle className="text-sm font-semibold text-slate-600">{plan.name}</CardTitle>
+                                            <div className="w-10 h-10 rounded-lg bg-sky-50 flex items-center justify-center">
+                                                <CreditCard className="h-5 w-5 text-sky-600" />
                                             </div>
-                                            <span className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-indigo-600 bg-indigo-50 border border-indigo-100 px-2.5 py-1.5 rounded-full">
-                                                {plan.credits} Credits
-                                            </span>
-                                        </div>
-
-                                        <div className="mt-4 flex items-center justify-between">
-                                            <div>
-                                                <p className="text-xl sm:text-2xl font-black text-slate-900">
+                                        </CardHeader>
+                                        <CardContent>
+                                            <p className="text-xs text-slate-500 mb-3">{plan.description}</p>
+                                            <div className="flex items-center justify-between mb-4">
+                                                <span className="text-xs font-semibold text-sky-700 bg-sky-50 px-2 py-1 rounded-full">
+                                                    {plan.credits} Credits
+                                                </span>
+                                                <div className="text-2xl font-bold text-slate-900">
                                                     {(plan.amount_cents / 100).toLocaleString(undefined, {
                                                         style: "currency",
                                                         currency: plan.currency.toUpperCase(),
                                                     })}
-                                                </p>
+                                                </div>
                                             </div>
-
                                             <Button
                                                 onClick={() => startCheckout(plan.id)}
                                                 disabled={checkoutingPlanId === plan.id}
-                                                className="h-10 sm:h-11 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white font-black text-xs sm:text-sm"
+                                                className="w-full bg-sky-600 hover:bg-sky-700 text-sm"
                                             >
                                                 {checkoutingPlanId === plan.id ? (
                                                     <Loader2 className="w-4 h-4 animate-spin" />
                                                 ) : (
-                                                    <>
-                                                        <CreditCard className="w-4 h-4 mr-1.5" />
-                                                        Buy Now
-                                                    </>
+                                                    "Buy Now"
                                                 )}
                                             </Button>
-                                        </div>
-                                    </div>
+                                        </CardContent>
+                                    </Card>
                                 ))}
                             </div>
                         )}
 
-                        <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-sm">
-                            <div className="flex items-center justify-between mb-3">
-                                <h4 className="text-xs sm:text-sm font-black uppercase tracking-widest text-slate-500">Recent Payments</h4>
+                        <Card className="border border-slate-200 relative z-10">
+                            <CardHeader className="flex flex-row items-center justify-between gap-4">
+                                <CardTitle className="text-lg font-semibold text-slate-900">Recent Payments</CardTitle>
                                 <Button
                                     onClick={fetchPaymentHistory}
                                     variant="ghost"
-                                    className="h-8 px-2 text-[10px] sm:text-xs font-bold text-indigo-600"
+                                    size="sm"
+                                    className="text-sky-600 hover:text-sky-700 hover:bg-sky-50 text-sm font-medium"
                                 >
                                     Refresh
                                 </Button>
-                            </div>
-                            {paymentHistory.length === 0 ? (
-                                <p className="text-[10px] sm:text-xs text-slate-400">No payment records yet.</p>
-                            ) : (
-                                <div className="space-y-2">
-                                    {paymentHistory.map((txn) => (
-                                        <div key={txn.id} className="flex items-center justify-between bg-slate-50 border border-slate-100 rounded-xl px-3 py-2.5">
-                                            <div>
-                                                <p className="text-xs sm:text-sm font-bold text-slate-800">{txn.plan_id}</p>
-                                                <p className="text-[10px] sm:text-xs text-slate-400">
-                                                    {new Date(txn.created_at).toLocaleString()}
-                                                </p>
+                            </CardHeader>
+                            <CardContent>
+                                {paymentHistory.length === 0 ? (
+                                    <div className="text-center py-8 text-slate-500">
+                                        <p className="text-sm">No payment records yet.</p>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-3">
+                                        {paymentHistory.map((txn) => (
+                                            <div key={txn.id} className="flex items-center justify-between p-4 border border-slate-200 rounded-lg hover:border-sky-300 hover:bg-slate-50 transition-all">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="w-10 h-10 rounded-lg bg-sky-50 flex items-center justify-center">
+                                                        <CreditCard className="w-5 h-5 text-sky-600" />
+                                                    </div>
+                                                    <div>
+                                                        <p className="font-medium text-slate-900">{txn.plan_id}</p>
+                                                        <p className="text-sm text-slate-500">
+                                                            {new Date(txn.created_at).toLocaleString()}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <div className="text-right">
+                                                    <p className="font-semibold text-slate-900">
+                                                        {(txn.amount_cents / 100).toLocaleString(undefined, {
+                                                            style: "currency",
+                                                            currency: txn.currency.toUpperCase(),
+                                                        })}
+                                                    </p>
+                                                    <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                                                        txn.status === "paid" 
+                                                            ? "bg-emerald-50 text-emerald-700" 
+                                                            : txn.status === "pending" 
+                                                                ? "bg-amber-50 text-amber-700" 
+                                                                : "bg-red-50 text-red-700"
+                                                    }`}>
+                                                        {txn.status}
+                                                    </span>
+                                                </div>
                                             </div>
-                                            <div className="text-right">
-                                                <p className="text-xs sm:text-sm font-black text-slate-900">
-                                                    {(txn.amount_cents / 100).toLocaleString(undefined, {
-                                                        style: "currency",
-                                                        currency: txn.currency.toUpperCase(),
-                                                    })}
-                                                </p>
-                                                <p className={`text-[10px] sm:text-xs font-bold uppercase ${txn.status === "paid" ? "text-emerald-600" : txn.status === "pending" ? "text-amber-600" : "text-red-600"}`}>
-                                                    {txn.status}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
                     </TabsContent>
                 </Tabs>
             </main>
