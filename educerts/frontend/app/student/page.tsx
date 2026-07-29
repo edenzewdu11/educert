@@ -71,7 +71,7 @@ export default function StudentPortal() {
         return (
             <div className="min-h-screen bg-slate-50 flex items-center justify-center">
                 <div className="flex flex-col items-center gap-4">
-                    <Loader2 className="w-12 h-12 text-indigo-600 animate-spin" />
+                    <Loader2 className="w-12 h-12 text-sky-600 animate-spin" />
                     <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">Loading Achievement Portal...</p>
                 </div>
             </div>
@@ -81,14 +81,14 @@ export default function StudentPortal() {
     return (
         <div className="min-h-screen bg-slate-50">
             {/* Header / Hero */}
-            <div className="bg-indigo-600 text-white pt-12 pb-24 px-8">
+            <div className="bg-sky-600 text-white pt-12 pb-24 px-8">
                 <div className="max-w-6xl mx-auto space-y-6">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                             <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-lg">
-                                <Award className="w-6 h-6 text-indigo-600" />
+                                <Award className="w-6 h-6 text-sky-600" />
                             </div>
-                            <h1 className="font-bold text-xl tracking-tight">EduCerts<span className="text-indigo-200">.io</span></h1>
+                            <h1 className="font-bold text-xl tracking-tight">EduCerts<span className="text-sky-200">.io</span></h1>
                         </div>
                         <div className="flex items-center gap-4">
                             <Link href="/wallet">
@@ -118,7 +118,7 @@ export default function StudentPortal() {
                     </div>
                     <div>
                         <h1 className="text-4xl font-extrabold tracking-tight">Achievement Portal</h1>
-                        <p className="text-indigo-100 text-lg mt-2 font-medium">Hello, {user?.name}! Here are your cryptographically secured achievements.</p>
+                        <p className="text-sky-100 text-lg mt-2 font-medium">Hello, {user?.name}! Here are your cryptographically secured achievements.</p>
                     </div>
                 </div>
             </div>
@@ -130,19 +130,19 @@ export default function StudentPortal() {
                     {/* Left: Summary Card */}
                     <div className="space-y-6">
                         <Card className="bg-white border-slate-200 shadow-xl rounded-3xl overflow-hidden border-0">
-                            <div className="h-2 bg-gradient-to-r from-indigo-500 to-purple-500"></div>
+                            <div className="h-2 bg-gradient-to-r from-sky-500 to-sky-600"></div>
                             <CardHeader className="pb-2">
                                 <CardTitle className="text-sm font-bold uppercase tracking-wider text-slate-400">Total Achievements</CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <div className="text-5xl font-black text-slate-900">{certs.length}</div>
                                 <p className="text-xs text-slate-500 mt-2 font-medium">Verifiable Academic Credentials</p>
-                                <div className="mt-6 p-4 bg-indigo-50 rounded-2xl border border-indigo-100">
-                                    <h4 className="text-[10px] font-bold text-indigo-900 uppercase tracking-widest mb-2 flex items-center gap-2">
+                                <div className="mt-6 p-4 bg-sky-50 rounded-2xl border border-sky-100">
+                                    <h4 className="text-[10px] font-bold text-sky-900 uppercase tracking-widest mb-2 flex items-center gap-2">
                                         <QrCode className="w-3.5 h-3.5" />
                                         QR Sharing Active
                                     </h4>
-                                    <p className="text-xs text-indigo-800 leading-relaxed">
+                                    <p className="text-xs text-sky-800 leading-relaxed">
                                         All your PDF downloads now include a **verification QR code** for instant document validation.
                                     </p>
                                 </div>
@@ -153,7 +153,7 @@ export default function StudentPortal() {
                     {/* Right: Certificate List */}
                     <div className="lg:col-span-2 space-y-6">
                         <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                            <Award className="w-5 h-5 text-indigo-600" />
+                            <Award className="w-5 h-5 text-sky-600" />
                             Issued Credentials (All Organizations)
                         </h3>
 
@@ -168,8 +168,8 @@ export default function StudentPortal() {
                                     >
                                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                                             <div className="flex items-center gap-5">
-                                                <div className="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center border border-indigo-100 group-hover:scale-105 transition-transform">
-                                                    <Award className="w-8 h-8 text-indigo-600" />
+                                                <div className="w-14 h-14 bg-sky-50 rounded-2xl flex items-center justify-center border border-sky-100 group-hover:scale-105 transition-transform">
+                                                    <Award className="w-8 h-8 text-sky-600" />
                                                 </div>
                                                 <div>
                                                     <h4 className="text-xl font-bold text-slate-900">{cert.course_name}</h4>
@@ -240,7 +240,7 @@ export default function StudentPortal() {
                                                     </span>
                                                 </div>
                                             </div>
-                                            <Button variant="ghost" className="text-xs text-indigo-600 hover:bg-indigo-50 font-bold">
+                                            <Button variant="ghost" className="text-xs text-sky-600 hover:bg-sky-50 font-bold">
                                                 <Share2 className="w-3.5 h-3.5 mr-2" />
                                                 Share Credential
                                             </Button>

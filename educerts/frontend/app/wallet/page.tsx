@@ -341,7 +341,7 @@ export default function WalletPage() {
             {/* Mobile Header */}
             <header className="fixed top-0 inset-x-0 h-14 sm:h-16 bg-white/90 backdrop-blur-xl border-b border-slate-200 z-50 px-3 sm:px-4 flex items-center justify-between shadow-sm safe-area-inset-top">
                 <div className="flex items-center gap-2 sm:gap-3">
-                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-indigo-600 to-violet-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-600/30">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-sky-500 to-sky-600 rounded-xl flex items-center justify-center shadow-lg shadow-sky-600/30">
                         <Wallet className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                     </div>
                     <div>
@@ -390,7 +390,7 @@ export default function WalletPage() {
                             initial={{ opacity: 0, y: -20, scale: 0.95 }}
                             animate={{ opacity: 1, y: 0, scale: 1 }}
                             exit={{ opacity: 0, y: -20, scale: 0.95 }}
-                            className="bg-gradient-to-r from-indigo-600 to-violet-600 text-white p-3 sm:p-4 rounded-2xl shadow-xl shadow-indigo-600/30 mb-3 sm:mb-4"
+                            className="bg-gradient-to-r from-sky-500 to-sky-600 text-white p-3 sm:p-4 rounded-2xl shadow-xl shadow-sky-600/30 mb-3 sm:mb-4"
                         >
                             <div className="flex items-center gap-2 sm:gap-3">
                                 <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white/20 rounded-xl flex items-center justify-center">
@@ -409,7 +409,7 @@ export default function WalletPage() {
                                     </button>
                                     <button
                                         onClick={handleInstallClick}
-                                        className="px-3 sm:px-4 py-1.5 sm:py-2 bg-white text-indigo-600 rounded-xl font-bold text-[10px] sm:text-xs hover:bg-white/90 transition-colors"
+                                        className="px-3 sm:px-4 py-1.5 sm:py-2 bg-white text-sky-600 rounded-xl font-bold text-[10px] sm:text-xs hover:bg-white/90 transition-colors"
                                     >
                                         Install
                                     </button>
@@ -425,7 +425,7 @@ export default function WalletPage() {
                     animate={{ opacity: 1, y: 0 }}
                     className="mb-4 sm:mb-6 flex items-center gap-3 sm:gap-4 bg-white p-4 sm:p-5 rounded-[2rem] shadow-xl shadow-slate-200/50 border border-slate-100"
                 >
-                    <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-indigo-600 to-violet-600 rounded-2xl flex items-center justify-center text-white text-lg sm:text-xl font-black shadow-lg shadow-indigo-600/30">
+                    <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-sky-500 to-sky-600 rounded-2xl flex items-center justify-center text-white text-lg sm:text-xl font-black shadow-lg shadow-sky-600/30">
                         {user?.name?.[0].toUpperCase()}
                     </div>
                     <div className="flex-1">
@@ -448,21 +448,21 @@ export default function WalletPage() {
                     <TabsList className="w-full bg-white border border-slate-200 rounded-2xl h-12 sm:h-14 p-1 sm:p-1.5 shadow-sm overflow-x-auto justify-start sm:justify-stretch">
                         <TabsTrigger
                             value="wallet"
-                            className="min-w-[88px] sm:min-w-0 sm:flex-1 rounded-xl data-[state=active]:bg-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all font-bold text-[10px] sm:text-xs uppercase tracking-widest"
+                            className="min-w-[88px] sm:min-w-0 sm:flex-1 rounded-xl data-[state=active]:bg-sky-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all font-bold text-[10px] sm:text-xs uppercase tracking-widest"
                         >
                             <Award className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-1.5" />
                             Credentials
                         </TabsTrigger>
                         <TabsTrigger
                             value="scan"
-                            className="min-w-[88px] sm:min-w-0 sm:flex-1 rounded-xl data-[state=active]:bg-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all font-bold text-[10px] sm:text-xs uppercase tracking-widest"
+                            className="min-w-[88px] sm:min-w-0 sm:flex-1 rounded-xl data-[state=active]:bg-sky-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all font-bold text-[10px] sm:text-xs uppercase tracking-widest"
                         >
                             <Camera className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-1.5" />
                             Scan
                         </TabsTrigger>
                         <TabsTrigger
                             value="claim"
-                            className="min-w-[88px] sm:min-w-0 sm:flex-1 rounded-xl data-[state=active]:bg-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all font-bold text-[10px] sm:text-xs uppercase tracking-widest"
+                            className="min-w-[88px] sm:min-w-0 sm:flex-1 rounded-xl data-[state=active]:bg-sky-600 data-[state=active]:text-white data-[state=active]:shadow-lg transition-all font-bold text-[10px] sm:text-xs uppercase tracking-widest"
                         >
                             <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-1.5" />
                             Claim
@@ -480,7 +480,7 @@ export default function WalletPage() {
                     <TabsContent value="wallet" className="space-y-3 sm:space-y-4 outline-none">
                         <div className="flex items-center justify-between px-1">
                             <h3 className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-slate-400">Your Credentials</h3>
-                            <span className="text-[10px] sm:text-xs font-black text-indigo-600 bg-indigo-50 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full border border-indigo-100">
+                            <span className="text-[10px] sm:text-xs font-black text-sky-600 bg-sky-50 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full border border-sky-100">
                                 {certs.length} {certs.length === 1 ? "Doc" : "Docs"}
                             </span>
                         </div>
@@ -488,7 +488,7 @@ export default function WalletPage() {
                         <div className="space-y-2 sm:space-y-3">
                             {loading ? (
                                 <div className="py-12 sm:py-16 text-center">
-                                    <Loader2 className="w-6 h-6 sm:w-8 sm:h-8 text-indigo-600 animate-spin mx-auto mb-3 sm:mb-4" />
+                                    <Loader2 className="w-6 h-6 sm:w-8 sm:h-8 text-sky-600 animate-spin mx-auto mb-3 sm:mb-4" />
                                     <p className="text-slate-400 text-[10px] sm:text-xs font-bold uppercase tracking-widest">Loading credentials...</p>
                                 </div>
                             ) : certs.length > 0 ? (
@@ -502,7 +502,7 @@ export default function WalletPage() {
                                         className="bg-white border border-slate-100 rounded-2xl p-3 sm:p-4 shadow-lg shadow-slate-200/50 hover:shadow-xl active:scale-[0.98] transition-all cursor-pointer group"
                                     >
                                         <div className="flex items-center gap-3 sm:gap-4">
-                                            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-indigo-500 to-violet-500 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-600/20">
+                                            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-sky-400 to-sky-500 rounded-xl flex items-center justify-center shadow-lg shadow-sky-600/20">
                                                 <Award className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                                             </div>
                                             <div className="flex-1 min-w-0">
@@ -594,7 +594,7 @@ export default function WalletPage() {
 
                         {verifying && (
                             <div className="p-4 sm:p-6 bg-white rounded-2xl border border-slate-200 text-center">
-                                <Loader2 className="w-6 h-6 sm:w-8 sm:h-8 text-indigo-600 animate-spin mx-auto mb-2 sm:mb-3" />
+                                <Loader2 className="w-6 h-6 sm:w-8 sm:h-8 text-sky-600 animate-spin mx-auto mb-2 sm:mb-3" />
                                 <p className="text-slate-500 text-xs sm:text-sm font-medium">Verifying credential...</p>
                             </div>
                         )}
@@ -603,7 +603,7 @@ export default function WalletPage() {
                     {/* Claim Tab */}
                     <TabsContent value="claim" className="space-y-3 sm:space-y-4 outline-none">
                         <Card className="border-0 shadow-xl shadow-slate-200/50 rounded-2xl bg-white overflow-hidden">
-                            <div className="h-1.5 bg-gradient-to-r from-indigo-600 to-violet-600"></div>
+                            <div className="h-1.5 bg-gradient-to-r from-sky-500 to-sky-600"></div>
                             <CardHeader className="text-center pb-2 px-4 sm:px-6">
                                 <CardTitle className="text-lg sm:text-xl font-black tracking-tight">Claim Credential</CardTitle>
                                 <CardDescription className="text-[10px] sm:text-xs sm:font-medium">Enter your 6-digit PIN from the issuer</CardDescription>
@@ -617,7 +617,7 @@ export default function WalletPage() {
                                         placeholder="• • • • • •"
                                         value={claimPin}
                                         onChange={(e) => setClaimPin(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                                        className="w-full bg-slate-50 border border-slate-200 rounded-xl h-14 sm:h-16 text-center text-xl sm:text-2xl font-black tracking-[0.5em] focus:ring-4 focus:ring-indigo-600/10 focus:border-indigo-600 transition-all outline-none"
+                                        className="w-full bg-slate-50 border border-slate-200 rounded-xl h-14 sm:h-16 text-center text-xl sm:text-2xl font-black tracking-[0.5em] focus:ring-4 focus:ring-sky-600/10 focus:border-sky-600 transition-all outline-none"
                                         maxLength={6}
                                     />
                                 </div>
@@ -628,14 +628,14 @@ export default function WalletPage() {
                                         type="text"
                                         value={organization}
                                         onChange={(e) => setOrganization(e.target.value)}
-                                        className="w-full bg-slate-50 border border-slate-200 rounded-xl h-10 sm:h-12 px-3 sm:px-4 font-bold text-xs sm:text-sm focus:ring-4 focus:ring-indigo-600/10 focus:border-indigo-600 transition-all outline-none"
+                                        className="w-full bg-slate-50 border border-slate-200 rounded-xl h-10 sm:h-12 px-3 sm:px-4 font-bold text-xs sm:text-sm focus:ring-4 focus:ring-sky-600/10 focus:border-sky-600 transition-all outline-none"
                                     />
                                 </div>
 
                                 <Button
                                     onClick={handleClaim}
                                     disabled={claiming || claimPin.length < 6}
-                                    className="w-full h-12 sm:h-14 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white font-black rounded-xl shadow-xl shadow-indigo-600/30 text-sm sm:text-base transition-all active:scale-[0.98]"
+                                    className="w-full h-12 sm:h-14 bg-gradient-to-r from-sky-500 to-sky-600 hover:from-sky-600 hover:to-sky-700 text-white font-black rounded-xl shadow-xl shadow-sky-600/30 text-sm sm:text-base transition-all active:scale-[0.98]"
                                 >
                                     {claiming ? <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" /> : "Claim Credential"}
                                 </Button>
@@ -798,7 +798,7 @@ export default function WalletPage() {
                                     {/* Credential Info */}
                                     <div className="flex items-start justify-between mb-4 sm:mb-6">
                                         <div className="flex items-center gap-3 sm:gap-4">
-                                            <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-indigo-600 to-violet-600 rounded-2xl flex items-center justify-center text-white shadow-xl shadow-indigo-600/30">
+                                            <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-sky-500 to-sky-600 rounded-2xl flex items-center justify-center text-white shadow-xl shadow-sky-600/30">
                                                 <Award className="w-6 h-6 sm:w-7 sm:h-7" />
                                             </div>
                                             <div>
@@ -831,7 +831,7 @@ export default function WalletPage() {
                                     <div className="space-y-2 sm:space-y-3">
                                         <Button
                                             onClick={() => generateQRCode(selectedCert.id)}
-                                            className="w-full h-12 sm:h-14 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white font-black rounded-xl shadow-xl shadow-indigo-600/30 text-sm sm:text-base"
+                                            className="w-full h-12 sm:h-14 bg-gradient-to-r from-sky-500 to-sky-600 hover:from-sky-600 hover:to-sky-700 text-white font-black rounded-xl shadow-xl shadow-sky-600/30 text-sm sm:text-base"
                                         >
                                             <QrCode className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2" />
                                             Show QR Code
@@ -859,7 +859,7 @@ export default function WalletPage() {
                                         <Button
                                             onClick={() => window.open(`${window.location.origin}/verify-public?id=${selectedCert.id}`)}
                                             variant="ghost"
-                                            className="w-full h-9 sm:h-10 text-indigo-600 font-bold text-xs sm:text-sm"
+                                            className="w-full h-9 sm:h-10 text-sky-600 font-bold text-xs sm:text-sm"
                                         >
                                             <ExternalLink className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
                                             Open Verification Page
@@ -913,7 +913,7 @@ export default function WalletPage() {
                     <button
                         onClick={() => setActiveTab("wallet")}
                         className={`flex flex-col items-center gap-1 py-2 px-2 sm:px-3 rounded-xl transition-all ${activeTab === "wallet"
-                                ? "text-indigo-600 bg-indigo-50"
+                                ? "text-sky-600 bg-sky-50"
                                 : "text-slate-400"
                             }`}
                     >
@@ -924,7 +924,7 @@ export default function WalletPage() {
                     <button
                         onClick={() => setActiveTab("scan")}
                         className={`flex flex-col items-center gap-1 py-2 px-2 sm:px-3 rounded-xl transition-all ${activeTab === "scan"
-                                ? "text-indigo-600 bg-indigo-50"
+                                ? "text-sky-600 bg-sky-50"
                                 : "text-slate-400"
                             }`}
                     >
@@ -935,7 +935,7 @@ export default function WalletPage() {
                     <button
                         onClick={() => setActiveTab("claim")}
                         className={`flex flex-col items-center gap-1 py-2 px-2 sm:px-3 rounded-xl transition-all ${activeTab === "claim"
-                                ? "text-indigo-600 bg-indigo-50"
+                                ? "text-sky-600 bg-sky-50"
                                 : "text-slate-400"
                             }`}
                     >
@@ -946,7 +946,7 @@ export default function WalletPage() {
                     <button
                         onClick={() => setActiveTab("topup")}
                         className={`flex flex-col items-center gap-1 py-2 px-2 sm:px-3 rounded-xl transition-all ${activeTab === "topup"
-                                ? "text-indigo-600 bg-indigo-50"
+                                ? "text-sky-600 bg-sky-50"
                                 : "text-slate-400"
                             }`}
                     >

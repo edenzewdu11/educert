@@ -127,24 +127,24 @@ export default function PublicVerifyPage() {
             <header className="bg-white border-b border-slate-200 sticky top-0 z-50">
                 <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
                     <Link href="/" className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-600/20">
+                        <div className="w-10 h-10 bg-sky-600 rounded-xl flex items-center justify-center shadow-lg shadow-sky-600/20">
                             <Award className="w-6 h-6 text-white" />
                         </div>
                         <div>
-                            <h1 className="font-bold text-lg tracking-tight text-slate-900">EduCerts<span className="text-indigo-600">.io</span></h1>
+                            <h1 className="font-bold text-lg tracking-tight text-slate-900">EduCerts<span className="text-sky-600">.io</span></h1>
                             <p className="text-[10px] text-slate-500 uppercase tracking-widest font-semibold">Public Verification Portal</p>
                         </div>
                     </Link>
                     <div className="flex items-center gap-4">
                         <Link 
                             href="/login" 
-                            className="text-sm font-semibold text-slate-600 hover:text-indigo-600 transition-colors"
+                            className="text-sm font-semibold text-slate-600 hover:text-sky-600 transition-colors"
                         >
                             Sign In
                         </Link>
                         <Link 
                             href="/wallet" 
-                            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl transition-colors shadow-lg shadow-indigo-600/20"
+                            className="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white text-sm font-semibold rounded-xl transition-colors shadow-lg shadow-sky-600/20"
                         >
                             Student Wallet
                         </Link>
@@ -159,7 +159,7 @@ export default function PublicVerifyPage() {
                         animate={{ scale: 1, opacity: 1 }}
                         className="w-20 h-20 bg-white rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl border border-slate-100"
                     >
-                        <ShieldCheck className="w-10 h-10 text-indigo-600" />
+                        <ShieldCheck className="w-10 h-10 text-sky-600" />
                     </motion.div>
                     <h1 className="text-4xl font-bold text-slate-900 tracking-tight">Verify Any Credential</h1>
                     <p className="text-slate-500 max-w-xl mx-auto font-medium text-lg">
@@ -172,14 +172,14 @@ export default function PublicVerifyPage() {
                         <div className="flex gap-2 p-1 bg-white border border-slate-200 rounded-xl shadow-sm">
                             <button
                                 onClick={() => setActiveMode("id")}
-                                className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-semibold transition-all ${activeMode === "id" ? "bg-indigo-600 text-white shadow-md" : "text-slate-500 hover:text-slate-700"}`}
+                                className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-semibold transition-all ${activeMode === "id" ? "bg-sky-600 text-white shadow-md" : "text-slate-500 hover:text-slate-700"}`}
                             >
                                 <Hash className="w-4 h-4" />
                                 By Certificate ID
                             </button>
                             <button
                                 onClick={() => setActiveMode("file")}
-                                className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-semibold transition-all ${activeMode === "file" ? "bg-indigo-600 text-white shadow-md" : "text-slate-500 hover:text-slate-700"}`}
+                                className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-semibold transition-all ${activeMode === "file" ? "bg-sky-600 text-white shadow-md" : "text-slate-500 hover:text-slate-700"}`}
                             >
                                 <Upload className="w-4 h-4" />
                                 By Document
@@ -195,7 +195,7 @@ export default function PublicVerifyPage() {
                                     exit={{ opacity: 0, x: 10 }}
                                     className="bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden"
                                 >
-                                    <div className="h-2 bg-indigo-600"></div>
+                                    <div className="h-2 bg-sky-600"></div>
                                     <div className="p-8 space-y-6">
                                         <div>
                                             <h3 className="text-lg font-bold text-slate-900 mb-2">Verify by ID</h3>
@@ -209,13 +209,13 @@ export default function PublicVerifyPage() {
                                                 value={verifyId}
                                                 onChange={(e) => setVerifyId(e.target.value)}
                                                 onKeyDown={(e) => e.key === "Enter" && handleVerifyId()}
-                                                className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-12 py-4 text-slate-900 font-mono text-sm focus:ring-4 focus:ring-indigo-600/10 outline-none focus:border-indigo-600 font-semibold transition-all"
+                                                className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-12 py-4 text-slate-900 font-mono text-sm focus:ring-4 focus:ring-sky-600/10 outline-none focus:border-sky-600 font-semibold transition-all"
                                             />
                                         </div>
                                         <Button 
                                             onClick={() => handleVerifyId()} 
                                             disabled={loading || !verifyId} 
-                                            className="w-full bg-indigo-600 hover:bg-indigo-700 h-14 rounded-2xl font-bold text-lg shadow-xl shadow-indigo-600/20 transition-all active:scale-95"
+                                            className="w-full bg-sky-600 hover:bg-sky-700 h-14 rounded-2xl font-bold text-lg shadow-xl shadow-sky-600/20 transition-all active:scale-95"
                                         >
                                             {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : "Verify Authenticity"}
                                         </Button>
@@ -233,10 +233,10 @@ export default function PublicVerifyPage() {
                                         onDragLeave={handleDrag}
                                         onDragOver={handleDrag}
                                         onDrop={handleDrop}
-                                        className={`h-[280px] border-3 border-dashed rounded-3xl flex flex-col items-center justify-center gap-6 transition-all shadow-xl ${dragActive ? "border-indigo-600 bg-indigo-50 shadow-indigo-600/20" : "border-slate-200 bg-white"}`}
+                                        className={`h-[280px] border-3 border-dashed rounded-3xl flex flex-col items-center justify-center gap-6 transition-all shadow-xl ${dragActive ? "border-sky-600 bg-sky-50 shadow-sky-600/20" : "border-slate-200 bg-white"}`}
                                     >
                                         <div className="w-16 h-16 bg-indigo-50 rounded-2xl flex items-center justify-center border border-indigo-100">
-                                            <FileSearch className="w-8 h-8 text-indigo-600" />
+                                            <FileSearch className="w-8 h-8 text-sky-600" />
                                         </div>
                                         <div className="text-center">
                                             <p className="text-lg font-bold text-slate-900 mb-1">Drop your document here</p>
@@ -349,9 +349,9 @@ export default function PublicVerifyPage() {
                 {/* Footer */}
                 <div className="text-center pt-12 border-t border-slate-200">
                     <p className="text-sm text-slate-400">
-                        Powered by <span className="font-semibold text-indigo-600">OpenAttestation</span> • 
-                        Secured by <span className="font-semibold text-indigo-600">Ed25519</span> • 
-                        Verified on <span className="font-semibold text-indigo-600">EduCerts Registry</span>
+                        Powered by <span className="font-semibold text-sky-600">OpenAttestation</span> • 
+                        Secured by <span className="font-semibold text-sky-600">Ed25519</span> • 
+                        Verified on <span className="font-semibold text-sky-600">EduCerts Registry</span>
                     </p>
                 </div>
             </main>

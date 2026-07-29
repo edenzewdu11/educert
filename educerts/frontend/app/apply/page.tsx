@@ -46,27 +46,27 @@ export default function ApplyPage() {
                             exit={{ opacity: 0, scale: 0.95 }}
                         >
                             <Card className="border-0 shadow-2xl rounded-[2.5rem] overflow-hidden bg-white">
-                                <div className="h-2 bg-indigo-600"></div>
+                                <div className="h-2 bg-sky-600"></div>
                                 <CardHeader className="text-center pt-10 pb-2">
                                     <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-slate-100 shadow-sm">
-                                        <Building2 className="w-8 h-8 text-indigo-600" />
+                                        <Building2 className="w-8 h-8 text-sky-600" />
                                     </div>
                                     <CardTitle className="text-3xl font-black text-slate-900 tracking-tight">Global Tech Corp</CardTitle>
                                     <CardDescription className="text-sm font-bold text-slate-400 uppercase tracking-widest mt-2">Job Application Portal</CardDescription>
                                 </CardHeader>
                                 <CardContent className="px-10 pb-10 space-y-8">
-                                    <div className="p-6 rounded-3xl bg-indigo-50/50 border border-indigo-100">
-                                        <h4 className="text-indigo-900 font-bold mb-1 flex items-center gap-2">
+                                    <div className="p-6 rounded-3xl bg-sky-50/50 border border-sky-100">
+                                        <h4 className="text-sky-900 font-bold mb-1 flex items-center gap-2">
                                             <Briefcase className="w-4 h-4" />
                                             Senior Software Engineer
                                         </h4>
-                                        <p className="text-indigo-600/70 text-sm font-medium">To complete your application, please verify your Bachelor's Degree using your EduCerts Wallet.</p>
+                                        <p className="text-sky-600/70 text-sm font-medium">To complete your application, please verify your Bachelor's Degree using your EduCerts Wallet.</p>
                                     </div>
 
                                     <Button
                                         onClick={generateChallenge}
                                         disabled={loading}
-                                        className="w-full h-16 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-lg font-bold shadow-xl shadow-indigo-600/20 group"
+                                        className="w-full h-16 rounded-2xl bg-sky-600 hover:bg-sky-700 text-lg font-bold shadow-xl shadow-sky-600/20 group"
                                     >
                                         {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (
                                             <>
@@ -100,7 +100,7 @@ export default function ApplyPage() {
                             <div className="p-10 bg-white rounded-[3rem] shadow-2xl border border-slate-100 inline-block relative">
                                 <img src={qrData} alt="QR Code" className="w-64 h-64" />
                                 <div className="absolute inset-0 flex items-center justify-center animate-pulse pointer-events-none">
-                                    <div className="w-72 h-72 border-2 border-indigo-600/20 rounded-[3.5rem]"></div>
+                                    <div className="w-72 h-72 border-2 border-sky-600/20 rounded-[3.5rem]"></div>
                                 </div>
                             </div>
 
@@ -115,7 +115,7 @@ export default function ApplyPage() {
                                     <input
                                         type="password"
                                         placeholder="Enter Wallet PIN..."
-                                        className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-center text-lg font-mono tracking-widest outline-none focus:ring-2 focus:ring-indigo-600/20"
+                                        className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-center text-lg font-mono tracking-widest outline-none focus:ring-2 focus:ring-sky-600/20"
                                         maxLength={6}
                                     />
                                     <Button
