@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo } from "react"
 import { useAuth } from "@/context/AuthContext"
 import { motion, AnimatePresence } from "framer-motion"
-import { Search, ShieldCheck, ShieldAlert, FileSearch, Upload, CheckCircle, XCircle, Info, Hash, Fingerprint, Loader2, ArrowLeft, Award, KeyRound, CreditCard, ChevronRight } from "lucide-react"
+import { Search, ShieldCheck, ShieldAlert, FileSearch, Upload, CheckCircle, XCircle, Info, Hash, Fingerprint, Loader2, ArrowLeft, Award, KeyRound, CreditCard, ChevronRight, Smartphone } from "lucide-react"
 import axios from "axios"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -59,6 +59,9 @@ export default function VerifyPage() {
     const [searchName, setSearchName] = useState("")
     const [searchType, setSearchType] = useState("all")
     const [searchCerts, setSearchCerts] = useState<SearchCertificate[]>([])
+    const [showMockPaymentModal, setShowMockPaymentModal] = useState(false)
+    const [mockTransactionId, setMockTransactionId] = useState<string | null>(null)
+    const [mockPaymentProcessing, setMockPaymentProcessing] = useState(false)
 
     // Function to determine specific reason for unverified status
     const getUnverifiedReason = (result: VerificationResult): string => {
@@ -140,6 +143,48 @@ export default function VerifyPage() {
         setPaymentBlocked(true)
         setError(message || "Payment required. Please buy credits in Wallet > Payments.")
         setResult(null)
+    }
+
+    const startMockPaymentForVerification = async () => {
+        try {
+            const res = await axios.post<{ checkout_url: string; session_id: string }>(`${getApiBaseUrl()}/api/payments/checkout`, {
+                plan_id: "starter", // Use starter plan for single verification
+                use_mock: true,
+            })
+            
+            const urlParams = new URLSearchParams(res.data.checkout_url.split('?')[1])
+            setMockTransactionId(urlParams.get('transaction_id'))
+            setShowMockPaymentModal(true)
+        } catch (error: any) {
+            setError(error.response?.data?.detail || "Unable to start payment.")
+        }
+    }
+
+    const completeMockPaymentForVerification = async () => {
+        if (!mockTransactionId) return
+        setMockPaymentProcessing(true)
+        try {
+            await axios.post(`${getApiBaseUrl()}/api/payments/mock-complete`, {
+                transaction_id: mockTransactionId,
+            })
+            
+            // Refresh balance and retry verification
+            const balanceRes = await axios.get<PaymentBalance>(`${getApiBaseUrl()}/api/payments/balance`)
+            setPaymentBalance(balanceRes.data.credits_available)
+            setPaymentBlocked(false)
+            setShowMockPaymentModal(false)
+            
+            // Retry the verification
+            if (activeMode === "id" && verifyId) {
+                handleVerifyId(verifyId)
+            } else if (activeMode === "pin" && verifyPin) {
+                handleVerifyPin()
+            }
+        } catch (error: any) {
+            setError(error.response?.data?.detail || "Payment failed. Please try again.")
+        } finally {
+            setMockPaymentProcessing(false)
+        }
     }
 
     const handleVerifyId = async (id?: string) => {
@@ -403,20 +448,32 @@ export default function VerifyPage() {
 
                     {paymentBlocked && !user?.is_admin && (
                         <div className="p-3 sm:p-4 bg-amber-50 border border-amber-200 rounded-2xl">
-                            <div className="flex items-center justify-between gap-3">
-                                <div>
-                                    <p className="text-xs sm:text-sm font-bold text-amber-900">Payment Required</p>
-                                    <p className="text-[10px] sm:text-xs text-amber-800 mt-0.5">
-                                        Buy credits first to verify certificates.
-                                        {paymentBalance !== null ? ` Credits left: ${paymentBalance}` : ""}
-                                    </p>
+                            <div className="flex flex-col gap-3">
+                                <div className="flex items-center justify-between gap-3">
+                                    <div>
+                                        <p className="text-xs sm:text-sm font-bold text-amber-900">Payment Required</p>
+                                        <p className="text-[10px] sm:text-xs text-amber-800 mt-0.5">
+                                            Buy credits first to verify certificates.
+                                            {paymentBalance !== null ? ` Credits left: ${paymentBalance}` : ""}
+                                        </p>
+                                    </div>
+                                    <Link href="/wallet?tab=topup">
+                                        <Button className="h-9 bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold">
+                                            <CreditCard className="w-3.5 h-3.5 mr-1" />
+                                            Go to Payments
+                                        </Button>
+                                    </Link>
                                 </div>
-                                <Link href="/wallet?tab=topup">
-                                    <Button className="h-9 bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold">
-                                        <CreditCard className="w-3.5 h-3.5 mr-1" />
-                                        Go to Payments
+                                <div className="flex items-center gap-2 pt-2 border-t border-amber-200">
+                                    <Smartphone className="w-4 h-4 text-amber-600" />
+                                    <p className="text-[10px] sm:text-xs text-amber-700">Or use demo payment:</p>
+                                    <Button
+                                        onClick={startMockPaymentForVerification}
+                                        className="h-8 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold"
+                                    >
+                                        Quick Demo Payment
                                     </Button>
-                                </Link>
+                                </div>
                             </div>
                         </div>
                     )}
@@ -698,6 +755,64 @@ export default function VerifyPage() {
                     </AnimatePresence>
                 </div>
             </div>
+
+            {/* Mock Payment Modal */}
+            <AnimatePresence>
+                {showMockPaymentModal && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4"
+                        onClick={() => setShowMockPaymentModal(false)}
+                    >
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            className="bg-white rounded-2xl p-6 sm:p-8 max-w-md w-full shadow-2xl"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <div className="text-center space-y-6">
+                                <div className="w-16 h-16 bg-gradient-to-br from-amber-500 to-amber-600 rounded-2xl flex items-center justify-center mx-auto shadow-lg shadow-amber-600/30">
+                                    <Smartphone className="w-8 h-8 text-white" />
+                                </div>
+                                <div>
+                                    <h3 className="text-xl font-bold text-slate-900">Demo Payment for Verification</h3>
+                                    <p className="text-slate-500 text-sm mt-1">Telebirr-like payment simulation</p>
+                                </div>
+                                <div className="bg-amber-50 rounded-xl p-4 border border-amber-100">
+                                    <p className="text-xs text-slate-600 mb-2">Transaction ID</p>
+                                    <p className="text-sm font-mono text-slate-800 break-all">{mockTransactionId}</p>
+                                </div>
+                                <div className="space-y-3">
+                                    <Button
+                                        onClick={completeMockPaymentForVerification}
+                                        disabled={mockPaymentProcessing}
+                                        className="w-full h-12 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold rounded-xl shadow-lg shadow-amber-600/30"
+                                    >
+                                        {mockPaymentProcessing ? (
+                                            <Loader2 className="w-5 h-5 animate-spin" />
+                                        ) : (
+                                            "Complete Payment & Verify"
+                                        )}
+                                    </Button>
+                                    <Button
+                                        onClick={() => setShowMockPaymentModal(false)}
+                                        variant="outline"
+                                        className="w-full h-10 border-slate-200 text-slate-600 hover:bg-slate-50 font-bold"
+                                    >
+                                        Cancel
+                                    </Button>
+                                </div>
+                                <p className="text-xs text-slate-400">
+                                    This is a demo payment for testing purposes only. No actual money will be charged.
+                                </p>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
         </>
     )
