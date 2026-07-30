@@ -485,12 +485,31 @@ def create_checkout_session(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(require_user),
 ):
-    if PAYMENT_PROVIDER.lower() != "stripe":
-        raise HTTPException(status_code=400, detail="Only Stripe payment provider is currently supported.")
-
     plan = PAYMENT_PLANS.get(checkout_request.plan_id)
     if not plan:
         raise HTTPException(status_code=404, detail="Unknown payment plan.")
+
+    # Mock payment for demo (Telebirr-like)
+    if PAYMENT_PROVIDER.lower() == "mock" or checkout_request.use_mock:
+        transaction = models.PaymentTransaction(
+            id=str(uuid.uuid4()),
+            user_id=current_user.id,
+            provider="mock_telebirr",
+            plan_id=checkout_request.plan_id,
+            amount_cents=plan["amount_cents"],
+            currency=plan["currency"],
+            status="pending",
+        )
+        db.add(transaction)
+        db.commit()
+
+        # Return mock payment URL for demo
+        mock_payment_url = f"{FRONTEND_URL.rstrip('/')}/wallet?payment=mock&transaction_id={transaction.id}"
+        return schemas.PaymentCheckoutResponse(checkout_url=mock_payment_url, session_id=transaction.id)
+
+    # Original Stripe implementation
+    if PAYMENT_PROVIDER.lower() != "stripe":
+        raise HTTPException(status_code=400, detail="Only Stripe payment provider is currently supported.")
 
     stripe.api_key = _get_stripe_secret_key()
 
@@ -618,6 +637,38 @@ def get_payment_balance(
     current_user: models.User = Depends(require_user),
 ):
     return _get_user_payment_balance(current_user.id, db)
+
+
+@app.post("/api/payments/mock-complete")
+def complete_mock_payment(
+    transaction_id: str,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(require_user),
+):
+    """Complete a mock payment transaction for demo purposes (Telebirr-like)"""
+    transaction = (
+        db.query(models.PaymentTransaction)
+        .filter(
+            models.PaymentTransaction.id == transaction_id,
+            models.PaymentTransaction.user_id == current_user.id,
+            models.PaymentTransaction.provider == "mock_telebirr",
+        )
+        .first()
+    )
+    
+    if not transaction:
+        raise HTTPException(status_code=404, detail="Transaction not found")
+    
+    if transaction.status != "pending":
+        raise HTTPException(status_code=400, detail="Transaction already processed")
+    
+    # Simulate successful payment
+    transaction.status = "paid"
+    transaction.payment_intent_id = f"mock_{uuid.uuid4().hex[:16]}"
+    db.add(transaction)
+    db.commit()
+    
+    return {"ok": True, "message": "Mock payment completed successfully"}
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Certificate Issuance (Phase 3: Document Registry)

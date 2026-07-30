@@ -119,6 +119,7 @@ class PaymentPlan(BaseModel):
 
 class PaymentCheckoutRequest(BaseModel):
     plan_id: str
+    use_mock: bool = False
 
 
 class PaymentCheckoutResponse(BaseModel):

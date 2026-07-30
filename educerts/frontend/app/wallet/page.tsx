@@ -95,6 +95,10 @@ export default function WalletPage() {
     const [paymentHistory, setPaymentHistory] = useState<PaymentTransaction[]>([])
     const [loadingPayments, setLoadingPayments] = useState(false)
     const [checkoutingPlanId, setCheckoutingPlanId] = useState<string | null>(null)
+    const [useMockPayment, setUseMockPayment] = useState(true)
+    const [showMockPaymentModal, setShowMockPaymentModal] = useState(false)
+    const [mockTransactionId, setMockTransactionId] = useState<string | null>(null)
+    const [mockPaymentProcessing, setMockPaymentProcessing] = useState(false)
     const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
     const [showInstallBanner, setShowInstallBanner] = useState(false)
     const [isInstalled, setIsInstalled] = useState(false)
@@ -201,14 +205,42 @@ export default function WalletPage() {
         setCheckoutingPlanId(planId)
         setErrorMessage("")
         try {
-            const res = await axios.post<{ checkout_url: string }>(`${getApiBaseUrl()}/api/payments/checkout`, {
+            const res = await axios.post<{ checkout_url: string; session_id: string }>(`${getApiBaseUrl()}/api/payments/checkout`, {
                 plan_id: planId,
+                use_mock: useMockPayment,
             })
-            window.location.href = res.data.checkout_url
+            
+            if (useMockPayment) {
+                // Show mock payment modal for Telebirr-like demo
+                const urlParams = new URLSearchParams(res.data.checkout_url.split('?')[1])
+                setMockTransactionId(urlParams.get('transaction_id'))
+                setShowMockPaymentModal(true)
+            } else {
+                // Redirect to actual Stripe checkout
+                window.location.href = res.data.checkout_url
+            }
         } catch (error: any) {
             setErrorMessage(error.response?.data?.detail || "Unable to start payment.")
         } finally {
             setCheckoutingPlanId(null)
+        }
+    }
+
+    const completeMockPayment = async () => {
+        if (!mockTransactionId) return
+        setMockPaymentProcessing(true)
+        try {
+            await axios.post(`${getApiBaseUrl()}/api/payments/mock-complete`, {
+                transaction_id: mockTransactionId,
+            })
+            setSuccessMessage("Payment completed successfully! Credits added to your wallet.")
+            setShowMockPaymentModal(false)
+            fetchPaymentHistory()
+            setTimeout(() => setSuccessMessage(""), 3000)
+        } catch (error: any) {
+            setErrorMessage(error.response?.data?.detail || "Payment failed. Please try again.")
+        } finally {
+            setMockPaymentProcessing(false)
         }
     }
 
@@ -665,8 +697,22 @@ export default function WalletPage() {
                         <Card className="border border-slate-200 relative z-10">
                             <CardHeader>
                                 <CardTitle className="text-lg font-semibold text-slate-900">Add Wallet Credits</CardTitle>
-                                <p className="text-slate-500 text-sm">Purchase credential issuance credits securely with Stripe</p>
+                                <p className="text-slate-500 text-sm">Purchase credential issuance credits</p>
                             </CardHeader>
+                            <CardContent>
+                                <div className="flex items-center gap-3 p-3 bg-sky-50 rounded-lg border border-sky-100">
+                                    <input
+                                        type="checkbox"
+                                        id="mock-payment"
+                                        checked={useMockPayment}
+                                        onChange={(e) => setUseMockPayment(e.target.checked)}
+                                        className="w-4 h-4 text-sky-600 rounded focus:ring-sky-500"
+                                    />
+                                    <label htmlFor="mock-payment" className="text-sm text-slate-700 cursor-pointer">
+                                        Use demo payment (Telebirr-like)
+                                    </label>
+                                </div>
+                            </CardContent>
                         </Card>
 
                         {loadingPayments ? (
@@ -902,6 +948,64 @@ export default function WalletPage() {
                                     </div>
                                 </>
                             )}
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Mock Payment Modal */}
+            <AnimatePresence>
+                {showMockPaymentModal && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4"
+                        onClick={() => setShowMockPaymentModal(false)}
+                    >
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            className="bg-white rounded-2xl p-6 sm:p-8 max-w-md w-full shadow-2xl"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <div className="text-center space-y-6">
+                                <div className="w-16 h-16 bg-gradient-to-br from-sky-500 to-sky-600 rounded-2xl flex items-center justify-center mx-auto shadow-lg shadow-sky-600/30">
+                                    <CreditCard className="w-8 h-8 text-white" />
+                                </div>
+                                <div>
+                                    <h3 className="text-xl font-bold text-slate-900">Demo Payment</h3>
+                                    <p className="text-slate-500 text-sm mt-1">Telebirr-like payment simulation</p>
+                                </div>
+                                <div className="bg-sky-50 rounded-xl p-4 border border-sky-100">
+                                    <p className="text-xs text-slate-600 mb-2">Transaction ID</p>
+                                    <p className="text-sm font-mono text-slate-800 break-all">{mockTransactionId}</p>
+                                </div>
+                                <div className="space-y-3">
+                                    <Button
+                                        onClick={completeMockPayment}
+                                        disabled={mockPaymentProcessing}
+                                        className="w-full h-12 bg-gradient-to-r from-sky-500 to-sky-600 hover:from-sky-600 hover:to-sky-700 text-white font-bold rounded-xl shadow-lg shadow-sky-600/30"
+                                    >
+                                        {mockPaymentProcessing ? (
+                                            <Loader2 className="w-5 h-5 animate-spin" />
+                                        ) : (
+                                            "Complete Payment"
+                                        )}
+                                    </Button>
+                                    <Button
+                                        onClick={() => setShowMockPaymentModal(false)}
+                                        variant="outline"
+                                        className="w-full h-10 border-slate-200 text-slate-600 hover:bg-slate-50 font-bold"
+                                    >
+                                        Cancel
+                                    </Button>
+                                </div>
+                                <p className="text-xs text-slate-400">
+                                    This is a demo payment for testing purposes only. No actual money will be charged.
+                                </p>
+                            </div>
                         </motion.div>
                     </motion.div>
                 )}
