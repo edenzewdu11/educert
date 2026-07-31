@@ -148,6 +148,7 @@ export default function WalletPage() {
             fetchClaimedCerts()
             fetchPaymentPlans()
             fetchPaymentHistory()
+            fetchPaymentBalance()
         }
     }, [user])
 
@@ -201,6 +202,15 @@ export default function WalletPage() {
         }
     }
 
+    const fetchPaymentBalance = async () => {
+        try {
+            const res = await axios.get<{ credits_available: number }>(`${getApiBaseUrl()}/api/payments/balance`)
+            setPaymentBalance(res.data.credits_available)
+        } catch (error) {
+            console.error("Failed to load payment balance", error)
+        }
+    }
+
     const startCheckout = async (planId: string) => {
         setCheckoutingPlanId(planId)
         setErrorMessage("")
@@ -230,13 +240,20 @@ export default function WalletPage() {
         if (!mockTransactionId) return
         setMockPaymentProcessing(true)
         try {
-            await axios.post(`${getApiBaseUrl()}/api/payments/mock-complete`, {
+            const res = await axios.post<{ ok: boolean; message: string; credits_added: number }>(`${getApiBaseUrl()}/api/payments/mock-complete`, {
                 transaction_id: mockTransactionId,
             })
-            setSuccessMessage("Payment completed successfully! Credits added to your wallet.")
+            setSuccessMessage(`Payment completed! ${res.data.credits_added} credits added to your wallet.`)
             setShowMockPaymentModal(false)
             fetchPaymentHistory()
-            setTimeout(() => setSuccessMessage(""), 3000)
+            // Refresh payment balance
+            try {
+                const balanceRes = await axios.get(`${getApiBaseUrl()}/api/payments/balance`)
+                setPaymentBalance(balanceRes.data.credits_available)
+            } catch (e) {
+                console.error("Failed to fetch balance", e)
+            }
+            setTimeout(() => setSuccessMessage(""), 5000)
         } catch (error: any) {
             setErrorMessage(error.response?.data?.detail || "Payment failed. Please try again.")
         } finally {

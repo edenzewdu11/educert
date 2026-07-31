@@ -668,7 +668,20 @@ def complete_mock_payment(
     db.add(transaction)
     db.commit()
     
-    return {"ok": True, "message": "Mock payment completed successfully"}
+    # Add credits to user's payment usage record
+    plan = PAYMENT_PLANS.get(transaction.plan_id, {})
+    credits_to_add = plan.get("credits", 0)
+    
+    if credits_to_add > 0:
+        payment_usage = models.PaymentUsage(
+            user_id=current_user.id,
+            credits_earned=credits_to_add,
+            transaction_id=transaction.id,
+        )
+        db.add(payment_usage)
+        db.commit()
+    
+    return {"ok": True, "message": "Mock payment completed successfully", "credits_added": credits_to_add}
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Certificate Issuance (Phase 3: Document Registry)
