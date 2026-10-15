@@ -9,7 +9,7 @@ python-jose[cryptography]
 passlib[bcrypt]
 jinja2
 pdfplumber
-PyMuPDF
+pymupdf
 openpyxl
 Pillow
 python-dotenv

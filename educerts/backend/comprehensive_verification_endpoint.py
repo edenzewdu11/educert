@@ -5,7 +5,7 @@ This replaces the existing PDF verification with a more robust system.
 
 from fastapi import HTTPException, UploadFile, File, Depends
 from sqlalchemy.orm import Session
-import fitz
+import pymupdf as fitz  # Updated import
 import hashlib
 import tempfile
 import os

@@ -3,7 +3,7 @@ WPS Office Style Verification Ribbon - Final Implementation
 Creates a ribbon that shows metadata in a reliable popup format
 """
 
-import fitz  # PyMuPDF
+import pymupdf as fitz  # Updated import
 
 
 class WPSRibbonFinal:

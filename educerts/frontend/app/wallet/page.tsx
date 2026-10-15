@@ -93,6 +93,7 @@ export default function WalletPage() {
     const [verificationResult, setVerificationResult] = useState<any>(null)
     const [paymentPlans, setPaymentPlans] = useState<PaymentPlan[]>([])
     const [paymentHistory, setPaymentHistory] = useState<PaymentTransaction[]>([])
+    const [paymentBalance, setPaymentBalance] = useState<number | null>(null)
     const [loadingPayments, setLoadingPayments] = useState(false)
     const [checkoutingPlanId, setCheckoutingPlanId] = useState<string | null>(null)
     const [useMockPayment, setUseMockPayment] = useState(true)

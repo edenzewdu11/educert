@@ -21,7 +21,7 @@ from io import BytesIO
 import qrcode
 import base64
 from dotenv import load_dotenv
-import fitz  # PyMuPDF
+import pymupdf as fitz  # Updated import to avoid deprecation warning
 from PIL import Image, UnidentifiedImageError
 import stripe
 

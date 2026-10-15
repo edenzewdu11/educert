@@ -2,7 +2,7 @@
 
 import hashlib
 import re
-import fitz  # PyMuPDF
+import pymupdf as fitz  # Updated import
 from typing import Dict, Optional
 import logging
 

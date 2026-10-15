@@ -18,7 +18,7 @@ Workflow:
 import re
 import os
 import time
-import fitz
+import pymupdf as fitz  # Updated import
 import io
 import datetime
 from pathlib import Path

@@ -7,7 +7,7 @@ and performs strict hash matching for tamper detection.
 
 import hashlib
 import os
-import fitz
+import pymupdf as fitz  # Updated import
 import database
 import models
 from sqlalchemy.orm import sessionmaker
