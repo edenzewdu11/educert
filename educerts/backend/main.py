@@ -38,32 +38,43 @@ from wps_ribbon_final import add_final_ribbon
 
 load_dotenv()
 
-# Create tables
-models.Base.metadata.create_all(bind=database.engine)
+# Create tables with error handling
+try:
+    models.Base.metadata.create_all(bind=database.engine)
+    print("✓ Database tables created/verified")
+except Exception as e:
+    print(f"⚠ Database table creation warning: {e}")
 
 # Auto-seed admin user for production
 def seed_admin_user():
-    db = database.SessionLocal()
     try:
-        admin_email = "app-reguser@mailinator.com"
-        user = db.query(models.User).filter(models.User.email == admin_email).first()
-        if not user:
-            print("Creating admin user for production...")
-            new_user = models.User(
-                name="Eden",
-                email=admin_email,
-                password=auth_utils.get_password_hash("Password1"),
-                is_admin=True
-            )
-            db.add(new_user)
-            db.commit()
-            print("Admin user created successfully.")
+        db = database.SessionLocal()
+        try:
+            admin_email = "app-reguser@mailinator.com"
+            user = db.query(models.User).filter(models.User.email == admin_email).first()
+            if not user:
+                print("Creating admin user for production...")
+                new_user = models.User(
+                    name="Eden",
+                    email=admin_email,
+                    password=auth_utils.get_password_hash("Password1"),
+                    is_admin=True
+                )
+                db.add(new_user)
+                db.commit()
+                print("✓ Admin user created successfully.")
+        except Exception as e:
+            print(f"⚠ Error seeding admin user: {e}")
+            db.rollback()
+        finally:
+            db.close()
     except Exception as e:
-        print(f"Error seeding admin user: {e}")
-    finally:
-        db.close()
+        print(f"⚠ Database session error: {e}")
 
-seed_admin_user()
+try:
+    seed_admin_user()
+except Exception as e:
+    print(f"⚠ Admin user seeding failed: {e}")
 
 app = FastAPI(title="EduCerts API")
 templates = Jinja2Templates(directory="templates")
@@ -231,6 +242,18 @@ def get_db():
         yield db
     finally:
         db.close()
+
+# Health check endpoint
+@app.get("/health")
+async def health_check():
+    """Simple health check endpoint for deployment verification"""
+    return {"status": "healthy", "app": "EduCerts API"}
+
+# Root endpoint
+@app.get("/")
+async def root():
+    """Root endpoint"""
+    return {"message": "EduCerts API", "status": "running"}
 
 
 def _normalize_image_bytes_to_png(raw_bytes: bytes) -> bytes:

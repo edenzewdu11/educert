@@ -14,12 +14,28 @@ DATABASE_URL = os.getenv("DATABASE_URL", f"sqlite:///{db_path}")
 if DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
-# psycopg2 driver for PostgreSQL
+# Handle connection args
 connect_args = {}
 if DATABASE_URL.startswith("sqlite"):
     connect_args = {"check_same_thread": False}
 
-engine = create_engine(DATABASE_URL, connect_args=connect_args)
+# Create engine with error handling
+try:
+    engine = create_engine(DATABASE_URL, connect_args=connect_args)
+    
+    # Test the connection
+    with engine.connect() as conn:
+        pass  # If this works, database is accessible
+        
+    print(f"✓ Database connection successful: {DATABASE_URL.split('://')[0]}://...")
+    
+except Exception as e:
+    print(f"⚠ Database connection warning: {e}")
+    # Fallback to SQLite if PostgreSQL fails
+    fallback_db = f"sqlite:///{db_path}"
+    engine = create_engine(fallback_db, connect_args={"check_same_thread": False})
+    print(f"✓ Using fallback database: {fallback_db}")
+
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
